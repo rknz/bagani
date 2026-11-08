@@ -17,7 +17,7 @@
 
 ---
 
-### [📥 Download Android Release APK (v1.0.0)](https://github.com/rknz/bagani/releases/download/v1.0.0/BAGANI_v1.0.0.apk) &nbsp;•&nbsp; [📦 All Releases](https://github.com/rknz/bagani/releases) &nbsp;•&nbsp; [🌐 Live Web App](https://44dd2e939d7324.lhr.life)
+### [📥 Download Android Release APK (v1.0.0)](https://github.com/rknz/bagani/releases/download/v1.0.0/BAGANI_v1.0.0.apk) &nbsp;•&nbsp; [📦 All Releases](https://github.com/rknz/bagani/releases) &nbsp;•&nbsp; [🌐 Live Web App](https://01dd807fae600e.lhr.life)
 
 </div>
 
@@ -159,3 +159,4 @@ Distributed under the **MIT License**. See [`LICENSE`](./LICENSE) for full detai
 
 Developed with passion by **[ProFix - Web & Soft](https://github.com/rknz)**.  
 *Copyright © 2026 ProFix - Web & Soft. All rights reserved.*
+

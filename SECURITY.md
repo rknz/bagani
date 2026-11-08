@@ -29,3 +29,4 @@ BAGANI adheres strictly to:
 - No background location tracking.
 - No broad storage permissions (`READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`).
 - Encrypted HTTPS-only communications for meteorological and botanical lookups.
+
