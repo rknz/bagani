@@ -1,0 +1,85 @@
+{
+  "project": {
+    "name": "BAGANI",
+    "nameBn": "বাগানি",
+    "tagline": "Grow Smart, Live Green.",
+    "subtitle": "Smart Gardening & Plant Care",
+    "package": "com.profix.bagani",
+    "developer": "ProFix - Web & Soft",
+    "version": "1.0.0",
+    "platforms": [
+      "Android 10+",
+      "iOS 15.0+",
+      "Web"
+    ],
+    "framework": "Expo SDK 52 / React Native 0.76.5 / React Native Web",
+    "language": "TypeScript 5.3"
+  },
+  "links": {
+    "liveDemo": "https://ab134a1a44c02b.lhr.life",
+    "codebaseBundle": "https://ab134a1a44c02b.lhr.life/bagani-codebase.txt",
+    "reviewMarkdown": "https://ab134a1a44c02b.lhr.life/project-review.md",
+    "reviewHtml": "https://ab134a1a44c02b.lhr.life/project-review.html"
+  },
+  "filesCount": 44,
+  "screens": [
+    {
+      "name": "HomeScreen",
+      "route": "home",
+      "file": "lib/screens/home/home_screen.tsx"
+    },
+    {
+      "name": "MyGardenScreen",
+      "route": "my_garden",
+      "file": "lib/screens/my_garden/my_garden_screen.tsx"
+    },
+    {
+      "name": "ScannerScreen",
+      "route": "scan",
+      "file": "lib/screens/scanner/scanner_screen.tsx"
+    },
+    {
+      "name": "PlantProfileScreen",
+      "route": "plant_profile",
+      "file": "lib/screens/plant_profile/plant_profile_screen.tsx"
+    },
+    {
+      "name": "RooftopPlannerScreen",
+      "route": "planner",
+      "file": "lib/screens/rooftop_planner/rooftop_planner_screen.tsx"
+    },
+    {
+      "name": "WeatherCareScreen",
+      "route": "weather_care",
+      "file": "lib/screens/weather_care/weather_care_screen.tsx"
+    },
+    {
+      "name": "DirectoryScreen",
+      "route": "directory",
+      "file": "lib/screens/directory/directory_screen.tsx"
+    },
+    {
+      "name": "SettingsScreen",
+      "route": "profile",
+      "file": "lib/screens/settings/settings_screen.tsx"
+    },
+    {
+      "name": "AuthScreen",
+      "route": "auth",
+      "file": "lib/screens/auth/auth_screen.tsx"
+    }
+  ],
+  "services": [
+    "OnlineBotanicalService",
+    "PrecisionPruningService",
+    "LocalDirectoryService",
+    "LocalDbService",
+    "CloudSyncService",
+    "WeatherService",
+    "AiScannerService",
+    "QrPdfService",
+    "NotificationService",
+    "AdService",
+    "AuthService"
+  ]
+}

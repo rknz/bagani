@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BAGANI (বাগানি) — Project Review & Code Audit Blueprint</title>
+  <style>
+    :root {
+      --bg: #0f1712;
+      --card-bg: #17241c;
+      --card-border: #24382c;
+      --primary: #52c785;
+      --primary-dark: #167a45;
+      --primary-glow: rgba(82, 199, 133, 0.2);
+      --text-main: #f0f7f2;
+      --text-muted: #9ab3a3;
+      --accent-gold: #f59e0b;
+      --accent-blue: #38bdf8;
+      --code-bg: #0b110e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.65;
+      padding: 24px 16px 80px;
+    }
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+    header {
+      background: linear-gradient(135deg, #133323 0%, #1c4832 100%);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 32px 28px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(82, 199, 133, 0.15);
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .subtitle {
+      font-size: 17px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    .action-links {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #0b1a11;
+    }
+    .btn-primary:hover {
+      background: #41b373;
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.08);
+      color: #ffffff;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.15);
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    }
+    h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    h3 {
+      font-size: 17px;
+      color: #ffffff;
+      margin: 18px 0 8px;
+    }
+    p { margin-bottom: 14px; color: var(--text-main); }
+    ul, ol { margin-left: 24px; margin-bottom: 16px; color: var(--text-muted); }
+    li { margin-bottom: 6px; }
+    strong { color: #ffffff; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 10px 14px;
+      border: 1px solid var(--card-border);
+      text-align: left;
+    }
+    th {
+      background: rgba(255,255,255,0.04);
+      color: var(--primary);
+      font-weight: 700;
+    }
+    td { color: var(--text-muted); }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      background: var(--code-bg);
+      padding: 2px 6px;
+      border-radius: 6px;
+      color: var(--primary);
+      font-size: 13.5px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 16px;
+      overflow-x: auto;
+      font-size: 13.5px;
+      margin-bottom: 16px;
+      color: #d1fae5;
+    }
+    .prompt-box {
+      background: #112419;
+      border: 1px solid var(--primary);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 16px;
+    }
+    .prompt-box h4 {
+      color: var(--primary);
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    .prompt-content {
+      background: #09140e;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 13.5px;
+      color: #e2f2e7;
+      white-space: pre-wrap;
+      font-family: monospace;
+      user-select: all;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <span class="badge">ProFix - Web & Soft • Official Project Blueprint</span>
+      <h1>🌿 BAGANI (বাগানি) — Code Review & Architecture Document</h1>
+      <div class="subtitle">Smart Gardening & Plant Care • "Grow Smart, Live Green." • Cross-Platform Mobile & Web (Expo SDK 52)</div>
+      
+      <div class="action-links">
+        <a class="btn btn-primary" href="/" target="_blank">📱 Open Live Web App</a>
+        <a class="btn btn-secondary" href="/bagani-codebase.txt" target="_blank">📄 View Complete Codebase (.txt)</a>
+        <a class="btn btn-secondary" href="/project-review.md" target="_blank">📝 Raw Markdown (.md)</a>
+        <a class="btn btn-secondary" href="/project-review.json" target="_blank">⚙️ Structured JSON</a>
+      </div>
+    </header>
+
+    <!-- Quick Copy Box for AI Prompts -->
+    <div class="card">
+      <h2>🤖 Copy-Ready Prompt to Share with Any AI</h2>
+      <p>You can copy this ready-to-use prompt and paste it into <strong>ChatGPT, Claude, Gemini, DeepSeek, or Cursor</strong> to request an in-depth architecture and code review:</p>
+      
+      <div class="prompt-box">
+        <h4>📋 Copy & Paste Prompt for AI Reviewer:</h4>
+        <div class="prompt-content">Hello! Please review my complete cross-platform smart gardening project, BAGANI (বাগানি), developed by ProFix - Web & Soft.
+
+You can inspect the project specification and full codebase bundle at:
+1. Architecture & Review Spec: https://ab134a1a44c02b.lhr.life/project-review.md
+2. Full Combined Codebase (42 files): https://ab134a1a44c02b.lhr.life/bagani-codebase.txt
+3. Live Interactive Web App: https://ab134a1a44c02b.lhr.life
+
+Please review the architecture, code quality, TypeScript safety, performance, offline resilience, and horticultural algorithms. Provide specific, actionable suggestions and corrections.</div>
+      </div>
+    </div>
+
+    <!-- Executive Overview -->
+    <div class="card">
+      <h2>1. Project Vision & Architecture Overview</h2>
+      <p><strong>BAGANI (বাগানি)</strong> is an offline-first mobile application built for rooftop gardeners, balcony plant hobbyists, and urban agriculture enthusiasts. It eliminates the need for expensive hardware sensors by combining intelligent local botanical heuristics with online enrichment and cloud backup.</p>
+      
+      <table>
+        <tr><th>Property</th><th>Specification</th></tr>
+        <tr><td><strong>Application Name</strong></td><td>BAGANI (বাগানি)</td></tr>
+        <tr><td><strong>Developer</strong></td><td>ProFix - Web & Soft</td></tr>
+        <tr><td><strong>Package ID</strong></td><td><code>com.profix.bagani</code></td></tr>
+        <tr><td><strong>Target Systems</strong></td><td>Android 10+, iOS 15.0+, Mobile & Desktop Web</td></tr>
+        <tr><td><strong>Core Engine</strong></td><td>React Native 0.76.5, Expo SDK 52, React Native Web 0.19</td></tr>
+        <tr><td><strong>Type Safety</strong></td><td>TypeScript 5.3.3 (100% strict compilation pass)</td></tr>
+        <tr><td><strong>Offline Storage</strong></td><td>AsyncStorage with local indexing & Google Cloud Sync</td></tr>
+      </table>
+    </div>
+
+    <!-- Core Features -->
+    <div class="card">
+      <h2>2. Core Functional Modules</h2>
+      
+      <h3>1. Botanical Search & Auto-Correction Filter</h3>
+      <p>Implemented in <code>lib/services/online_botanical_service.ts</code> and <code>lib/core/components/botanical_search_modal.tsx</code>. Automatically checks user input against an authoritative botanical catalog, fixes colloquial or misspelled entries (e.g. "sabeda" &rarr; "সফেদা / Sapodilla"), and enriches plant profiles with optimal soil pH, humidity, and sunlight data.</p>
+
+      <h3>2. Dual-Tab Plant Profile & Precision Pruning</h3>
+      <p>Implemented in <code>lib/screens/plant_profile/plant_profile_screen.tsx</code> and <code>lib/services/precision_pruning_service.ts</code>.</p>
+      <ul>
+        <li><strong>Tab 1 (Care & Organic Remedies):</strong> Real-time hydration estimates, harvest countdown, organic pest remedies (Neem oil, wood ash, garlic spray), and a checkbox care timeline.</li>
+        <li><strong>Tab 2 (Precision Pruning for 2x Yield):</strong> Step-by-step 1G, 2G, and 3G pruning regimens tailored to climbing gourds, tomatoes, chilies, and citrus trees.</li>
+      </ul>
+
+      <h3>3. Hyper-Local Climate Advisory</h3>
+      <p>Implemented in <code>lib/screens/weather_care/weather_care_screen.tsx</code>. Synthesizes real-time microclimate conditions across all 64 districts in Bangladesh to recommend season-appropriate crops.</p>
+
+      <h3>4. Remotely-Updatable Directory & Community Vault</h3>
+      <p>Implemented in <code>lib/screens/directory/directory_screen.tsx</code>. Provides verified contacts for regional agriculture officers and nurseries, alongside a community tip vault with upvoting.</p>
+
+      <h3>5. Custom Navigation & Settings</h3>
+      <p>5-tab bottom navigation dock with a specialized light-white unselected tile and vibrant green active indicator for the <strong>Scan</strong> action. Clean segmented toggles for Bengali/English and Light/Dark mode.</p>
+    </div>
+
+    <!-- File Structure -->
+    <div class="card">
+      <h2>3. Codebase File Structure (42 Files)</h2>
+      <pre>
+lib/
+├── core/
+│   ├── components/ (bottom_nav_bar, botanical_search_modal, banner_ad_view)
+│   ├── l10n/       (app_strings - English & Bengali)
+│   └── theme/      (app_theme - Light, Dark, Tokens)
+├── models/         (user, plant, plant_log, plant_forecast, rooftop_plan, care_schedule)
+├── screens/        (home, my_garden, plant_profile, scanner, rooftop_planner, weather_care, directory, settings, auth)
+└── services/       (online_botanical, precision_pruning, local_directory, local_db, cloud_sync, weather, ai_scanner, qr_pdf, notification, ad, auth)
+      </pre>
+    </div>
+
+    <!-- AI Review Checklist -->
+    <div class="card">
+      <h2>4. Key Review Areas for the Reviewing AI</h2>
+      <ol>
+        <li><strong>Architecture & Modularity:</strong> Evaluate service layer boundaries and decoupling between state and views.</li>
+        <li><strong>Performance:</strong> Review AsyncStorage read/write patterns, list virtualization, and re-rendering optimizations.</li>
+        <li><strong>Security:</strong> Audit client-side authentication tokens, cloud sync payloads, and data sanitization.</li>
+        <li><strong>Horticultural Science:</strong> Validate botanical care recommendations, organic pest recipes, and 1G/2G/3G pruning timing.</li>
+        <li><strong>Accessibility & UI Polish:</strong> Check color contrast, touch target dimensions, and bilingual layout adaptability.</li>
+      </ol>
+    </div>
+  </div>
+</body>
+</html>
