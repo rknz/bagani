@@ -1598,12 +1598,19 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({
               </View>
 
               {/* Custom Numeric Size Input with Clear Unit Badge */}
-              <View style={styles.ageInputRow}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <TextInput
                   style={[
                     styles.inputField,
                     {
-                      flex: 1,
+                      width: 72,
+                      height: 38,
+                      borderRadius: 8,
+                      textAlign: 'center',
+                      fontWeight: '700',
+                      fontSize: 14,
+                      paddingHorizontal: 4,
+                      paddingVertical: 0,
                       backgroundColor: theme.surface,
                       color: theme.textPrimary,
                       borderColor: theme.border,
@@ -1613,17 +1620,27 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({
                   keyboardType="numeric"
                   value={containerSizeText}
                   onChangeText={setContainerSizeText}
+                  placeholder="18"
+                  placeholderTextColor={theme.textMuted}
                 />
                 <View
                   style={[
                     styles.unitStaticBadge,
                     {
+                      height: 38,
+                      borderRadius: 8,
+                      paddingHorizontal: 12,
+                      paddingVertical: 0,
+                      justifyContent: 'center',
+                      alignItems: 'center',
                       backgroundColor: theme.selectedSurface,
                       borderColor: theme.primary + '55',
+                      flexShrink: 0,
                     },
                   ]}
                 >
                   <Text
+                    numberOfLines={1}
                     style={{
                       color: theme.primary,
                       fontWeight: '700',
