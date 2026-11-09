@@ -103,6 +103,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   >({});
   const [urgentCareSelectedPlantId, setUrgentCareSelectedPlantId] =
     useState<string>('all');
+  const [urgentCareFilter, setUrgentCareFilter] = useState<
+    'all' | 'pending' | 'do_later' | 'completed'
+  >('pending');
   const [careTaskModalOpen, setCareTaskModalOpen] = useState(false);
 
   // New Plant Form state
@@ -390,7 +393,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           style={[
             styles.modernHeroCard,
             {
-              backgroundColor: '#113A23',
+              backgroundColor: '#123B29',
             },
           ]}
         >
@@ -431,7 +434,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               <Text
                 style={[
                   styles.heroCtaPillText,
-                  { color: '#113A23', fontFamily: fontFam },
+                  { color: '#123B29', fontFamily: fontFam },
                 ]}
               >
                 {lang === 'bn'
@@ -955,13 +958,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <View
               style={[
                 styles.statIconWrap,
-                { backgroundColor: 'rgba(20, 99, 59, 0.10)' },
+                { backgroundColor: 'rgba(22, 122, 69, 0.10)' },
               ]}
             >
               <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
                 <Path
                   d="M12 22V13M12 13C12 13 8 11.5 8 7C10.5 7 12 9 12 13ZM12 13C12 13 16 11.5 16 7C13.5 7 12 9 12 13Z"
-                  stroke="#14633B"
+                  stroke="#167A45"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -969,7 +972,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               </Svg>
             </View>
             <View style={styles.statTextCol}>
-              <Text style={[styles.statNumber, { color: theme.textPrimary }]}>
+              <Text style={[styles.statNumber, { color: '#167A45' }]}>
                 {lang === 'bn' ? toBengaliNumber(totalPlants) : totalPlants}
               </Text>
               <Text
@@ -1224,560 +1227,618 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             }
           />
 
-          {/* Urgent Care Tasks: Pending tasks only; completed tasks stay recorded in plant timeline log */}
+          {/* Urgent Care Status Filter Chips: All, Pending, Do Later, Completed */}
           {(() => {
-            const pendingTasks = careTasks.filter((task) => {
+            const plantScopedTasks = careTasks.filter((task) => {
               if (
                 urgentCareSelectedPlantId !== 'all' &&
                 task.plantId !== urgentCareSelectedPlantId
               ) {
                 return false;
               }
+              return true;
+            });
+
+            const countAll = plantScopedTasks.length;
+            const countPending = plantScopedTasks.filter(
+              (t) => !t.isCompleted && (t.status === 'pending' || !t.status)
+            ).length;
+            const countDoLater = plantScopedTasks.filter(
+              (t) => !t.isCompleted && t.status === 'do_later'
+            ).length;
+            const countCompleted = plantScopedTasks.filter(
+              (t) => t.isCompleted || t.status === 'completed'
+            ).length;
+
+            const displayedUrgentTasks = plantScopedTasks.filter((task) => {
               const effectiveStatus: CareTaskStatus = task.isCompleted
                 ? 'completed'
                 : task.status || 'pending';
-              return effectiveStatus !== 'completed';
+              if (urgentCareFilter === 'all') return true;
+              if (urgentCareFilter === 'pending') return effectiveStatus === 'pending';
+              if (urgentCareFilter === 'do_later') return effectiveStatus === 'do_later';
+              if (urgentCareFilter === 'completed') return effectiveStatus === 'completed';
+              return true;
             });
 
-            if (pendingTasks.length === 0) {
-              return (
-                <View
-                  style={{
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    paddingVertical: 24,
-                    paddingHorizontal: 16,
-                    gap: 8,
-                    backgroundColor: theme.surfaceElevated,
-                    borderRadius: 14,
-                    borderWidth: 1,
-                    borderColor: theme.border,
-                  }}
-                >
-                  <Text style={{ fontSize: 32 }}>🌿</Text>
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      fontWeight: '700',
-                      color: theme.primary,
-                      fontFamily: fontFam,
-                      textAlign: 'center',
-                    }}
-                  >
-                    {lang === 'bn'
-                      ? 'সকল পরিচর্যা টাস্ক সম্পন্ন!'
-                      : 'All Urgent Tasks Completed!'}
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      color: theme.textSecondary,
-                      fontFamily: fontFam,
-                      textAlign: 'center',
-                    }}
-                  >
-                    {lang === 'bn'
-                      ? 'আপনার বাগানের সকল গাছ পরিচ্ছন্ন ও সুস্থ অবস্থায় রয়েছে।'
-                      : 'All plants in your rooftop garden are healthy and up to date.'}
-                  </Text>
-                </View>
-              );
-            }
-
-            return pendingTasks.map((task) => {
-              const isSelected = task.id in selectedTaskDrafts;
-              const draftChoice = selectedTaskDrafts[task.id] || 'completed';
-
-              return (
-                <View
-                  key={task.id}
-                  style={[
-                    styles.taskItem,
-                    {
-                      flexDirection: 'column',
-                      alignItems: 'stretch',
-                      backgroundColor: theme.surfaceElevated,
-                      borderColor: isSelected
-                        ? theme.primary
-                        : task.status === 'do_later'
-                        ? theme.warning
-                        : theme.border,
-                      borderWidth: isSelected ? 1.5 : 1,
-                      borderRadius: 14,
-                      padding: 13,
-                      gap: 9,
-                    },
-                  ]}
-                >
-                  {/* Task Content Block */}
-                  <View style={{ gap: 4 }}>
-                    {/* Row 1: Plant Name, Nature badge & Push notification */}
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                        gap: 6,
-                      }}
-                    >
-                      <Text
+            return (
+              <View style={{ gap: 10 }}>
+                {/* Filter buttons row: All, Pending, Do Later, Completed */}
+                <View style={styles.urgentFilterRow}>
+                  {[
+                    { key: 'all', label: lang === 'bn' ? 'সব' : 'All', count: countAll },
+                    { key: 'pending', label: lang === 'bn' ? 'অপেক্ষমান' : 'Pending', count: countPending },
+                    { key: 'do_later', label: lang === 'bn' ? 'পরে করব' : 'Do Later', count: countDoLater },
+                    { key: 'completed', label: lang === 'bn' ? 'সম্পন্ন' : 'Completed', count: countCompleted },
+                  ].map((chip) => {
+                    const isActive = urgentCareFilter === chip.key;
+                    return (
+                      <TouchableOpacity
+                        key={chip.key}
+                        activeOpacity={0.8}
+                        onPress={() => setUrgentCareFilter(chip.key as any)}
                         style={[
-                          styles.taskTitle,
+                          styles.urgentFilterChip,
                           {
-                            color: theme.textPrimary,
-                            fontFamily: fontFam,
-                            fontWeight: '800',
+                            backgroundColor: isActive ? theme.primary : theme.surfaceElevated,
+                            borderColor: isActive ? theme.primary : theme.border,
                           },
                         ]}
                       >
-                        🌱 {lang === 'bn' ? task.plantNameBengali : task.plantNameEnglish}
-                      </Text>
-
-                      {task.taskType && (
-                        <View
-                          style={{
-                            backgroundColor: theme.selectedSurface,
-                            paddingHorizontal: 7,
-                            paddingVertical: 2,
-                            borderRadius: 6,
-                            borderWidth: 1,
-                            borderColor: theme.primary,
-                          }}
-                        >
-                          <Text
-                            style={{
-                              fontSize: 11,
-                              fontWeight: '700',
-                              color: theme.primary,
+                        <Text
+                          style={[
+                            styles.urgentFilterText,
+                            {
+                              color: isActive ? '#FFFFFF' : theme.textSecondary,
                               fontFamily: fontFam,
-                            }}
-                          >
-                            {task.taskType === 'watering'
-                              ? '💧 সেচ'
-                              : task.taskType === 'fertilizer'
-                              ? '🧪 সার'
-                              : task.taskType === 'pest_control'
-                              ? '🛡️ বালাই দমন'
-                              : task.taskType === 'pruning'
-                              ? '✂️ ছাঁটাই'
-                              : task.taskType === 'soil_work'
-                              ? '🪴 মাটি'
-                              : task.taskType === 'sunlight'
-                              ? '☀️ রোদ'
-                              : '📌 পরিচর্যা'}
-                          </Text>
-                        </View>
-                      )}
-
-                      {task.notificationScheduled && (
-                        <View
-                          style={{
-                            backgroundColor: 'rgba(20, 99, 59, 0.08)',
-                            paddingHorizontal: 6,
-                            paddingVertical: 2,
-                            borderRadius: 6,
-                          }}
+                              fontWeight: isActive ? '700' : '600',
+                            },
+                          ]}
                         >
-                          <Text
-                            style={{
-                              fontSize: 10.5,
-                              color: theme.primary,
-                              fontWeight: '700',
-                            }}
-                          >
-                            🔔 {lang === 'bn' ? 'পুশ অ্যালার্ট' : 'Push'}
-                          </Text>
-                        </View>
-                      )}
+                          {chip.label} ({lang === 'bn' ? toBengaliNumber(chip.count) : chip.count})
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
 
-                      {task.status === 'do_later' && (
-                        <View
-                          style={{
-                            backgroundColor: 'rgba(217, 119, 6, 0.12)',
-                            paddingHorizontal: 6,
-                            paddingVertical: 2,
-                            borderRadius: 6,
-                            borderWidth: 1,
-                            borderColor: theme.warning,
-                          }}
-                        >
-                          <Text
-                            style={{
-                              fontSize: 10.5,
-                              color: theme.warning,
-                              fontWeight: '700',
-                            }}
-                          >
-                            ⏰ {lang === 'bn' ? 'পরে করব' : 'Do Later'}
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-
-                    {/* Row 2: Specific Task Title */}
-                    {(task.titleBengali || task.titleEnglish) && (
-                      <Text
-                        style={{
-                          fontSize: 13.5,
-                          fontWeight: '700',
-                          color: theme.primary,
-                          fontFamily: fontFam,
-                        }}
-                      >
-                        {lang === 'bn' ? task.titleBengali : task.titleEnglish}
-                        {task.waterAmountLiters ? ` • 💧 ${task.waterAmountLiters}L` : ''}
-                      </Text>
-                    )}
-
-                    {/* Row 3: Action steps */}
-                    <Text
-                      style={[
-                        styles.taskSub,
-                        { color: theme.textPrimary, fontFamily: fontFam, lineHeight: 18 },
-                      ]}
-                    >
-                      👉 <Text style={{ fontWeight: '700' }}>{lang === 'bn' ? 'পদক্ষেপ: ' : 'Action: '}</Text>
-                      {lang === 'bn'
-                        ? task.actionDetailsBengali || task.fertilizerOrSprayInstructionBengali
-                        : task.actionDetailsEnglish || task.fertilizerOrSprayInstructionEnglish}
-                    </Text>
-
-                    {/* Row 4: Reasoning behind the task */}
-                    {(task.reasoningBengali || task.reasoningEnglish || task.shadeOrMoistureAdvisoryBengali) && (
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          color: theme.textSecondary,
-                          fontFamily: fontFam,
-                          lineHeight: 16,
-                        }}
-                      >
-                        💡 <Text style={{ fontWeight: '700' }}>{lang === 'bn' ? 'কারণ: ' : 'Reason: '}</Text>
-                        {lang === 'bn'
-                          ? task.reasoningBengali || task.shadeOrMoistureAdvisoryBengali
-                          : task.reasoningEnglish || task.shadeOrMoistureAdvisoryEnglish}
-                      </Text>
-                    )}
-
-                    {/* Row 5: Due date & slot */}
-                    <Text style={{ fontSize: 11, color: theme.textMuted, marginTop: 2 }}>
-                      📅 {task.dueDateIso.split('T')[0]} • {task.recommendedTimeSlot === 'morning' ? '🌅 সকাল' : task.recommendedTimeSlot === 'afternoon' ? '☀️ দুপুর' : '🌇 বিকাল/সন্ধ্যা'}
-                    </Text>
-                  </View>
-
-                  {/* Bottom Actions Row: Neatly arranged BELOW the task content */}
+                {/* Empty State */}
+                {displayedUrgentTasks.length === 0 ? (
                   <View
                     style={{
-                      flexDirection: 'row',
                       alignItems: 'center',
-                      justifyContent: 'space-between',
-                      flexWrap: 'wrap',
+                      justifyContent: 'center',
+                      paddingVertical: 24,
+                      paddingHorizontal: 16,
                       gap: 8,
-                      marginTop: 4,
-                      paddingTop: 8,
-                      borderTopWidth: 1,
-                      borderTopColor: theme.border,
+                      backgroundColor: theme.surfaceElevated,
+                      borderRadius: 14,
+                      borderWidth: 1,
+                      borderColor: theme.border,
                     }}
                   >
-                    {isSelected ? (
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          justifyContent: 'flex-end',
-                          gap: 6,
-                          flex: 1,
-                          flexWrap: 'wrap',
-                        }}
-                      >
-                        <TouchableOpacity
-                          onPress={() =>
-                            setSelectedTaskDrafts((prev) => ({
-                              ...prev,
-                              [task.id]: 'completed',
-                            }))
-                          }
-                          style={{
-                            paddingHorizontal: 10,
-                            paddingVertical: 6,
-                            borderRadius: 8,
-                            borderWidth: 1,
-                            backgroundColor:
-                              draftChoice === 'completed'
-                                ? theme.primary
-                                : theme.surface,
-                            borderColor:
-                              draftChoice === 'completed'
-                                ? theme.primary
-                                : theme.border,
-                          }}
-                        >
-                          <Text
-                            style={{
-                              color:
-                                draftChoice === 'completed'
-                                  ? '#FFFFFF'
-                                  : theme.textPrimary,
-                              fontSize: 11.5,
-                              fontWeight: '700',
-                              fontFamily: fontFam,
-                            }}
-                          >
-                            ✓ {lang === 'bn' ? 'সম্পন্ন' : 'Completed'}
-                          </Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                          onPress={() =>
-                            setSelectedTaskDrafts((prev) => ({
-                              ...prev,
-                              [task.id]: 'do_later',
-                            }))
-                          }
-                          style={{
-                            paddingHorizontal: 10,
-                            paddingVertical: 6,
-                            borderRadius: 8,
-                            borderWidth: 1,
-                            backgroundColor:
-                              draftChoice === 'do_later'
-                                ? theme.warning
-                                : theme.surface,
-                            borderColor:
-                              draftChoice === 'do_later'
-                                ? theme.warning
-                                : theme.border,
-                          }}
-                        >
-                          <Text
-                            style={{
-                              color:
-                                draftChoice === 'do_later'
-                                  ? '#FFFFFF'
-                                  : theme.textPrimary,
-                              fontSize: 11.5,
-                              fontWeight: '700',
-                              fontFamily: fontFam,
-                            }}
-                          >
-                            ⏰ {lang === 'bn' ? 'পরে করব' : 'Do Later'}
-                          </Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                          activeOpacity={0.85}
-                          onPress={() => {
-                            if (onSaveTaskStatus) {
-                              onSaveTaskStatus(task, draftChoice);
-                            } else {
-                              onToggleTaskCheckbox(task);
-                            }
-                            setSelectedTaskDrafts((prev) => {
-                              const next = { ...prev };
-                              delete next[task.id];
-                              return next;
-                            });
-                          }}
-                          style={{
-                            backgroundColor: theme.primary,
-                            paddingHorizontal: 12,
-                            paddingVertical: 7,
-                            borderRadius: 8,
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          <Text
-                            style={{
-                              color: '#FFFFFF',
-                              fontWeight: '700',
-                              fontSize: 12,
-                              fontFamily: fontFam,
-                            }}
-                          >
-                            💾 {lang === 'bn' ? 'সেভ করুন' : 'Save'}
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    ) : (
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          justifyContent: 'flex-end',
-                          gap: 8,
-                          flex: 1,
-                        }}
-                      >
-                        <TouchableOpacity
-                          onPress={() => {
-                            setSelectedTaskDrafts((prev) => ({
-                              ...prev,
-                              [task.id]: 'do_later',
-                            }));
-                          }}
-                          style={{
-                            paddingHorizontal: 10,
-                            paddingVertical: 6,
-                            borderRadius: 8,
-                            backgroundColor: theme.surface,
-                            borderWidth: 1,
-                            borderColor: theme.border,
-                          }}
-                        >
-                          <Text
-                            style={{
-                              color: theme.textSecondary,
-                              fontSize: 11.5,
-                              fontWeight: '700',
-                              fontFamily: fontFam,
-                            }}
-                          >
-                            ⏰ {lang === 'bn' ? 'পরে করব' : 'Do Later'}
-                          </Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                          activeOpacity={0.85}
-                          onPress={() => {
-                            if (onSaveTaskStatus) {
-                              onSaveTaskStatus(task, 'completed');
-                            } else {
-                              onToggleTaskCheckbox(task);
-                            }
-                          }}
-                          style={{
-                            backgroundColor: theme.primary,
-                            paddingHorizontal: 13,
-                            paddingVertical: 6,
-                            borderRadius: 8,
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            gap: 5,
-                          }}
-                        >
-                          <Text
-                            style={{
-                              color: '#FFFFFF',
-                              fontSize: 12,
-                              fontWeight: '700',
-                              fontFamily: fontFam,
-                            }}
-                          >
-                            ✓ {lang === 'bn' ? 'সম্পন্ন করুন' : 'Complete'}
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
+                    <Text style={{ fontSize: 30 }}>🌿</Text>
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        fontWeight: '700',
+                        color: theme.primary,
+                        fontFamily: fontFam,
+                        textAlign: 'center',
+                      }}
+                    >
+                      {urgentCareFilter === 'completed'
+                        ? lang === 'bn'
+                          ? 'কোনো টাস্ক সম্পন্ন তালিকায় নেই'
+                          : 'No completed tasks yet'
+                        : urgentCareFilter === 'do_later'
+                        ? lang === 'bn'
+                          ? "কোনো টাস্ক 'পরে করব' তালিকায় নেই"
+                          : 'No tasks deferred to later'
+                        : lang === 'bn'
+                        ? 'সকল পরিচর্যা টাস্ক সম্পন্ন!'
+                        : 'All Urgent Tasks Completed!'}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        color: theme.textSecondary,
+                        fontFamily: fontFam,
+                        textAlign: 'center',
+                      }}
+                    >
+                      {lang === 'bn'
+                        ? 'আপনার বাগানের সকল গাছ পরিচ্ছন্ন ও সুস্থ অবস্থায় রয়েছে।'
+                        : 'All plants in your rooftop garden are healthy and up to date.'}
+                    </Text>
                   </View>
-                </View>
-              );
-            });
+                ) : (
+                  displayedUrgentTasks.map((task) => {
+                    const isCompleted = task.isCompleted || task.status === 'completed';
+                    const isDoLater = !isCompleted && task.status === 'do_later';
+
+                    return (
+                      <View
+                        key={task.id}
+                        style={[
+                          styles.taskItem,
+                          {
+                            flexDirection: 'column',
+                            alignItems: 'stretch',
+                            backgroundColor: theme.surfaceElevated,
+                            borderColor: isCompleted
+                              ? theme.primary
+                              : isDoLater
+                              ? theme.warning
+                              : theme.border,
+                            borderWidth: 1,
+                            borderRadius: 14,
+                            padding: 13,
+                            gap: 9,
+                            opacity: isCompleted ? 0.88 : 1,
+                          },
+                        ]}
+                      >
+                        {/* Top Row: Checkbox, Plant Name, Nature badge & Status */}
+                        <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
+                          <TouchableOpacity
+                            activeOpacity={0.8}
+                            onPress={() => {
+                              if (onSaveTaskStatus) {
+                                onSaveTaskStatus(task, isCompleted ? 'pending' : 'completed');
+                              } else {
+                                onToggleTaskCheckbox(task);
+                              }
+                            }}
+                            style={[
+                              styles.checkboxBox,
+                              {
+                                backgroundColor: isCompleted ? theme.primary : 'transparent',
+                                borderColor: isCompleted ? theme.primary : theme.textSecondary,
+                                marginTop: 2,
+                              },
+                            ]}
+                          >
+                            {isCompleted && <Text style={styles.checkboxMark}>✓</Text>}
+                          </TouchableOpacity>
+
+                          <View style={{ flex: 1, minWidth: 0, gap: 5 }}>
+                            {/* Plant Name & Badges */}
+                            <View
+                              style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                flexWrap: 'wrap',
+                                gap: 6,
+                              }}
+                            >
+                              <Text
+                                style={[
+                                  styles.taskTitle,
+                                  {
+                                    color: theme.textPrimary,
+                                    fontFamily: fontFam,
+                                    fontWeight: '800',
+                                    textDecorationLine: isCompleted ? 'line-through' : 'none',
+                                  },
+                                ]}
+                              >
+                                🌱 {lang === 'bn' ? task.plantNameBengali : task.plantNameEnglish}
+                              </Text>
+
+                              {task.taskType && (
+                                <View
+                                  style={{
+                                    backgroundColor: theme.selectedSurface,
+                                    paddingHorizontal: 7,
+                                    paddingVertical: 2,
+                                    borderRadius: 6,
+                                    borderWidth: 1,
+                                    borderColor: theme.primary,
+                                  }}
+                                >
+                                  <Text
+                                    style={{
+                                      fontSize: 11,
+                                      fontWeight: '700',
+                                      color: theme.primary,
+                                      fontFamily: fontFam,
+                                    }}
+                                  >
+                                    {task.taskType === 'watering'
+                                      ? '💧 সেচ'
+                                      : task.taskType === 'fertilizer'
+                                      ? '🧪 সার'
+                                      : task.taskType === 'pest_control'
+                                      ? '🛡️ বালাই দমন'
+                                      : task.taskType === 'pruning'
+                                      ? '✂️ ছাঁটাই'
+                                      : task.taskType === 'soil_work'
+                                      ? '🪴 মাটি'
+                                      : task.taskType === 'sunlight'
+                                      ? '☀️ রোদ'
+                                      : '📌 পরিচর্যা'}
+                                  </Text>
+                                </View>
+                              )}
+
+                              {task.notificationScheduled && (
+                                <View
+                                  style={{
+                                    backgroundColor: 'rgba(22, 122, 69, 0.08)',
+                                    paddingHorizontal: 6,
+                                    paddingVertical: 2,
+                                    borderRadius: 6,
+                                  }}
+                                >
+                                  <Text
+                                    style={{
+                                      fontSize: 10.5,
+                                      color: theme.primary,
+                                      fontWeight: '700',
+                                    }}
+                                  >
+                                    🔔 {lang === 'bn' ? 'পুশ অ্যালার্ট' : 'Push'}
+                                  </Text>
+                                </View>
+                              )}
+
+                              {isDoLater && (
+                                <View
+                                  style={{
+                                    backgroundColor: 'rgba(217, 119, 6, 0.12)',
+                                    paddingHorizontal: 6,
+                                    paddingVertical: 2,
+                                    borderRadius: 6,
+                                    borderWidth: 1,
+                                    borderColor: theme.warning,
+                                  }}
+                                >
+                                  <Text
+                                    style={{
+                                      fontSize: 10.5,
+                                      color: theme.warning,
+                                      fontWeight: '700',
+                                    }}
+                                  >
+                                    ⏰ {lang === 'bn' ? 'পরে করব' : 'Do Later'}
+                                  </Text>
+                                </View>
+                              )}
+
+                              {isCompleted && (
+                                <View
+                                  style={{
+                                    backgroundColor: 'rgba(22, 122, 69, 0.12)',
+                                    paddingHorizontal: 6,
+                                    paddingVertical: 2,
+                                    borderRadius: 6,
+                                    borderWidth: 1,
+                                    borderColor: theme.primary,
+                                  }}
+                                >
+                                  <Text
+                                    style={{
+                                      fontSize: 10.5,
+                                      color: theme.primary,
+                                      fontWeight: '700',
+                                    }}
+                                  >
+                                    ✓ {lang === 'bn' ? 'সম্পন্ন' : 'Completed'}
+                                  </Text>
+                                </View>
+                              )}
+                            </View>
+
+                            {/* Specific Task Title */}
+                            {(task.titleBengali || task.titleEnglish) && (
+                              <Text
+                                style={{
+                                  fontSize: 13.5,
+                                  fontWeight: '700',
+                                  color: theme.primary,
+                                  fontFamily: fontFam,
+                                  textDecorationLine: isCompleted ? 'line-through' : 'none',
+                                }}
+                              >
+                                {lang === 'bn' ? task.titleBengali : task.titleEnglish}
+                                {task.waterAmountLiters ? ` • 💧 ${task.waterAmountLiters}L` : ''}
+                              </Text>
+                            )}
+
+                            {/* Action steps */}
+                            <Text
+                              style={[
+                                styles.taskSub,
+                                {
+                                  color: theme.textPrimary,
+                                  fontFamily: fontFam,
+                                  lineHeight: 19,
+                                  fontSize: 13.5,
+                                },
+                              ]}
+                            >
+                              👉 <Text style={{ fontWeight: '700' }}>{lang === 'bn' ? 'পদক্ষেপ: ' : 'Action: '}</Text>
+                              {lang === 'bn'
+                                ? task.actionDetailsBengali || task.fertilizerOrSprayInstructionBengali
+                                : task.actionDetailsEnglish || task.fertilizerOrSprayInstructionEnglish}
+                            </Text>
+
+                            {/* Reasoning */}
+                            {(task.reasoningBengali || task.reasoningEnglish || task.shadeOrMoistureAdvisoryBengali) && (
+                              <Text
+                                style={{
+                                  fontSize: 12.5,
+                                  color: theme.textSecondary,
+                                  fontFamily: fontFam,
+                                  lineHeight: 17,
+                                }}
+                              >
+                                💡 <Text style={{ fontWeight: '700' }}>{lang === 'bn' ? 'কারণ: ' : 'Reason: '}</Text>
+                                {lang === 'bn'
+                                  ? task.reasoningBengali || task.shadeOrMoistureAdvisoryBengali
+                                  : task.reasoningEnglish || task.shadeOrMoistureAdvisoryEnglish}
+                              </Text>
+                            )}
+
+                            {/* Due date & slot */}
+                            <Text style={{ fontSize: 11, color: theme.textMuted, marginTop: 2 }}>
+                              📅 {task.dueDateIso.split('T')[0]} • {task.recommendedTimeSlot === 'morning' ? '🌅 সকাল' : task.recommendedTimeSlot === 'afternoon' ? '☀️ দুপুর' : '🌇 বিকাল/সন্ধ্যা'}
+                            </Text>
+                          </View>
+                        </View>
+
+                        {/* Bottom Actions Row: Neatly arranged BELOW the task content */}
+                        <View style={styles.taskBottomActionsRow}>
+                          {isCompleted ? (
+                            <>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                <Text
+                                  style={{
+                                    fontSize: 12,
+                                    color: theme.primary,
+                                    fontWeight: '700',
+                                    fontFamily: fontFam,
+                                  }}
+                                >
+                                  ✓ {lang === 'bn' ? 'টাস্ক সম্পন্ন হয়েছে' : 'Task Completed'}
+                                </Text>
+                              </View>
+                              <TouchableOpacity
+                                activeOpacity={0.8}
+                                onPress={() => {
+                                  if (onSaveTaskStatus) {
+                                    onSaveTaskStatus(task, 'pending');
+                                  } else {
+                                    onToggleTaskCheckbox(task);
+                                  }
+                                }}
+                                style={[
+                                  styles.taskActionBtnSecondary,
+                                  { borderColor: theme.border, backgroundColor: theme.surface },
+                                ]}
+                              >
+                                <Text
+                                  style={{
+                                    fontSize: 11.5,
+                                    color: theme.textSecondary,
+                                    fontFamily: fontFam,
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  ↩ {lang === 'bn' ? 'অপেক্ষমান করুন' : 'Mark Pending'}
+                                </Text>
+                              </TouchableOpacity>
+                            </>
+                          ) : (
+                            <>
+                              <TouchableOpacity
+                                activeOpacity={0.8}
+                                onPress={() => {
+                                  const nextStatus = task.status === 'do_later' ? 'pending' : 'do_later';
+                                  if (onSaveTaskStatus) {
+                                    onSaveTaskStatus(task, nextStatus);
+                                  }
+                                }}
+                                style={[
+                                  styles.taskActionBtnSecondary,
+                                  {
+                                    backgroundColor: isDoLater ? 'rgba(217, 119, 6, 0.12)' : theme.surface,
+                                    borderColor: isDoLater ? theme.warning : theme.border,
+                                  },
+                                ]}
+                              >
+                                <Text
+                                  style={{
+                                    color: isDoLater ? theme.warning : theme.textSecondary,
+                                    fontSize: 11.5,
+                                    fontWeight: '700',
+                                    fontFamily: fontFam,
+                                  }}
+                                >
+                                  ⏰ {isDoLater ? (lang === 'bn' ? 'অপেক্ষমান করুন' : 'Pending') : (lang === 'bn' ? 'পরে করব' : 'Do Later')}
+                                </Text>
+                              </TouchableOpacity>
+
+                              <TouchableOpacity
+                                activeOpacity={0.85}
+                                onPress={() => {
+                                  if (onSaveTaskStatus) {
+                                    onSaveTaskStatus(task, 'completed');
+                                  } else {
+                                    onToggleTaskCheckbox(task);
+                                  }
+                                }}
+                                style={[
+                                  styles.taskActionBtnPrimary,
+                                  { backgroundColor: theme.primary },
+                                ]}
+                              >
+                                <Text
+                                  style={{
+                                    color: '#FFFFFF',
+                                    fontSize: 12,
+                                    fontWeight: '700',
+                                    fontFamily: fontFam,
+                                  }}
+                                >
+                                  ✓ {lang === 'bn' ? 'সম্পন্ন করুন' : 'Complete'}
+                                </Text>
+                              </TouchableOpacity>
+                            </>
+                          )}
+                        </View>
+                      </View>
+                    );
+                  })
+                )}
+              </View>
+            );
           })()}
         </View>
 
-        {/* 4. Quick Action Shortcuts: + Add Plant, Plant QR, AI Diagnosis */}
-        <View style={styles.shortcutRow}>
+        {/* 8. Quick Action Shortcuts: 2x2 Equal-Height Grid */}
+        <View style={styles.shortcutGrid}>
+          {/* Button 1: Add Plant (Primary Action) */}
           <TouchableOpacity
             activeOpacity={0.85}
             onPress={() => setAddModalOpen(true)}
             style={[
-              styles.shortcutBtnPrimary,
+              styles.shortcutGridBtn,
               {
                 backgroundColor: theme.primary,
-                flexDirection: 'row',
-                gap: 8,
-              },
-            ]}
-          >
-            <View
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: 12,
-                backgroundColor: 'rgba(255,255,255,0.22)',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Text
-                style={{
-                  color: '#FFFFFF',
-                  fontSize: 16,
-                  fontWeight: '800',
-                  lineHeight: 18,
-                }}
-              >
-                +
-              </Text>
-            </View>
-            <Text style={[styles.shortcutBtnText, { fontFamily: fontFam }]}>
-              {lang === 'bn' ? 'গাছ যুক্ত করুন' : 'Add Plant'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            activeOpacity={0.85}
-            onPress={() => setCameraScannerOpen(true)}
-            style={[
-              styles.shortcutBtnSecondary,
-              {
-                backgroundColor: theme.surface,
                 borderColor: theme.primary,
               },
             ]}
           >
+            <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+              <Path
+                d="M12 5V19M5 12H19"
+                stroke="#FFFFFF"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+            </Svg>
             <Text
+              numberOfLines={1}
               style={[
-                styles.shortcutBtnTextAlt,
-                { color: theme.primary, fontFamily: fontFam },
+                styles.shortcutGridText,
+                { color: '#FFFFFF', fontFamily: fontFam },
               ]}
             >
-              📷 {t.scanQrBtn}
+              {lang === 'bn' ? 'গাছ যুক্ত করুন' : 'Add Plant'}
             </Text>
           </TouchableOpacity>
 
-          {onOpenAiDiagnosis && (
-            <TouchableOpacity
-              activeOpacity={0.85}
-              onPress={onOpenAiDiagnosis}
-              style={[
-                styles.shortcutBtnSecondary,
-                {
-                  backgroundColor: theme.selectedSurface,
-                  borderColor: theme.primary,
-                },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.shortcutBtnTextAlt,
-                  { color: theme.primary, fontFamily: fontFam },
-                ]}
-              >
-                🔬 {lang === 'bn' ? 'এআই রোগ নির্ণয়' : 'AI Doctor'}
-              </Text>
-            </TouchableOpacity>
-          )}
-
+          {/* Button 2: Plant QR (Secondary Action) */}
           <TouchableOpacity
             activeOpacity={0.85}
-            onPress={() => setBotanicalSearchOpen(true)}
+            onPress={() => setCameraScannerOpen(true)}
             style={[
-              styles.shortcutBtnSecondary,
+              styles.shortcutGridBtn,
               {
                 backgroundColor: theme.surfaceElevated,
                 borderColor: theme.border,
               },
             ]}
           >
+            <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+              <Path
+                d="M3 7V5C3 3.89543 3.89543 3 5 3H7"
+                stroke={theme.textPrimary}
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <Path
+                d="M17 3H19C20.1046 3 21 3.89543 21 5V7"
+                stroke={theme.textPrimary}
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <Path
+                d="M21 17V19C21 20.1046 20.1046 21 19 21H17"
+                stroke={theme.textPrimary}
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <Path
+                d="M7 21H5C3.89543 21 3 20.1046 3 19V17"
+                stroke={theme.textPrimary}
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <Rect x="7" y="7" width="4" height="4" fill={theme.textPrimary} />
+              <Rect x="13" y="7" width="4" height="4" fill={theme.textPrimary} />
+              <Rect x="7" y="13" width="4" height="4" fill={theme.textPrimary} />
+              <Rect x="13" y="13" width="4" height="4" fill={theme.textPrimary} />
+            </Svg>
             <Text
+              numberOfLines={1}
               style={[
-                styles.shortcutBtnTextAlt,
+                styles.shortcutGridText,
                 { color: theme.textPrimary, fontFamily: fontFam },
               ]}
             >
-              🌿 {lang === 'bn' ? 'উদ্ভিদ ও জাত সার্চ' : 'Botanical Search'}
+              {lang === 'bn' ? 'প্ল্যান্ট কিউআর' : 'Plant QR'}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Button 3: AI Doctor (Secondary Action) */}
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => onOpenAiDiagnosis?.()}
+            style={[
+              styles.shortcutGridBtn,
+              {
+                backgroundColor: theme.surfaceElevated,
+                borderColor: theme.border,
+              },
+            ]}
+          >
+            <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+              <Path
+                d="M12 2L14.4 7.2L20 8L16 12L17 17.6L12 15L7 17.6L8 12L4 8L9.6 7.2L12 2Z"
+                stroke={theme.primary}
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </Svg>
+            <Text
+              numberOfLines={1}
+              style={[
+                styles.shortcutGridText,
+                { color: theme.textPrimary, fontFamily: fontFam },
+              ]}
+            >
+              {lang === 'bn' ? 'এআই ডক্টর' : 'AI Doctor'}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Button 4: Botanical Search (Secondary Action) */}
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => setBotanicalSearchOpen(true)}
+            style={[
+              styles.shortcutGridBtn,
+              {
+                backgroundColor: theme.surfaceElevated,
+                borderColor: theme.border,
+              },
+            ]}
+          >
+            <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+              <Circle cx="11" cy="11" r="7" stroke={theme.primary} strokeWidth="2" />
+              <Path d="M20 20L16 16" stroke={theme.primary} strokeWidth="2" strokeLinecap="round" />
+            </Svg>
+            <Text
+              numberOfLines={1}
+              style={[
+                styles.shortcutGridText,
+                { color: theme.textPrimary, fontFamily: fontFam },
+              ]}
+            >
+              {lang === 'bn' ? 'উদ্ভিদ সার্চ' : 'Botanical Search'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -2450,7 +2511,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: DESIGN_TOKENS.screenHorizontalPadding,
     paddingVertical: DESIGN_TOKENS.spacing.md,
     gap: DESIGN_TOKENS.spacing.md,
-    paddingBottom: 90,
+    paddingBottom: 110,
   },
   modernHeaderRow: {
     width: '100%',
@@ -2580,14 +2641,14 @@ const styles = StyleSheet.create({
   heroCtaPillBtn: {
     alignSelf: 'flex-start',
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 14,
-    height: 34,
+    paddingHorizontal: 16,
+    height: 36,
     borderRadius: 10,
     justifyContent: 'center',
     marginTop: 4,
   },
   heroCtaPillText: {
-    fontSize: 12.5,
+    fontSize: 13,
     fontWeight: '700',
   },
   weatherCardTopRow: {
@@ -2874,38 +2935,73 @@ const styles = StyleSheet.create({
   taskSub: {
     fontSize: 13,
   },
-  shortcutRow: {
+  urgentFilterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginVertical: 4,
+  },
+  urgentFilterChip: {
+    paddingHorizontal: 11,
+    paddingVertical: 5.5,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  urgentFilterText: {
+    fontSize: 12,
+  },
+  taskBottomActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 4,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#E5EBE6',
+  },
+  taskActionBtnPrimary: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  taskActionBtnSecondary: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  shortcutGrid: {
+    width: '100%',
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    justifyContent: 'space-between',
+    rowGap: 10,
   },
-  shortcutBtnPrimary: {
-    flexGrow: 1,
-    minHeight: DESIGN_TOKENS.buttonHeight,
-    borderRadius: DESIGN_TOKENS.buttonRadius,
+  shortcutGridBtn: {
+    width: '48.5%',
+    height: 46,
+    borderRadius: 12,
+    borderWidth: 1,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 10,
+    gap: 7,
   },
-  shortcutBtnSecondary: {
-    flexGrow: 1,
-    minHeight: DESIGN_TOKENS.buttonHeight,
-    borderRadius: DESIGN_TOKENS.buttonRadius,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  shortcutBtnText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  shortcutBtnTextAlt: {
-    fontSize: 14,
-    fontWeight: '600',
+  shortcutGridText: {
+    fontSize: 13,
+    fontWeight: '700',
   },
   plantsHeaderRow: {
     flexDirection: 'row',
