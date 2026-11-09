@@ -33,5 +33,20 @@ export const APP_CONFIG = {
     appStoreKeywords:
       'gardening,plant,care,smart,weather,identifier,tracker,water,fertilizer,garden',
   },
+
+  developerInfo: {
+    company: 'ProFix - Web & Soft',
+    leadArchitect: 'ProFix Engineering Team',
+    shortBioBn:
+      'আধুনিক সফটওয়্যার সলিউশন, স্মার্ট এগ্রিটেক ও প্রফেশনাল মোবাইল অ্যাপ্লিকেশন ডেভেলপমেন্ট টিম।',
+    shortBioEn:
+      'Engineering modern software solutions, smart agritech platforms, and next-gen mobile applications.',
+    websiteUrl: 'https://profixtech.com',
+    supportEmail: 'support@profixtech.com',
+    playStoreUrl: 'https://play.google.com/store/apps/details?id=com.profix.bagani',
+    copyrightYear: '2026',
+    allRightsReservedBn: 'সর্বস্বত্ব সংরক্ষিত © ২০২৬ ProFix - Web & Soft',
+    allRightsReservedEn: 'Copyright © 2026 ProFix - Web & Soft. All rights reserved.',
+  },
 } as const;
 

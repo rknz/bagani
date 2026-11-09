@@ -38,6 +38,7 @@ import {
   CloudSyncService,
 } from '../../services/cloud_sync_service';
 import { LegalModal } from '../auth/legal_modal';
+import { FeedbackModal } from '../../core/components/feedback_modal';
 
 interface SettingsScreenProps {
   theme: AppThemeColors;
@@ -78,6 +79,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   onTriggerExit,
 }) => {
   const [legalVisible, setLegalVisible] = useState(false);
+  const [feedbackVisible, setFeedbackVisible] = useState(false);
   const [syncMeta, setSyncMeta] = useState<CloudSyncMetadata | null>(null);
 
   useEffect(() => {
@@ -614,6 +616,461 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           </View>
         </View>
 
+        {/* 6. Software & Developer Information (Credits, Contact, Feedback & Reviews) */}
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: theme.surface, borderColor: theme.border },
+          ]}
+        >
+          {/* Section Heading */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Text style={{ fontSize: 16 }}>💻</Text>
+            <Text
+              style={[
+                styles.cardTitle,
+                { color: theme.primary, fontFamily: fontFam },
+              ]}
+            >
+              {lang === 'bn'
+                ? 'সফটওয়্যার ও ডেভেলপার পরিচিতি'
+                : 'Software & Developer Information'}
+            </Text>
+          </View>
+
+          {/* App & Developer Brand Card */}
+          <View
+            style={[
+              styles.devBrandBox,
+              {
+                backgroundColor: theme.surfaceElevated,
+                borderColor: theme.border,
+              },
+            ]}
+          >
+            <View style={styles.devBrandHeaderRow}>
+              <View
+                style={[
+                  styles.devLogoWrap,
+                  {
+                    backgroundColor: theme.selectedSurface,
+                    borderColor: theme.primary,
+                  },
+                ]}
+              >
+                <Image
+                  source={require('../../../assets/images/logo.png')}
+                  style={{ width: 44, height: 44 }}
+                  resizeMode="contain"
+                />
+              </View>
+
+              <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 6,
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.devAppName,
+                      { color: theme.textPrimary, fontFamily: fontFam },
+                    ]}
+                  >
+                    {APP_CONFIG.appName} ({APP_CONFIG.appNameBengali})
+                  </Text>
+                  <View
+                    style={[
+                      styles.versionBadge,
+                      { backgroundColor: theme.selectedSurface },
+                    ]}
+                  >
+                    <Text
+                      style={{
+                        color: theme.primary,
+                        fontSize: 10.5,
+                        fontWeight: '700',
+                      }}
+                    >
+                      v{APP_CONFIG.version} (Build {APP_CONFIG.buildNumber})
+                    </Text>
+                  </View>
+                </View>
+
+                <Text
+                  style={{
+                    color: theme.textSecondary,
+                    fontSize: 12,
+                    fontFamily: fontFam,
+                  }}
+                >
+                  {lang === 'bn'
+                    ? APP_CONFIG.subtitleBengali
+                    : APP_CONFIG.subtitle}
+                </Text>
+              </View>
+            </View>
+
+            {/* Developer / Company Profile */}
+            <View
+              style={[
+                styles.companyInfoRow,
+                { borderTopColor: theme.border },
+              ]}
+            >
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  flexWrap: 'wrap',
+                }}
+              >
+                <Text style={{ fontSize: 15 }}>🏢</Text>
+                <Text
+                  style={[
+                    styles.companyLabel,
+                    { color: theme.textPrimary, fontFamily: fontFam },
+                  ]}
+                >
+                  {lang === 'bn'
+                    ? 'নির্মাতা ও প্রযুক্তি প্রতিষ্ঠান:'
+                    : 'Developer & Company:'}
+                </Text>
+                <Text
+                  style={[
+                    styles.companyName,
+                    { color: theme.primary, fontFamily: fontFam },
+                  ]}
+                >
+                  {APP_CONFIG.developerInfo.company}
+                </Text>
+              </View>
+
+              <Text
+                style={[
+                  styles.companyBio,
+                  { color: theme.textSecondary, fontFamily: fontFam },
+                ]}
+              >
+                {lang === 'bn'
+                  ? APP_CONFIG.developerInfo.shortBioBn
+                  : APP_CONFIG.developerInfo.shortBioEn}
+              </Text>
+
+              {/* Tech Stack Badges */}
+              <View style={styles.techPillRow}>
+                {[
+                  'React Native',
+                  'Expo',
+                  'TypeScript',
+                  'Botanical AI Engine',
+                  'Cloud Sync',
+                ].map((item) => (
+                  <View
+                    key={item}
+                    style={[
+                      styles.techBadge,
+                      {
+                        backgroundColor: theme.surface,
+                        borderColor: theme.border,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={{
+                        color: theme.textSecondary,
+                        fontSize: 10.5,
+                        fontWeight: '600',
+                      }}
+                    >
+                      {item}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </View>
+
+          {/* Interactive Quick-Action Touchpoints: Contact, Feedback, Review, Website */}
+          <View style={styles.actionGridWrap}>
+            {/* 1. Email Contact */}
+            <TouchableOpacity
+              activeOpacity={0.82}
+              onPress={() => {
+                const mailUrl = `mailto:${APP_CONFIG.developerInfo.supportEmail}?subject=${encodeURIComponent(
+                  `[BAGANI Inquiry] from ${user.displayName || 'User'}`
+                )}`;
+                Linking.openURL(mailUrl).catch(() => {
+                  Alert.alert(
+                    'Email',
+                    `Contact: ${APP_CONFIG.developerInfo.supportEmail}`
+                  );
+                });
+              }}
+              style={[
+                styles.gridTouchCard,
+                {
+                  backgroundColor: theme.surfaceElevated,
+                  borderColor: theme.border,
+                },
+              ]}
+            >
+              <View
+                style={[
+                  styles.touchIconCircle,
+                  { backgroundColor: 'rgba(2, 132, 199, 0.12)' },
+                ]}
+              >
+                <Text style={{ fontSize: 18 }}>✉️</Text>
+              </View>
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.gridTouchTitle,
+                    { color: theme.textPrimary, fontFamily: fontFam },
+                  ]}
+                >
+                  {lang === 'bn'
+                    ? 'ডেভেলপারের সাথে যোগাযোগ'
+                    : 'Contact Developer'}
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.gridTouchSub,
+                    { color: theme.textSecondary, fontFamily: fontFam },
+                  ]}
+                >
+                  {APP_CONFIG.developerInfo.supportEmail}
+                </Text>
+              </View>
+              <Text
+                style={{
+                  color: theme.primary,
+                  fontSize: 16,
+                  fontWeight: '700',
+                }}
+              >
+                ›
+              </Text>
+            </TouchableOpacity>
+
+            {/* 2. Feedback Modal */}
+            <TouchableOpacity
+              activeOpacity={0.82}
+              onPress={() => setFeedbackVisible(true)}
+              style={[
+                styles.gridTouchCard,
+                {
+                  backgroundColor: theme.surfaceElevated,
+                  borderColor: theme.border,
+                },
+              ]}
+            >
+              <View
+                style={[
+                  styles.touchIconCircle,
+                  { backgroundColor: 'rgba(22, 122, 69, 0.12)' },
+                ]}
+              >
+                <Text style={{ fontSize: 18 }}>💬</Text>
+              </View>
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.gridTouchTitle,
+                    { color: theme.textPrimary, fontFamily: fontFam },
+                  ]}
+                >
+                  {lang === 'bn'
+                    ? 'মতামত ও পরামর্শ দিন'
+                    : 'Send App Feedback'}
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.gridTouchSub,
+                    { color: theme.textSecondary, fontFamily: fontFam },
+                  ]}
+                >
+                  {lang === 'bn'
+                    ? 'নতুন আইডিয়া বা বাগ রিপোর্ট পাঠান'
+                    : 'Submit suggestions or bug reports'}
+                </Text>
+              </View>
+              <Text
+                style={{
+                  color: theme.primary,
+                  fontSize: 16,
+                  fontWeight: '700',
+                }}
+              >
+                ›
+              </Text>
+            </TouchableOpacity>
+
+            {/* 3. Rate & Review */}
+            <TouchableOpacity
+              activeOpacity={0.82}
+              onPress={() => {
+                Linking.openURL(APP_CONFIG.developerInfo.playStoreUrl).catch(
+                  () => {
+                    Alert.alert(
+                      lang === 'bn' ? 'রেটিং ও রিভিউ' : 'Rate & Review',
+                      lang === 'bn'
+                        ? 'গুগল প্লে স্টোরে সরাসরি রেটিং দিতে লিংক ওপেন করা হচ্ছে...'
+                        : 'Opening Google Play Store to leave a review...'
+                    );
+                  }
+                );
+              }}
+              style={[
+                styles.gridTouchCard,
+                {
+                  backgroundColor: theme.surfaceElevated,
+                  borderColor: theme.border,
+                },
+              ]}
+            >
+              <View
+                style={[
+                  styles.touchIconCircle,
+                  { backgroundColor: 'rgba(234, 88, 12, 0.12)' },
+                ]}
+              >
+                <Text style={{ fontSize: 18 }}>⭐</Text>
+              </View>
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.gridTouchTitle,
+                    { color: theme.textPrimary, fontFamily: fontFam },
+                  ]}
+                >
+                  {lang === 'bn' ? 'রিভিউ ও রেটিং দিন' : 'Rate & Review'}
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.gridTouchSub,
+                    { color: theme.textSecondary, fontFamily: fontFam },
+                  ]}
+                >
+                  {lang === 'bn'
+                    ? 'গুগল প্লে স্টোরে ৫-স্টার রেটিং'
+                    : 'Rate 5 stars on Google Play'}
+                </Text>
+              </View>
+              <Text
+                style={{
+                  color: theme.primary,
+                  fontSize: 16,
+                  fontWeight: '700',
+                }}
+              >
+                ›
+              </Text>
+            </TouchableOpacity>
+
+            {/* 4. Company Website */}
+            <TouchableOpacity
+              activeOpacity={0.82}
+              onPress={() => {
+                Linking.openURL(APP_CONFIG.developerInfo.websiteUrl).catch(
+                  () => {
+                    Alert.alert('Website', APP_CONFIG.developerInfo.websiteUrl);
+                  }
+                );
+              }}
+              style={[
+                styles.gridTouchCard,
+                {
+                  backgroundColor: theme.surfaceElevated,
+                  borderColor: theme.border,
+                },
+              ]}
+            >
+              <View
+                style={[
+                  styles.touchIconCircle,
+                  { backgroundColor: 'rgba(124, 58, 237, 0.12)' },
+                ]}
+              >
+                <Text style={{ fontSize: 18 }}>🌐</Text>
+              </View>
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.gridTouchTitle,
+                    { color: theme.textPrimary, fontFamily: fontFam },
+                  ]}
+                >
+                  {lang === 'bn'
+                    ? 'অফিসিয়াল ওয়েবসাইট'
+                    : 'Visit ProFix Website'}
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.gridTouchSub,
+                    { color: theme.textSecondary, fontFamily: fontFam },
+                  ]}
+                >
+                  profixtech.com
+                </Text>
+              </View>
+              <Text
+                style={{
+                  color: theme.primary,
+                  fontSize: 16,
+                  fontWeight: '700',
+                }}
+              >
+                ›
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Copyright & Team Footer */}
+          <View style={styles.devCopyrightFooter}>
+            <Text
+              style={[
+                styles.copyrightText,
+                { color: theme.textSecondary, fontFamily: fontFam },
+              ]}
+            >
+              {lang === 'bn'
+                ? APP_CONFIG.developerInfo.allRightsReservedBn
+                : APP_CONFIG.developerInfo.allRightsReservedEn}
+            </Text>
+            <Text
+              style={[
+                styles.madeWithLoveText,
+                { color: theme.primary, fontFamily: fontFam },
+              ]}
+            >
+              Crafted with 💚 for Rooftop Gardeners by {APP_CONFIG.developerName}
+            </Text>
+          </View>
+        </View>
+
+        <FeedbackModal
+          visible={feedbackVisible}
+          onClose={() => setFeedbackVisible(false)}
+          theme={theme}
+          lang={lang}
+          userEmail={user.email}
+          userName={user.displayName}
+        />
+
         <LegalModal
           visible={legalVisible}
           onClose={() => setLegalVisible(false)}
@@ -636,7 +1093,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: DESIGN_TOKENS.screenHorizontalPadding,
     paddingVertical: DESIGN_TOKENS.spacing.md,
     gap: DESIGN_TOKENS.spacing.md,
-    paddingBottom: 90,
+    paddingBottom: 110, // Safe padding above bottom floating dock
   },
   card: {
     padding: DESIGN_TOKENS.cardPadding,
@@ -758,5 +1215,106 @@ const styles = StyleSheet.create({
   },
   rowSub: {
     fontSize: 12,
+  },
+  // Software & Developer Info Card Styles
+  devBrandBox: {
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 14,
+    gap: 12,
+  },
+  devBrandHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  devLogoWrap: {
+    width: 52,
+    height: 52,
+    borderRadius: 13,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  devAppName: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  versionBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 2.5,
+    borderRadius: 6,
+  },
+  companyInfoRow: {
+    borderTopWidth: 1,
+    paddingTop: 10,
+    gap: 6,
+  },
+  companyLabel: {
+    fontSize: 12.5,
+    fontWeight: '600',
+  },
+  companyName: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  companyBio: {
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  techPillRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 4,
+  },
+  techBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  actionGridWrap: {
+    gap: 8,
+    marginTop: 2,
+  },
+  gridTouchCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 12,
+  },
+  touchIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  gridTouchTitle: {
+    fontSize: 13.5,
+    fontWeight: '700',
+    marginBottom: 1.5,
+  },
+  gridTouchSub: {
+    fontSize: 11.5,
+  },
+  devCopyrightFooter: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 8,
+    gap: 4,
+  },
+  copyrightText: {
+    fontSize: 11,
+    textAlign: 'center',
+  },
+  madeWithLoveText: {
+    fontSize: 11,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });
