@@ -760,9 +760,30 @@ export const AddCareTaskModal: React.FC<AddCareTaskModalProps> = ({
               </Text>
               <View style={styles.timeSlotRow}>
                 {[
-                  { id: 'morning', icon: '🌅', bn: 'সকাল (০৮:০০ AM)', en: 'Morning (8 AM)' },
-                  { id: 'afternoon', icon: '☀️', bn: 'দুপুর (০১:০০ PM)', en: 'Noon (1 PM)' },
-                  { id: 'evening', icon: '🌇', bn: 'বিকাল (০৫:৩০ PM)', en: 'Evening (5:30 PM)' },
+                  {
+                    id: 'morning',
+                    icon: '🌅',
+                    labelBn: 'সকাল',
+                    labelEn: 'Morning',
+                    timeBn: '০৮:০০ AM',
+                    timeEn: '08:00 AM',
+                  },
+                  {
+                    id: 'afternoon',
+                    icon: '☀️',
+                    labelBn: 'দুপুর',
+                    labelEn: 'Noon',
+                    timeBn: '০১:০০ PM',
+                    timeEn: '01:00 PM',
+                  },
+                  {
+                    id: 'evening',
+                    icon: '🌇',
+                    labelBn: 'বিকাল/সন্ধ্যা',
+                    labelEn: 'Evening',
+                    timeBn: '০৫:৩০ PM',
+                    timeEn: '05:30 PM',
+                  },
                 ].map((slot) => {
                   const active = timeSlot === slot.id;
                   return (
@@ -780,16 +801,26 @@ export const AddCareTaskModal: React.FC<AddCareTaskModalProps> = ({
                         },
                       ]}
                     >
-                      <Text style={{ fontSize: 16 }}>{slot.icon}</Text>
+                      <Text style={{ fontSize: 18 }}>{slot.icon}</Text>
                       <Text
                         style={{
-                          fontSize: 12,
+                          fontSize: 12.5,
                           fontWeight: '700',
                           color: active ? '#FFFFFF' : theme.textPrimary,
                           fontFamily: fontFam,
                         }}
                       >
-                        {lang === 'bn' ? slot.bn : slot.en}
+                        {lang === 'bn' ? slot.labelBn : slot.labelEn}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 10.5,
+                          fontWeight: '600',
+                          color: active ? 'rgba(255,255,255,0.85)' : theme.textSecondary,
+                          fontFamily: fontFam,
+                        }}
+                      >
+                        {lang === 'bn' ? slot.timeBn : slot.timeEn}
                       </Text>
                     </TouchableOpacity>
                   );
@@ -804,19 +835,27 @@ export const AddCareTaskModal: React.FC<AddCareTaskModalProps> = ({
                 activeOpacity={0.8}
                 style={styles.notifToggleRow}
               >
-                <View style={[styles.checkboxSquare, { backgroundColor: enableNotification ? theme.primary : 'transparent', borderColor: theme.primary }]}>
-                  {enableNotification && <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 13 }}>✓</Text>}
+                <View
+                  style={[
+                    styles.checkboxSquare,
+                    {
+                      backgroundColor: enableNotification ? theme.primary : 'transparent',
+                      borderColor: theme.primary,
+                    },
+                  ]}
+                >
+                  {enableNotification && (
+                    <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 13 }}>✓</Text>
+                  )}
                 </View>
-                <View style={{ flex: 1, gap: 2 }}>
-                  <Text style={[styles.notifTitle, { color: theme.textPrimary, fontFamily: fontFam }]}>
-                    🔔 {lang === 'bn' ? 'নির্ধারিত তারিখে পুশ নোটিফিকেশন অ্যালার্ট' : 'Send Push Notification on Due Date'}
-                  </Text>
-                  <Text style={[styles.notifSub, { color: theme.textSecondary, fontFamily: fontFam }]}>
-                    {lang === 'bn'
-                      ? 'নির্ধারিত দিনে মোবাইলে সাউন্ড ও করণীয় পদক্ষেপসহ নোটিফিকেশন পৌঁছাবে।'
-                      : 'You will receive an alert with steps & reasons on the designated date.'}
-                  </Text>
-                </View>
+                <Text
+                  style={[
+                    styles.notifTitle,
+                    { color: theme.textPrimary, fontFamily: fontFam, flex: 1 },
+                  ]}
+                >
+                  🔔 {lang === 'bn' ? 'পুশ নোটিফিকেশন' : 'Push notification'}
+                </Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
@@ -833,10 +872,10 @@ export const AddCareTaskModal: React.FC<AddCareTaskModalProps> = ({
                 {isSubmitting
                   ? lang === 'bn'
                     ? 'সংরক্ষণ করা হচ্ছে...'
-                    : 'Scheduling...'
+                    : 'Saving...'
                   : lang === 'bn'
-                  ? '✅ পরিচর্যা শিডিউল নিশ্চিত করুন'
-                  : '✅ Confirm & Schedule Care Task'}
+                  ? 'টাস্ক সংরক্ষণ'
+                  : 'Save Task'}
               </Text>
             </TouchableOpacity>
           </View>

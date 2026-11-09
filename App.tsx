@@ -467,14 +467,14 @@ export default function App() {
                 <Path
                   d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21S18 15 18 8Z"
                   stroke={notificationsOpen ? theme.primary : theme.textPrimary}
-                  strokeWidth="1.9"
+                  strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
                 <Path
-                  d="M13.73 21A2 2 0 0 1 10.27 21"
+                  d="M10.3 21C10.6 21.6 11.2 22 12 22C12.8 22 13.4 21.6 13.7 21"
                   stroke={notificationsOpen ? theme.primary : theme.textPrimary}
-                  strokeWidth="1.9"
+                  strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
@@ -952,16 +952,16 @@ const styles = StyleSheet.create({
     gap: 1,
   },
   brandTitle: {
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: '800',
-    letterSpacing: 0.3,
-    lineHeight: 20,
+    letterSpacing: 0.2,
+    lineHeight: 18,
   },
   brandSub: {
-    fontSize: 11,
+    fontSize: 9.5,
     fontWeight: '500',
     letterSpacing: 0.1,
-    lineHeight: 14,
+    lineHeight: 12,
     opacity: 0.85,
   },
   toggleRow: {
@@ -986,22 +986,25 @@ const styles = StyleSheet.create({
   },
   notifCountBadge: {
     position: 'absolute',
-    top: -3,
-    right: -3,
-    minWidth: 15,
-    height: 15,
-    borderRadius: 7.5,
-    paddingHorizontal: 3,
+    top: -5,
+    right: -5,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    paddingHorizontal: 2,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
     borderColor: '#FFFFFF',
+    zIndex: 10,
   },
   notifCountText: {
     color: '#FFFFFF',
-    fontSize: 9,
+    fontSize: 8.5,
     fontWeight: '800',
-    lineHeight: 11,
+    lineHeight: 10,
+    textAlign: 'center',
+    includeFontPadding: false,
   },
   pillBtn: {
     paddingHorizontal: 12,

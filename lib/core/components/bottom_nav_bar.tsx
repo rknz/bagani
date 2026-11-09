@@ -55,7 +55,7 @@ const renderNavIcon = (
           <Path
             d="M3 10.5L12 3L21 10.5V20C21 20.5523 20.5523 21 20 21H4C3.44772 21 3 20.5523 3 20V10.5Z"
             stroke={color}
-            strokeWidth="2.2"
+            strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
             fill={isActive ? 'none' : color}
@@ -63,7 +63,7 @@ const renderNavIcon = (
           <Path
             d="M9 21V13H15V21"
             stroke={isActive ? color : theme.primary}
-            strokeWidth="2.2"
+            strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
@@ -76,19 +76,19 @@ const renderNavIcon = (
           <Path
             d="M12 13V8M12 8C12 8 8.5 7 8.5 4.5C10.5 4.5 12 6 12 8ZM12 8C12 8 15.5 7 15.5 4.5C13.5 4.5 12 6 12 8Z"
             stroke={color}
-            strokeWidth="2.2"
+            strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
           <Path
             d="M6.5 13H17.5L16 20.5H8L6.5 13Z"
             stroke={color}
-            strokeWidth="2.2"
+            strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
             fill={isActive ? 'none' : color}
           />
-          <Path d="M5 13H19" stroke={color} strokeWidth="2.2" strokeLinecap="round" />
+          <Path d="M5 13H19" stroke={color} strokeWidth="2" strokeLinecap="round" />
         </Svg>
       );
 
@@ -96,31 +96,40 @@ const renderNavIcon = (
       return (
         <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
           <Path
-            d="M3 8V5C3 3.89543 3.89543 3 5 3H8"
+            d="M3 7V5C3 3.89543 3.89543 3 5 3H7"
             stroke={color}
-            strokeWidth="2.4"
+            strokeWidth="2"
             strokeLinecap="round"
+            strokeLinejoin="round"
           />
           <Path
-            d="M16 3H19C20.1046 3 21 3.89543 21 5V8"
+            d="M17 3H19C20.1046 3 21 3.89543 21 5V7"
             stroke={color}
-            strokeWidth="2.4"
+            strokeWidth="2"
             strokeLinecap="round"
+            strokeLinejoin="round"
           />
           <Path
-            d="M21 16V19C21 20.1046 20.1046 21 19 21H16"
+            d="M21 17V19C21 20.1046 20.1046 21 19 21H17"
             stroke={color}
-            strokeWidth="2.4"
+            strokeWidth="2"
             strokeLinecap="round"
+            strokeLinejoin="round"
           />
           <Path
-            d="M8 21H5C3.89543 21 3 20.1046 3 19V16"
+            d="M7 21H5C3.89543 21 3 20.1046 3 19V17"
             stroke={color}
-            strokeWidth="2.4"
+            strokeWidth="2"
             strokeLinecap="round"
+            strokeLinejoin="round"
           />
-          <Path d="M5 12H19" stroke={color} strokeWidth="2" strokeLinecap="round" />
-          <Rect x="9" y="9" width="6" height="6" rx="1.5" fill={color} />
+          <Path
+            d="M7 12H17"
+            stroke={color}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </Svg>
       );
 
@@ -128,21 +137,21 @@ const renderNavIcon = (
       return (
         <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
           <Path
-            d="M14.5 4.5L19.5 9.5L16.5 12.5L11.5 7.5L14.5 4.5Z"
+            d="M2 3H8C10.2 3 12 4.8 12 7V21C12 19.3 10.7 18 9 18H2V3Z"
             stroke={color}
-            strokeWidth="2.2"
+            strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
             fill={isActive ? 'none' : color}
           />
           <Path
-            d="M11.5 7.5L4.5 14.5V17.5H7.5L14.5 10.5"
+            d="M22 3H16C13.8 3 12 4.8 12 7V21C12 19.3 13.3 18 15 18H22V3Z"
             stroke={color}
-            strokeWidth="2.2"
+            strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
+            fill={isActive ? 'none' : color}
           />
-          <Path d="M3.5 20.5L7.5 16.5" stroke={color} strokeWidth="2.4" strokeLinecap="round" />
         </Svg>
       );
 
@@ -152,12 +161,12 @@ const renderNavIcon = (
           <Path
             d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21"
             stroke={color}
-            strokeWidth="2.2"
+            strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
             fill={isActive ? 'none' : color}
           />
-          <Circle cx="12" cy="7" r="4" stroke={color} strokeWidth="2.2" fill={isActive ? 'none' : color} />
+          <Circle cx="12" cy="7" r="4" stroke={color} strokeWidth="2" fill={isActive ? 'none' : color} />
         </Svg>
       );
   }
