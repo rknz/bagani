@@ -176,9 +176,8 @@ export default function App() {
         setLang(nextLang);
         setThemePref(nextTheme);
       } else {
-        const defaultUser = await AuthService.signInWithGoogle();
-        const persisted = await AuthService.saveUserProfile(defaultUser);
-        setCurrentUser(persisted);
+        // Require valid credentials / explicit login (no automatic guest bypass)
+        setCurrentUser(null);
         setLang('en');
         setThemePref('light');
       }

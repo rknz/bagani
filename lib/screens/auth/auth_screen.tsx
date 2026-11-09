@@ -1,11 +1,21 @@
 /**
  * BAGANI — Clean Minimalist Login / Sign-Up & Profile Editor
+ * Complies with Google Play & Apple App Store guidelines:
+ * - Logo-only top header (app title text below logo removed)
+ * - "Login" and "Sign Up" tabs ("Sign In" renamed to "Login")
+ * - Mandatory credential verification (Email/Username + Password)
+ * - Email verification flow with clickable activation link
+ * - "Continue with Google" available for Android & Web
+ * - "Continue with Apple" strictly restricted to iOS (Platform.OS === 'ios')
+ * - Full account data linking to Google Account via email
  */
 
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useState } from 'react';
 import {
   Image,
+  Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,7 +23,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { APP_CONFIG } from '../../core/constants/app_constants';
 import { AppLanguage } from '../../core/l10n/translations';
 import {
   APP_TYPOGRAPHY,
@@ -26,7 +35,11 @@ import {
   TastePreference,
   UserModel,
 } from '../../models/user_model';
-import { AuthService, BANGLADESH_DISTRICTS } from '../../services/auth_service';
+import {
+  AuthService,
+  BANGLADESH_DISTRICTS,
+  RegisteredAccount,
+} from '../../services/auth_service';
 
 interface AuthScreenProps {
   theme: AppThemeColors;
@@ -48,9 +61,28 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
   );
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
 
-  // Editable Profile Fields
+  // Login form state
+  const [loginIdentifier, setLoginIdentifier] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authSuccessNotice, setAuthSuccessNotice] = useState<string | null>(null);
+
+  // Sign up form state
+  const [signupUsername, setSignupUsername] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
+  const [signupPassword, setSignupPassword] = useState('');
+  const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Activation simulation modal
+  const [pendingActivationAccount, setPendingActivationAccount] =
+    useState<RegisteredAccount | null>(null);
+
+  // Editable Profile Fields (for Step 2: Edit Profile from Settings)
   const [emailInput, setEmailInput] = useState(
-    initialUser?.email || 'bagani.profix@gmail.com'
+    initialUser?.email || 'gardener@gmail.com'
   );
   const [displayName, setDisplayName] = useState(
     initialUser?.displayName || 'সবুজ বাগানি'
@@ -81,11 +113,10 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
     initialUser?.tasteProfile?.tastePreference || 'sweet'
   );
 
-  // Sync state whenever initialUser prop changes
   useEffect(() => {
     if (initialUser) {
       setStep('customize_profile');
-      setEmailInput(initialUser.email || 'bagani.profix@gmail.com');
+      setEmailInput(initialUser.email || 'gardener@gmail.com');
       setDisplayName(initialUser.displayName || 'সবুজ বাগানি');
       setPhotoUrl(initialUser.photoUrl);
       setDistrict(initialUser.district || BANGLADESH_DISTRICTS[0].bn);
@@ -106,34 +137,192 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
       ? APP_TYPOGRAPHY.fontFamilyBengali
       : APP_TYPOGRAPHY.fontFamilyEnglish;
 
-  const handleDirectLoginOrSignup = async () => {
-    const gUser = await AuthService.signInWithGoogle(emailInput);
-    const finalName =
-      authMode === 'signup' && displayName.trim()
-        ? displayName.trim()
-        : gUser.displayName;
-    const saved = await AuthService.saveUserProfile(gUser, {
-      displayName: finalName,
-      email: emailInput.trim() || 'gardener@gmail.com',
-      language: lang,
-    });
-    onCompleteAuth(saved);
+  // Handle Login with mandatory username/email and password credentials
+  const handleCredentialLogin = async () => {
+    setAuthError(null);
+    setAuthSuccessNotice(null);
+
+    const identifier = loginIdentifier.trim();
+    const pass = loginPassword.trim();
+
+    if (!identifier || !pass) {
+      setAuthError(
+        lang === 'bn'
+          ? 'অনুগ্রহ করে আপনার ইমেইল/ইউজারনেম এবং পাসওয়ার্ড লিখুন।'
+          : 'Please enter your email/username and password.'
+      );
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const res = await AuthService.loginWithCredentials(identifier, pass);
+      if (!res.success) {
+        if (res.isNotActivated) {
+          setAuthError(
+            lang === 'bn'
+              ? 'আপনার অ্যাকাউন্টটি এখনও সক্রিয় করা হয়নি। অনুগ্রহ করে ইমেইলের ভেরিফিকেশন লিংকে ক্লিক করুন।'
+              : 'Account not activated yet. Please click the activation link in your verification email.'
+          );
+        } else if (res.error === 'user_not_found') {
+          setAuthError(
+            lang === 'bn'
+              ? 'এই ইমেইল বা ইউজারনেম দিয়ে কোনো অ্যাকাউন্ট পাওয়া যায়নি। অনুগ্রহ করে সঠিক তথ্য দিন অথবা সাইন আপ করুন।'
+              : 'No registered account found with this email or username. Please check your credentials or sign up.'
+          );
+        } else if (res.error === 'invalid_password') {
+          setAuthError(
+            lang === 'bn'
+              ? 'পাসওয়ার্ড সঠিক নয়। দয়া করে সঠিক পাসওয়ার্ড দিন।'
+              : 'Incorrect password. Please verify your password and try again.'
+          );
+        } else {
+          setAuthError(
+            lang === 'bn'
+              ? 'লগইন ব্যর্থ হয়েছে। তথ্যগুলো পুনরায় পরীক্ষা করুন।'
+              : 'Login failed. Please check your credentials.'
+          );
+        }
+        return;
+      }
+
+      if (res.user) {
+        onCompleteAuth(res.user);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle Registration (Username, Email, Password)
+  const handleSignup = async () => {
+    setAuthError(null);
+    setAuthSuccessNotice(null);
+
+    const uname = signupUsername.trim();
+    const email = signupEmail.trim().toLowerCase();
+    const pass = signupPassword.trim();
+    const confirmPass = signupConfirmPassword.trim();
+
+    if (!uname || uname.length < 3) {
+      setAuthError(
+        lang === 'bn'
+          ? 'ব্যবহারকারীর নাম কমপক্ষে ৩ অক্ষরের হতে হবে।'
+          : 'Username must be at least 3 characters long.'
+      );
+      return;
+    }
+    if (!email || !email.includes('@') || !email.includes('.')) {
+      setAuthError(
+        lang === 'bn'
+          ? 'সঠিক ইমেইল ঠিকানা প্রদান করুন।'
+          : 'Please provide a valid email address.'
+      );
+      return;
+    }
+    if (!pass || pass.length < 6) {
+      setAuthError(
+        lang === 'bn'
+          ? 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।'
+          : 'Password must be at least 6 characters long.'
+      );
+      return;
+    }
+    if (pass !== confirmPass) {
+      setAuthError(
+        lang === 'bn'
+          ? 'উভয় পাসওয়ার্ড একই হতে হবে।'
+          : 'Passwords do not match.'
+      );
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const res = await AuthService.registerUser({
+        username: uname,
+        email,
+        password: pass,
+        district,
+      });
+
+      if (!res.success) {
+        if (res.error === 'email_already_registered') {
+          setAuthError(
+            lang === 'bn'
+              ? 'এই ইমেইলটি ইতিমধ্যেই নিবন্ধিত রয়েছে। দয়া করে লগইন করুন।'
+              : 'This email is already registered. Please log in.'
+          );
+        } else if (res.error === 'username_already_taken') {
+          setAuthError(
+            lang === 'bn'
+              ? 'এই ব্যবহারকারীর নামটি ইতিমধ্যেই নেওয়া হয়েছে। অন্য নাম দিন।'
+              : 'This username is already taken. Please choose another.'
+          );
+        } else {
+          setAuthError(
+            lang === 'bn'
+              ? 'নিবন্ধন ব্যর্থ হয়েছে। তথ্য যাচাই করুন।'
+              : 'Registration failed. Please review your details.'
+          );
+        }
+        return;
+      }
+
+      // Success: Show verification email activation prompt
+      if (res.account) {
+        setPendingActivationAccount(res.account);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Trigger activation via link click simulation
+  const handleActivateAccount = async (account: RegisteredAccount) => {
+    const res = await AuthService.verifyAndActivateAccount(
+      account.email,
+      account.activationToken
+    );
+    if (res.success) {
+      setPendingActivationAccount(null);
+      setLoginIdentifier(account.email);
+      setLoginPassword(account.password);
+      setAuthMode('signin');
+      setAuthSuccessNotice(
+        lang === 'bn'
+          ? '✅ আপনার অ্যাকাউন্ট সফলভাবে সক্রিয় করা হয়েছে! এখন লগইন করুন।'
+          : '✅ Your account has been successfully activated! You can now log in.'
+      );
+    }
   };
 
   const handleGoogleLogin = async () => {
-    const gUser = await AuthService.signInWithGoogle(emailInput);
-    const saved = await AuthService.saveUserProfile(gUser, {
-      language: lang,
-    });
-    onCompleteAuth(saved);
+    setAuthError(null);
+    setIsSubmitting(true);
+    try {
+      const gUser = await AuthService.signInWithGoogle(loginIdentifier);
+      const saved = await AuthService.saveUserProfile(gUser, {
+        language: lang,
+      });
+      onCompleteAuth(saved);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleAppleLogin = async () => {
-    const aUser = await AuthService.signInWithApple();
-    const saved = await AuthService.saveUserProfile(aUser, {
-      language: lang,
-    });
-    onCompleteAuth(saved);
+    setAuthError(null);
+    setIsSubmitting(true);
+    try {
+      const aUser = await AuthService.signInWithApple();
+      const saved = await AuthService.saveUserProfile(aUser, {
+        language: lang,
+      });
+      onCompleteAuth(saved);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handlePickProfilePhoto = async () => {
@@ -170,7 +359,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
     onCompleteAuth(saved);
   };
 
-  // STEP 1: CLEAN, CENTERED LOGIN / SIGN-UP SCREEN (No Top/Bottom Bars, Zero Clutter)
+  // STEP 1: CLEAN, CENTERED LOGIN / SIGN-UP SCREEN
   if (step === 'login') {
     return (
       <ScrollView
@@ -185,7 +374,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             { backgroundColor: theme.surface, borderColor: theme.border },
           ]}
         >
-          {/* Brand Logo & Title */}
+          {/* Logo only (Title and name below logo removed as requested) */}
           <View style={styles.logoWrap}>
             <Image
               source={require('../../../assets/images/logo.png')}
@@ -194,30 +383,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             />
           </View>
 
-          <Text
-            style={[
-              styles.loginTitle,
-              { color: theme.textPrimary, fontFamily: fontFam },
-            ]}
-          >
-            {APP_CONFIG.appName}
-          </Text>
-          <Text
-            style={[
-              styles.loginSub,
-              { color: theme.textSecondary, fontFamily: fontFam },
-            ]}
-          >
-            {authMode === 'signin'
-              ? lang === 'bn'
-                ? 'আপনার অ্যাকাউন্টে সাইন ইন করুন'
-                : 'Sign in to your account'
-              : lang === 'bn'
-              ? 'নতুন অ্যাকাউন্ট তৈরি করুন'
-              : 'Create your account'}
-          </Text>
-
-          {/* Sign In / Sign Up Mode Switcher */}
+          {/* Login / Sign Up Tab Switcher */}
           <View
             style={[
               styles.authModeToggle,
@@ -228,7 +394,10 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             ]}
           >
             <TouchableOpacity
-              onPress={() => setAuthMode('signin')}
+              onPress={() => {
+                setAuthMode('signin');
+                setAuthError(null);
+              }}
               style={[
                 styles.authModeBtn,
                 authMode === 'signin' && { backgroundColor: theme.primary },
@@ -244,12 +413,15 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                   },
                 ]}
               >
-                {lang === 'bn' ? 'সাইন ইন' : 'Sign In'}
+                {lang === 'bn' ? 'লগইন' : 'Login'}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => setAuthMode('signup')}
+              onPress={() => {
+                setAuthMode('signup');
+                setAuthError(null);
+              }}
               style={[
                 styles.authModeBtn,
                 authMode === 'signup' && { backgroundColor: theme.primary },
@@ -270,106 +442,344 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             </TouchableOpacity>
           </View>
 
-          {/* Form Inputs */}
-          {authMode === 'signup' && (
-            <View style={styles.inputGroup}>
+          {/* Success Notification Banner */}
+          {authSuccessNotice && (
+            <View
+              style={[
+                styles.noticeBanner,
+                {
+                  backgroundColor: 'rgba(20, 99, 59, 0.12)',
+                  borderColor: theme.primary,
+                },
+              ]}
+            >
               <Text
-                style={[
-                  styles.label,
-                  { color: theme.textSecondary, fontFamily: fontFam },
-                ]}
+                style={{
+                  color: theme.primary,
+                  fontSize: 12.5,
+                  fontWeight: '700',
+                  fontFamily: fontFam,
+                  textAlign: 'center',
+                }}
               >
-                {lang === 'bn' ? 'পূর্ণ নাম' : 'Full Name'}
+                {authSuccessNotice}
               </Text>
-              <TextInput
-                value={displayName}
-                onChangeText={setDisplayName}
-                placeholder={lang === 'bn' ? 'আপনার নাম' : 'Enter your name'}
-                placeholderTextColor={theme.textMuted}
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: theme.surfaceElevated,
-                    color: theme.textPrimary,
-                    borderColor: theme.border,
-                    fontFamily: fontFam,
-                  },
-                ]}
-              />
             </View>
           )}
 
-          <View style={styles.inputGroup}>
-            <Text
+          {/* Error Banner */}
+          {authError && (
+            <View
               style={[
-                styles.label,
-                { color: theme.textSecondary, fontFamily: fontFam },
-              ]}
-            >
-              {lang === 'bn' ? 'ইমেইল' : 'Email'}
-            </Text>
-            <TextInput
-              value={emailInput}
-              onChangeText={setEmailInput}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              placeholder="name@example.com"
-              placeholderTextColor={theme.textMuted}
-              style={[
-                styles.input,
+                styles.noticeBanner,
                 {
-                  backgroundColor: theme.surfaceElevated,
-                  color: theme.textPrimary,
-                  borderColor: theme.border,
-                  fontFamily: fontFam,
+                  backgroundColor: 'rgba(220, 38, 38, 0.10)',
+                  borderColor: '#DC2626',
                 },
               ]}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text
-              style={[
-                styles.label,
-                { color: theme.textSecondary, fontFamily: fontFam },
-              ]}
             >
-              {lang === 'bn' ? 'পাসওয়ার্ড' : 'Password'}
-            </Text>
-            <TextInput
-              value={appPassword}
-              onChangeText={setAppPassword}
-              secureTextEntry
-              placeholder="••••••••"
-              placeholderTextColor={theme.textMuted}
-              style={[
-                styles.input,
-                {
-                  backgroundColor: theme.surfaceElevated,
-                  color: theme.textPrimary,
-                  borderColor: theme.border,
+              <Text
+                style={{
+                  color: '#DC2626',
+                  fontSize: 12.5,
+                  fontWeight: '700',
                   fontFamily: fontFam,
-                },
-              ]}
-            />
-          </View>
+                  textAlign: 'center',
+                }}
+              >
+                ⚠️ {authError}
+              </Text>
+            </View>
+          )}
 
-          {/* Primary Sign In / Create Account Button */}
-          <TouchableOpacity
-            onPress={handleDirectLoginOrSignup}
-            activeOpacity={0.85}
-            style={[styles.primaryAuthBtn, { backgroundColor: theme.primary }]}
-          >
-            <Text style={[styles.primaryAuthBtnText, { fontFamily: fontFam }]}>
-              {authMode === 'signin'
-                ? lang === 'bn'
-                  ? 'সাইন ইন'
-                  : 'Sign In'
-                : lang === 'bn'
-                ? 'অ্যাকাউন্ট তৈরি করুন'
-                : 'Create Account'}
-            </Text>
-          </TouchableOpacity>
+          {/* TAB 1: LOGIN (Requires Valid Email/Username & Password) */}
+          {authMode === 'signin' ? (
+            <View style={{ gap: 12 }}>
+              <View style={styles.inputGroup}>
+                <Text
+                  style={[
+                    styles.label,
+                    { color: theme.textSecondary, fontFamily: fontFam },
+                  ]}
+                >
+                  {lang === 'bn' ? 'ইমেইল বা ব্যবহারকারীর নাম' : 'Email or Username'}
+                </Text>
+                <TextInput
+                  value={loginIdentifier}
+                  onChangeText={setLoginIdentifier}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  placeholder={
+                    lang === 'bn'
+                      ? 'নাম বা ইমেইল লিখুন...'
+                      : 'Enter email or username...'
+                  }
+                  placeholderTextColor={theme.textMuted}
+                  style={[
+                    styles.input,
+                    {
+                      backgroundColor: theme.surfaceElevated,
+                      color: theme.textPrimary,
+                      borderColor: theme.border,
+                      fontFamily: fontFam,
+                    },
+                  ]}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.label,
+                      { color: theme.textSecondary, fontFamily: fontFam },
+                    ]}
+                  >
+                    {lang === 'bn' ? 'পাসওয়ার্ড' : 'Password'}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setShowLoginPassword(!showLoginPassword)}
+                  >
+                    <Text
+                      style={{
+                        color: theme.primary,
+                        fontSize: 12,
+                        fontWeight: '700',
+                      }}
+                    >
+                      {showLoginPassword
+                        ? lang === 'bn'
+                          ? 'লুকান'
+                          : 'Hide'
+                        : lang === 'bn'
+                        ? 'দেখুন'
+                        : 'Show'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                <TextInput
+                  value={loginPassword}
+                  onChangeText={setLoginPassword}
+                  secureTextEntry={!showLoginPassword}
+                  placeholder="••••••••"
+                  placeholderTextColor={theme.textMuted}
+                  style={[
+                    styles.input,
+                    {
+                      backgroundColor: theme.surfaceElevated,
+                      color: theme.textPrimary,
+                      borderColor: theme.border,
+                      fontFamily: fontFam,
+                    },
+                  ]}
+                />
+              </View>
+
+              {/* Login Button */}
+              <TouchableOpacity
+                onPress={handleCredentialLogin}
+                disabled={isSubmitting}
+                activeOpacity={0.85}
+                style={[
+                  styles.primaryAuthBtn,
+                  { backgroundColor: theme.primary },
+                ]}
+              >
+                <Text
+                  style={[styles.primaryAuthBtnText, { fontFamily: fontFam }]}
+                >
+                  {isSubmitting
+                    ? lang === 'bn'
+                      ? 'যাচাই করা হচ্ছে...'
+                      : 'Verifying...'
+                    : lang === 'bn'
+                    ? 'লগইন'
+                    : 'Login'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            /* TAB 2: SIGN UP (Username, Email, Password, Verification Flow) */
+            <View style={{ gap: 12 }}>
+              <View style={styles.inputGroup}>
+                <Text
+                  style={[
+                    styles.label,
+                    { color: theme.textSecondary, fontFamily: fontFam },
+                  ]}
+                >
+                  {lang === 'bn' ? 'ব্যবহারকারীর নাম (Username)' : 'Username'}
+                </Text>
+                <TextInput
+                  value={signupUsername}
+                  onChangeText={setSignupUsername}
+                  placeholder={lang === 'bn' ? 'যেমন: rafi_green' : 'e.g. green_gardener'}
+                  placeholderTextColor={theme.textMuted}
+                  style={[
+                    styles.input,
+                    {
+                      backgroundColor: theme.surfaceElevated,
+                      color: theme.textPrimary,
+                      borderColor: theme.border,
+                      fontFamily: fontFam,
+                    },
+                  ]}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text
+                  style={[
+                    styles.label,
+                    { color: theme.textSecondary, fontFamily: fontFam },
+                  ]}
+                >
+                  {lang === 'bn' ? 'ইমেইল ঠিকানা' : 'Email Address'}
+                </Text>
+                <TextInput
+                  value={signupEmail}
+                  onChangeText={setSignupEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  placeholder="name@example.com"
+                  placeholderTextColor={theme.textMuted}
+                  style={[
+                    styles.input,
+                    {
+                      backgroundColor: theme.surfaceElevated,
+                      color: theme.textPrimary,
+                      borderColor: theme.border,
+                      fontFamily: fontFam,
+                    },
+                  ]}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.label,
+                      { color: theme.textSecondary, fontFamily: fontFam },
+                    ]}
+                  >
+                    {lang === 'bn' ? 'পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)' : 'Password (min 6 characters)'}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setShowSignupPassword(!showSignupPassword)}
+                  >
+                    <Text
+                      style={{
+                        color: theme.primary,
+                        fontSize: 12,
+                        fontWeight: '700',
+                      }}
+                    >
+                      {showSignupPassword
+                        ? lang === 'bn'
+                          ? 'লুকান'
+                          : 'Hide'
+                        : lang === 'bn'
+                        ? 'দেখুন'
+                        : 'Show'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                <TextInput
+                  value={signupPassword}
+                  onChangeText={setSignupPassword}
+                  secureTextEntry={!showSignupPassword}
+                  placeholder="••••••••"
+                  placeholderTextColor={theme.textMuted}
+                  style={[
+                    styles.input,
+                    {
+                      backgroundColor: theme.surfaceElevated,
+                      color: theme.textPrimary,
+                      borderColor: theme.border,
+                      fontFamily: fontFam,
+                    },
+                  ]}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text
+                  style={[
+                    styles.label,
+                    { color: theme.textSecondary, fontFamily: fontFam },
+                  ]}
+                >
+                  {lang === 'bn' ? 'পাসওয়ার্ড নিশ্চিত করুন' : 'Confirm Password'}
+                </Text>
+                <TextInput
+                  value={signupConfirmPassword}
+                  onChangeText={setSignupConfirmPassword}
+                  secureTextEntry={!showSignupPassword}
+                  placeholder="••••••••"
+                  placeholderTextColor={theme.textMuted}
+                  style={[
+                    styles.input,
+                    {
+                      backgroundColor: theme.surfaceElevated,
+                      color: theme.textPrimary,
+                      borderColor: theme.border,
+                      fontFamily: fontFam,
+                    },
+                  ]}
+                />
+              </View>
+
+              <Text
+                style={{
+                  fontSize: 11.5,
+                  color: theme.textSecondary,
+                  lineHeight: 16,
+                  fontFamily: fontFam,
+                }}
+              >
+                ℹ️{' '}
+                {lang === 'bn'
+                  ? 'নিবন্ধনের পর আপনার ইমেইলে একটি ভেরিফিকেশন অ্যাক্টিভেশন লিংক পাঠানো হবে। লিংকে ক্লিক করে অ্যাকাউন্ট সক্রিয় করতে হবে।'
+                  : 'An activation link will be sent to your email. Click the verification link to activate your account.'}
+              </Text>
+
+              {/* Sign Up Button */}
+              <TouchableOpacity
+                onPress={handleSignup}
+                disabled={isSubmitting}
+                activeOpacity={0.85}
+                style={[
+                  styles.primaryAuthBtn,
+                  { backgroundColor: theme.primary },
+                ]}
+              >
+                <Text
+                  style={[styles.primaryAuthBtnText, { fontFamily: fontFam }]}
+                >
+                  {isSubmitting
+                    ? lang === 'bn'
+                      ? 'অ্যাকাউন্ট তৈরি হচ্ছে...'
+                      : 'Creating Account...'
+                    : lang === 'bn'
+                    ? 'সাইন আপ'
+                    : 'Sign Up'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
           {/* Clean Divider */}
           <View style={styles.dividerRow}>
@@ -389,9 +799,11 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             />
           </View>
 
-          {/* Social Sign-In Buttons */}
+          {/* Social Sign-In: On Android only "Continue with Google" is available.
+              "Continue with Apple" is strictly restricted to iOS only. */}
           <TouchableOpacity
             onPress={handleGoogleLogin}
+            disabled={isSubmitting}
             activeOpacity={0.85}
             style={[
               styles.socialBtn,
@@ -411,32 +823,144 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={handleAppleLogin}
-            activeOpacity={0.85}
-            style={[
-              styles.socialBtn,
-              {
-                backgroundColor: theme.surfaceElevated,
-                borderColor: theme.border,
-              },
-            ]}
-          >
-            <Text
+          {/* Render Apple Sign-In ONLY on iOS */}
+          {Platform.OS === 'ios' && (
+            <TouchableOpacity
+              onPress={handleAppleLogin}
+              disabled={isSubmitting}
+              activeOpacity={0.85}
               style={[
-                styles.socialBtnText,
-                { color: theme.textPrimary, fontFamily: fontFam },
+                styles.socialBtn,
+                {
+                  backgroundColor: theme.surfaceElevated,
+                  borderColor: theme.border,
+                },
               ]}
             >
-              {lang === 'bn' ? 'Apple দিয়ে চালিয়ে যান' : 'Continue with Apple'}
-            </Text>
-          </TouchableOpacity>
+              <Text
+                style={[
+                  styles.socialBtnText,
+                  { color: theme.textPrimary, fontFamily: fontFam },
+                ]}
+              >
+                {lang === 'bn' ? 'Apple দিয়ে চালিয়ে যান' : 'Continue with Apple'}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
+
+        {/* Verification Email Activation Modal */}
+        {pendingActivationAccount && (
+          <Modal
+            transparent
+            animationType="fade"
+            visible={!!pendingActivationAccount}
+            onRequestClose={() => setPendingActivationAccount(null)}
+          >
+            <View style={styles.modalOverlay}>
+              <View
+                style={[
+                  styles.activationCard,
+                  {
+                    backgroundColor: theme.surface,
+                    borderColor: theme.border,
+                  },
+                ]}
+              >
+                <Text style={{ fontSize: 40, textAlign: 'center' }}>✉️</Text>
+                <Text
+                  style={[
+                    styles.activationTitle,
+                    { color: theme.textPrimary, fontFamily: fontFam },
+                  ]}
+                >
+                  {lang === 'bn'
+                    ? 'ভেরিফিকেশন ইমেইল পাঠানো হয়েছে!'
+                    : 'Verification Email Sent!'}
+                </Text>
+                <Text
+                  style={[
+                    styles.activationDesc,
+                    { color: theme.textSecondary, fontFamily: fontFam },
+                  ]}
+                >
+                  {lang === 'bn'
+                    ? `আমরা ${pendingActivationAccount.email} ঠিকানায় একটি অ্যাক্টিভেশন লিংক পাঠিয়েছি। আপনার অ্যাকাউন্ট সক্রিয় করতে লিংকে ক্লিক করুন:`
+                    : `We sent an activation link to ${pendingActivationAccount.email}. Please click the link to activate your account:`}
+                </Text>
+
+                <View
+                  style={[
+                    styles.emailLinkBox,
+                    {
+                      backgroundColor: theme.surfaceElevated,
+                      borderColor: theme.border,
+                    },
+                  ]}
+                >
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      fontSize: 12,
+                      color: theme.primary,
+                      fontFamily: fontFam,
+                      fontWeight: '600',
+                    }}
+                  >
+                    https://bagani.app/activate?token=
+                    {pendingActivationAccount.activationToken}
+                  </Text>
+                </View>
+
+                {/* Simulated Link Click to Activate Account */}
+                <TouchableOpacity
+                  onPress={() =>
+                    handleActivateAccount(pendingActivationAccount)
+                  }
+                  activeOpacity={0.85}
+                  style={[
+                    styles.primaryAuthBtn,
+                    { backgroundColor: theme.primary, width: '100%' },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.primaryAuthBtnText,
+                      { fontFamily: fontFam },
+                    ]}
+                  >
+                    {lang === 'bn'
+                      ? '📧 অ্যাকাউন্ট সক্রিয় করুন (Activate Account)'
+                      : '📧 Activate Account'}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    setPendingActivationAccount(null);
+                    setAuthMode('signin');
+                  }}
+                  style={{ paddingVertical: 8, alignItems: 'center' }}
+                >
+                  <Text
+                    style={{
+                      color: theme.textSecondary,
+                      fontSize: 13,
+                      fontFamily: fontFam,
+                    }}
+                  >
+                    {lang === 'bn' ? 'পরে করব / লগইনে যান' : 'Skip to Login'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+        )}
       </ScrollView>
     );
   }
 
-  // STEP 2: EDIT PROFILE SCREEN (Full Bottom Navigation Bar remains visible)
+  // STEP 2: EDIT PROFILE SCREEN (Settings Route)
   return (
     <ScrollView
       style={{ flex: 1, width: '100%' }}
@@ -549,11 +1073,13 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                 { color: theme.textSecondary, fontFamily: fontFam },
               ]}
             >
-              {lang === 'bn' ? 'পূর্ণ নাম' : 'Full Name'}
+              {lang === 'bn' ? 'ব্যবহারকারীর নাম' : 'Display Name'}
             </Text>
             <TextInput
               value={displayName}
               onChangeText={setDisplayName}
+              placeholder={lang === 'bn' ? 'আপনার নাম' : 'Your Name'}
+              placeholderTextColor={theme.textMuted}
               style={[
                 styles.input,
                 {
@@ -566,7 +1092,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             />
           </View>
 
-          {/* Editable Email */}
+          {/* Email Address */}
           <View style={styles.inputGroup}>
             <Text
               style={[
@@ -574,13 +1100,14 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                 { color: theme.textSecondary, fontFamily: fontFam },
               ]}
             >
-              {lang === 'bn' ? 'ইমেইল অ্যাড্রেস' : 'Email Address'}
+              {lang === 'bn' ? 'ইমেইল ঠিকানা' : 'Email Address'}
             </Text>
             <TextInput
               value={emailInput}
               onChangeText={setEmailInput}
               keyboardType="email-address"
-              autoCapitalize="none"
+              placeholder="name@example.com"
+              placeholderTextColor={theme.textMuted}
               style={[
                 styles.input,
                 {
@@ -593,7 +1120,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             />
           </View>
 
-          {/* District Selector */}
+          {/* District Selector Chips */}
           <View style={styles.inputGroup}>
             <Text
               style={[
@@ -601,26 +1128,27 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                 { color: theme.textSecondary, fontFamily: fontFam },
               ]}
             >
-              {lang === 'bn' ? 'জেলা' : 'District'}
+              {lang === 'bn' ? 'বাগান বা বাসস্থানের জেলা' : 'Home District'}
             </Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.chipScroll}
             >
-              {BANGLADESH_DISTRICTS.map((d) => {
-                const selected = district === d.bn || district === d.en;
+              {BANGLADESH_DISTRICTS.map((item) => {
+                const label = lang === 'bn' ? item.bn : item.en;
+                const isSelected = district === item.bn || district === item.en;
                 return (
                   <TouchableOpacity
-                    key={d.en}
-                    onPress={() => setDistrict(d.bn)}
+                    key={item.en}
+                    onPress={() => setDistrict(item.bn)}
                     style={[
                       styles.chip,
                       {
-                        backgroundColor: selected
+                        backgroundColor: isSelected
                           ? theme.primary
                           : theme.surfaceElevated,
-                        borderColor: selected ? theme.primary : theme.border,
+                        borderColor: isSelected ? theme.primary : theme.border,
                       },
                     ]}
                   >
@@ -628,12 +1156,12 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                       style={[
                         styles.chipText,
                         {
-                          color: selected ? '#FFFFFF' : theme.textPrimary,
+                          color: isSelected ? '#FFFFFF' : theme.textPrimary,
                           fontFamily: fontFam,
                         },
                       ]}
                     >
-                      📍 {lang === 'bn' ? d.bn : d.en}
+                      {label}
                     </Text>
                   </TouchableOpacity>
                 );
@@ -641,7 +1169,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             </ScrollView>
           </View>
 
-          {/* Address & Organization */}
+          {/* Address */}
           <View style={styles.inputGroup}>
             <Text
               style={[
@@ -649,13 +1177,17 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                 { color: theme.textSecondary, fontFamily: fontFam },
               ]}
             >
-              {lang === 'bn'
-                ? 'ঠিকানা / ছাদের অবস্থান'
-                : 'Address / Rooftop Location'}
+              {lang === 'bn' ? 'বিস্তারিত ঠিকানা' : 'Detailed Address'}
             </Text>
             <TextInput
               value={address}
               onChangeText={setAddress}
+              placeholder={
+                lang === 'bn'
+                  ? 'সড়ক, বাড়ি নং, এলাকা...'
+                  : 'Street, House No, Area...'
+              }
+              placeholderTextColor={theme.textMuted}
               style={[
                 styles.input,
                 {
@@ -668,6 +1200,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             />
           </View>
 
+          {/* Organization / Profession */}
           <View style={styles.inputGroup}>
             <Text
               style={[
@@ -676,12 +1209,14 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
               ]}
             >
               {lang === 'bn'
-                ? 'পেশা বা প্রতিষ্ঠান'
-                : 'Profession / Organization'}
+                ? 'প্রতিষ্ঠান / পেশা'
+                : 'Organization / Profession'}
             </Text>
             <TextInput
               value={organization}
               onChangeText={setOrganization}
+              placeholder="e.g. ProFix - Web & Soft"
+              placeholderTextColor={theme.textMuted}
               style={[
                 styles.input,
                 {
@@ -694,7 +1229,37 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             />
           </View>
 
-          {/* Gardener Preferences */}
+          {/* App Security Password */}
+          <View style={styles.inputGroup}>
+            <Text
+              style={[
+                styles.label,
+                { color: theme.textSecondary, fontFamily: fontFam },
+              ]}
+            >
+              {lang === 'bn'
+                ? 'অ্যাপ পাসওয়ার্ড (ঐচ্ছিক)'
+                : 'App Security Password (Optional)'}
+            </Text>
+            <TextInput
+              value={appPassword}
+              onChangeText={setAppPassword}
+              secureTextEntry
+              placeholder="••••••••"
+              placeholderTextColor={theme.textMuted}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: theme.surfaceElevated,
+                  color: theme.textPrimary,
+                  borderColor: theme.border,
+                  fontFamily: fontFam,
+                },
+              ]}
+            />
+          </View>
+
+          {/* SECTION: Gardener Taste & Preference Profile (Phase 2 Requirement) */}
           <View
             style={[
               styles.faqBox,
@@ -710,177 +1275,174 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                 { color: theme.primary, fontFamily: fontFam },
               ]}
             >
-              🌱{' '}
-              {lang === 'bn'
-                ? 'বাগানির পছন্দ ও রুচি'
-                : 'Gardening Preferences'}
+              🌿 {lang === 'bn' ? 'বাগানের রুচি ও পছন্দ' : 'Gardening Taste Profile'}
             </Text>
 
-            <Text
-              style={[
-                styles.label,
-                { color: theme.textSecondary, fontFamily: fontFam },
-              ]}
-            >
-              {lang === 'bn' ? 'চাষের আগ্রহ:' : 'Cultivation Focus:'}
-            </Text>
-            <View style={styles.optionRow}>
-              {(
-                [
-                  { val: 'fruits', bn: '🍎 ফল গাছ', en: '🍎 Fruits' },
-                  { val: 'vegetables', bn: '🥦 শাকসবজি', en: '🥦 Vegetables' },
-                  { val: 'both', bn: '🌿 উভয়ই', en: '🌿 Both' },
-                ] as const
-              ).map((opt) => (
-                <TouchableOpacity
-                  key={opt.val}
-                  onPress={() => setCultivationInterest(opt.val)}
-                  style={[
-                    styles.optChip,
-                    {
-                      backgroundColor:
-                        cultivationInterest === opt.val
-                          ? theme.primary
-                          : theme.surface,
-                      borderColor:
-                        cultivationInterest === opt.val
-                          ? theme.primary
-                          : theme.border,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={{
-                      color:
-                        cultivationInterest === opt.val
-                          ? '#FFFFFF'
-                          : theme.textPrimary,
-                      fontSize: 12,
-                      fontWeight: '600',
-                      fontFamily: fontFam,
-                    }}
-                  >
-                    {lang === 'bn' ? opt.bn : opt.en}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+            {/* Q1: Cultivation Interest */}
+            <View style={{ gap: 6, marginVertical: 4 }}>
+              <Text
+                style={{
+                  color: theme.textPrimary,
+                  fontWeight: '700',
+                  fontSize: 13,
+                  fontFamily: fontFam,
+                }}
+              >
+                {lang === 'bn'
+                  ? '১. আপনি কী ধরণের গাছ বেশি পছন্দ করেন?'
+                  : '1. What type of plants do you prefer cultivating?'}
+              </Text>
+              <View style={styles.optionRow}>
+                {[
+                  { id: 'fruits', bn: '🍎 ফলমূল', en: '🍎 Fruits' },
+                  { id: 'vegetables', bn: '🥦 শাকসবজি', en: '🥦 Vegetables' },
+                  { id: 'both', bn: '🌱 উভয়ই', en: '🌱 Both' },
+                ].map((opt) => {
+                  const sel = cultivationInterest === opt.id;
+                  return (
+                    <TouchableOpacity
+                      key={opt.id}
+                      onPress={() =>
+                        setCultivationInterest(opt.id as CultivationInterest)
+                      }
+                      style={[
+                        styles.optChip,
+                        {
+                          backgroundColor: sel
+                            ? theme.primary
+                            : theme.surface,
+                          borderColor: sel ? theme.primary : theme.border,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={{
+                          color: sel ? '#FFFFFF' : theme.textPrimary,
+                          fontSize: 12,
+                          fontWeight: '600',
+                          fontFamily: fontFam,
+                        }}
+                      >
+                        {lang === 'bn' ? opt.bn : opt.en}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
             </View>
 
-            <Text
-              style={[
-                styles.label,
-                {
-                  color: theme.textSecondary,
-                  marginTop: 8,
+            {/* Q2: Origin Preference */}
+            <View style={{ gap: 6, marginVertical: 4 }}>
+              <Text
+                style={{
+                  color: theme.textPrimary,
+                  fontWeight: '700',
+                  fontSize: 13,
                   fontFamily: fontFam,
-                },
-              ]}
-            >
-              {lang === 'bn' ? 'জাতের পছন্দ:' : 'Preferred Varieties:'}
-            </Text>
-            <View style={styles.optionRow}>
-              {(
-                [
-                  { val: 'deshi', bn: '🇧🇩 দেশি জাত', en: '🇧🇩 Deshi' },
-                  { val: 'exotic', bn: '🌏 বিদেশি জাত', en: '🌏 Exotic' },
-                  { val: 'both', bn: '✨ উভয়ই', en: '✨ Both' },
-                ] as const
-              ).map((opt) => (
-                <TouchableOpacity
-                  key={opt.val}
-                  onPress={() => setOriginPreference(opt.val)}
-                  style={[
-                    styles.optChip,
-                    {
-                      backgroundColor:
-                        originPreference === opt.val
-                          ? theme.primary
-                          : theme.surface,
-                      borderColor:
-                        originPreference === opt.val
-                          ? theme.primary
-                          : theme.border,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={{
-                      color:
-                        originPreference === opt.val
-                          ? '#FFFFFF'
-                          : theme.textPrimary,
-                      fontSize: 12,
-                      fontWeight: '600',
-                      fontFamily: fontFam,
-                    }}
-                  >
-                    {lang === 'bn' ? opt.bn : opt.en}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                }}
+              >
+                {lang === 'bn'
+                  ? '২. দেশি নাকি বিদেশি জাত বেশি রোপণ করেন?'
+                  : '2. Do you prefer native or exotic varieties?'}
+              </Text>
+              <View style={styles.optionRow}>
+                {[
+                  { id: 'deshi', bn: '🇧🇩 দেশি জাত', en: '🇧🇩 Native' },
+                  { id: 'exotic', bn: '🌍 বিদেশি জাত', en: '🌍 Exotic' },
+                  { id: 'both', bn: '🌿 উভয়ই', en: '🌿 Both' },
+                ].map((opt) => {
+                  const sel = originPreference === opt.id;
+                  return (
+                    <TouchableOpacity
+                      key={opt.id}
+                      onPress={() =>
+                        setOriginPreference(opt.id as OriginPreference)
+                      }
+                      style={[
+                        styles.optChip,
+                        {
+                          backgroundColor: sel
+                            ? theme.primary
+                            : theme.surface,
+                          borderColor: sel ? theme.primary : theme.border,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={{
+                          color: sel ? '#FFFFFF' : theme.textPrimary,
+                          fontSize: 12,
+                          fontWeight: '600',
+                          fontFamily: fontFam,
+                        }}
+                      >
+                        {lang === 'bn' ? opt.bn : opt.en}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
             </View>
 
-            <Text
-              style={[
-                styles.label,
-                {
-                  color: theme.textSecondary,
-                  marginTop: 8,
+            {/* Q3: Taste Preference */}
+            <View style={{ gap: 6, marginVertical: 4 }}>
+              <Text
+                style={{
+                  color: theme.textPrimary,
+                  fontWeight: '700',
+                  fontSize: 13,
                   fontFamily: fontFam,
-                },
-              ]}
-            >
-              {lang === 'bn' ? 'স্বাদের পছন্দ:' : 'Taste Preference:'}
-            </Text>
-            <View style={styles.optionRow}>
-              {(
-                [
-                  { val: 'sweet', bn: '🍯 মিষ্টি', en: '🍯 Sweet' },
-                  { val: 'sour_tangy', bn: '🍋 টক-মিষ্টি', en: '🍋 Tangy' },
-                  { val: 'both', bn: '🍊 সব ধরনের', en: '🍊 All' },
-                ] as const
-              ).map((opt) => (
-                <TouchableOpacity
-                  key={opt.val}
-                  onPress={() => setTastePreference(opt.val)}
-                  style={[
-                    styles.optChip,
-                    {
-                      backgroundColor:
-                        tastePreference === opt.val
-                          ? theme.primary
-                          : theme.surface,
-                      borderColor:
-                        tastePreference === opt.val
-                          ? theme.primary
-                          : theme.border,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={{
-                      color:
-                        tastePreference === opt.val
-                          ? '#FFFFFF'
-                          : theme.textPrimary,
-                      fontSize: 12,
-                      fontWeight: '600',
-                      fontFamily: fontFam,
-                    }}
-                  >
-                    {lang === 'bn' ? opt.bn : opt.en}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                }}
+              >
+                {lang === 'bn'
+                  ? '৩. ফলের স্বাদে কোনটিকে প্রাধান্য দেন?'
+                  : '3. What flavor profile do you prefer in homegrown fruits?'}
+              </Text>
+              <View style={styles.optionRow}>
+                {[
+                  { id: 'sweet', bn: '🍯 মিষ্টি স্বাদ', en: '🍯 Sweet' },
+                  { id: 'sour_tangy', bn: '🍋 টক-মিষ্টি', en: '🍋 Tangy/Sour' },
+                  { id: 'both', bn: '🍍 সকল স্বাদ', en: '🍍 Any flavor' },
+                ].map((opt) => {
+                  const sel = tastePreference === opt.id;
+                  return (
+                    <TouchableOpacity
+                      key={opt.id}
+                      onPress={() =>
+                        setTastePreference(opt.id as TastePreference)
+                      }
+                      style={[
+                        styles.optChip,
+                        {
+                          backgroundColor: sel
+                            ? theme.primary
+                            : theme.surface,
+                          borderColor: sel ? theme.primary : theme.border,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={{
+                          color: sel ? '#FFFFFF' : theme.textPrimary,
+                          fontSize: 12,
+                          fontWeight: '600',
+                          fontFamily: fontFam,
+                        }}
+                      >
+                        {lang === 'bn' ? opt.bn : opt.en}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
             </View>
           </View>
 
-          {/* Bottom Save & Cancel Action Row */}
+          {/* Action Row */}
           <View style={styles.bottomActionRow}>
             {onCancelEdit && (
               <TouchableOpacity
                 onPress={onCancelEdit}
-                activeOpacity={0.8}
                 style={[
                   styles.cancelBottomBtn,
                   {
@@ -892,7 +1454,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                 <Text
                   style={{
                     color: theme.textSecondary,
-                    fontWeight: '700',
+                    fontWeight: '600',
                     fontSize: 14,
                     fontFamily: fontFam,
                   }}
@@ -935,26 +1497,16 @@ const styles = StyleSheet.create({
     maxWidth: 400,
     borderRadius: DESIGN_TOKENS.mainCardRadius,
     borderWidth: 1,
-    padding: 28,
+    padding: 26,
     gap: 14,
   },
   logoWrap: {
     alignItems: 'center',
-    marginBottom: 2,
+    marginBottom: 6,
   },
   logoImage: {
-    width: 84,
-    height: 68,
-  },
-  loginTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    textAlign: 'center',
-  },
-  loginSub: {
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 4,
+    width: 90,
+    height: 72,
   },
   authModeToggle: {
     flexDirection: 'row',
@@ -964,14 +1516,20 @@ const styles = StyleSheet.create({
   },
   authModeBtn: {
     flex: 1,
-    paddingVertical: 9,
+    paddingVertical: 10,
     borderRadius: 9,
     alignItems: 'center',
     justifyContent: 'center',
   },
   authModeText: {
-    fontSize: 13,
+    fontSize: 13.5,
     fontWeight: '700',
+  },
+  noticeBanner: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
   },
   primaryAuthBtn: {
     minHeight: 48,
@@ -990,7 +1548,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginVertical: 2,
+    marginVertical: 4,
   },
   dividerLine: {
     flex: 1,
@@ -1011,6 +1569,39 @@ const styles = StyleSheet.create({
   socialBtnText: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  activationCard: {
+    width: '100%',
+    maxWidth: 380,
+    padding: 24,
+    borderRadius: 18,
+    borderWidth: 1,
+    gap: 12,
+    alignItems: 'center',
+  },
+  activationTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  activationDesc: {
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
+  },
+  emailLinkBox: {
+    width: '100%',
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: 'center',
   },
   editScrollOuter: {
     width: '100%',
