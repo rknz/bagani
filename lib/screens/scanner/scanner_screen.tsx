@@ -29,6 +29,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { AppLanguage } from '../../core/l10n/translations';
 import {
   APP_TYPOGRAPHY,
@@ -786,13 +787,23 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
 
         {/* Global Botanical Plant Selector & Online Search Input */}
         <View style={[styles.mainCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <Text style={[styles.cardHeading, { color: theme.textPrimary, fontFamily: fontFam }]}>
-            🌐 {lang === 'bn' ? 'কোন উদ্ভিদ বা প্রজাতির রোগ নির্ণয় করবেন? (Global Search)' : 'Target Plant or Species (Global Search):'}
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, marginBottom: 10 }}>
+            <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+              <Circle cx="12" cy="12" r="9" stroke={theme.primary} strokeWidth="2" />
+              <Path d="M3 12H21" stroke={theme.primary} strokeWidth="1.8" />
+              <Path d="M12 3C14.5 5.5 15.5 8.5 15.5 12C15.5 15.5 14.5 18.5 12 21C9.5 18.5 8.5 15.5 8.5 12C8.5 8.5 9.5 5.5 12 3Z" stroke={theme.primary} strokeWidth="1.8" />
+            </Svg>
+            <Text style={[styles.cardHeading, { color: theme.textPrimary, fontFamily: fontFam, marginBottom: 0 }]}>
+              {lang === 'bn' ? 'কোন উদ্ভিদ বা প্রজাতির রোগ নির্ণয় করবেন? (Global Search)' : 'Target Plant or Species (Global Search):'}
+            </Text>
+          </View>
 
           {/* Plant Search / Input Box */}
           <View style={[styles.plantHintInputRow, { backgroundColor: theme.surfaceElevated, borderColor: theme.border }]}>
-            <Text style={{ fontSize: 16 }}>🔍</Text>
+            <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+              <Circle cx="11" cy="11" r="7" stroke={theme.textSecondary} strokeWidth="2" />
+              <Path d="M16.5 16.5L21 21" stroke={theme.textSecondary} strokeWidth="2.2" strokeLinecap="round" />
+            </Svg>
             <TextInput
               value={plantQueryInput}
               onChangeText={setPlantQueryInput}
@@ -812,10 +823,14 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
             ) : null}
             <TouchableOpacity
               onPress={() => handlePlantQuerySubmit(plantQueryInput)}
-              style={[styles.plantHintSearchBtn, { backgroundColor: theme.primary }]}
+              style={[styles.plantHintSearchBtn, { backgroundColor: theme.primary, flexDirection: 'row', alignItems: 'center', gap: 5 }]}
             >
+              <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+                <Circle cx="11" cy="11" r="7" stroke="#FFFFFF" strokeWidth="2.2" />
+                <Path d="M16.5 16.5L21 21" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" />
+              </Svg>
               <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 12.5, fontFamily: fontFam }}>
-                {lang === 'bn' ? 'সার্চ' : 'Go'}
+                {lang === 'bn' ? 'সার্চ' : 'Search'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -863,9 +878,15 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
           </ScrollView>
 
           {/* Examined Part Selector (Leaf, Fruit, Flower, Soil, Whole Plant) */}
-          <Text style={[styles.cardHeading, { color: theme.textPrimary, fontFamily: fontFam, marginTop: 14 }]}>
-            🔍 {lang === 'bn' ? 'গাছের কোন অংশে সমস্যা? (Examined Part)' : 'Examined Plant Part:'}
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 14 }}>
+            <Svg width={17} height={17} viewBox="0 0 24 24" fill="none">
+              <Circle cx="11" cy="11" r="7" stroke={theme.primary} strokeWidth="2" />
+              <Path d="M16.5 16.5L21 21" stroke={theme.primary} strokeWidth="2.2" strokeLinecap="round" />
+            </Svg>
+            <Text style={[styles.cardHeading, { color: theme.textPrimary, fontFamily: fontFam, marginBottom: 0 }]}>
+              {lang === 'bn' ? 'গাছের কোন অংশে সমস্যা? (Examined Part)' : 'Examined Plant Part:'}
+            </Text>
+          </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4 }}>
             {EXAMINED_PARTS.map((p) => {
               const active = examinedPart === p.id;
@@ -1210,6 +1231,7 @@ const styles = StyleSheet.create({
     maxWidth: 960,
     paddingHorizontal: 14,
     gap: 14,
+    paddingBottom: 90,
   },
   mainCard: {
     width: '100%',

@@ -11,12 +11,14 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Svg, { Circle, Path } from 'react-native-svg';
 import * as Print from 'expo-print';
 import { AppLanguage } from '../../core/l10n/translations';
 import { APP_TYPOGRAPHY, AppThemeColors } from '../../core/theme/app_theme';
 import { PlantModel, QrTagSize } from '../../models/plant_model';
 import { QrPdfService } from '../../services/qr_pdf_service';
 import { QrCameraScannerModal } from '../../core/components/qr_camera_scanner_modal';
+import { PlantSelectorDropdown } from '../../core/components/plant_selector_dropdown';
 
 interface QrTrackerScreenProps {
   theme: AppThemeColors;
@@ -253,10 +255,14 @@ export const QrTrackerScreen: React.FC<QrTrackerScreenProps> = ({
 
         <TouchableOpacity
           onPress={() => setScannerOpen(true)}
-          style={[styles.scanNowBtn, { backgroundColor: theme.primary }]}
+          style={[styles.scanNowBtn, { backgroundColor: theme.primary, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }]}
         >
+          <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+            <Circle cx="11" cy="11" r="7" stroke="#FFFFFF" strokeWidth="2.2" />
+            <Path d="M16.5 16.5L21 21" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" />
+          </Svg>
           <Text style={styles.scanNowBtnText}>
-            🔍 {lang === 'bn' ? 'QR স্ক্যান করুন' : 'Scan QR Tag'}
+            {lang === 'bn' ? 'QR স্ক্যান করুন' : 'Scan QR Tag'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -277,197 +283,18 @@ export const QrTrackerScreen: React.FC<QrTrackerScreenProps> = ({
           </Text>
         </View>
 
-        {/* Dropdown Selector Button */}
-        <TouchableOpacity
-          onPress={() => setIsPlantDropdownOpen((prev) => !prev)}
-          activeOpacity={0.82}
-          style={[
-            styles.dropdownTrigger,
-            {
-              backgroundColor: theme.surfaceElevated,
-              borderColor: isPlantDropdownOpen ? theme.primary : theme.border,
-            },
-          ]}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
-            <Text style={{ fontSize: 24 }}>
-              {selectedPlant?.category === 'fruit'
-                ? '🍋'
-                : selectedPlant?.category === 'flower'
-                ? '🌸'
-                : '🌿'}
-            </Text>
-            <View style={{ flex: 1 }}>
-              <Text
-                numberOfLines={1}
-                style={[
-                  styles.dropdownSelectedTitle,
-                  { color: theme.textPrimary, fontFamily: fontFam },
-                ]}
-              >
-                {selectedPlant
-                  ? `${lang === 'bn' ? selectedPlant.nameBengali : selectedPlant.nameEnglish} (${lang === 'bn' ? selectedPlant.nameEnglish : selectedPlant.nameBengali})`
-                  : lang === 'bn'
-                  ? 'গাছ নির্বাচন করুন'
-                  : 'Select a Plant'}
-              </Text>
-              <Text
-                numberOfLines={1}
-                style={[
-                  styles.dropdownSelectedSub,
-                  { color: theme.textSecondary, fontFamily: fontFam },
-                ]}
-              >
-                {selectedPlant
-                  ? `${selectedPlant.variety || 'জাত'} • 📍 ${selectedPlant.rooftopZone || 'ছাদ বাগান'}`
-                  : ''}
-              </Text>
-            </View>
-          </View>
-          <View
-            style={[
-              styles.dropdownChevronBox,
-              {
-                backgroundColor: isPlantDropdownOpen
-                  ? theme.selectedSurface
-                  : 'transparent',
-              },
-            ]}
-          >
-            <Text
-              style={{
-                fontSize: 13,
-                color: isPlantDropdownOpen ? theme.primary : theme.textSecondary,
-                fontWeight: '800',
-              }}
-            >
-              {isPlantDropdownOpen ? '▲' : '▼'}
-            </Text>
-          </View>
-        </TouchableOpacity>
-
-        {/* Dropdown Menu List */}
-        {isPlantDropdownOpen && (
-          <View
-            style={[
-              styles.dropdownMenuBox,
-              {
-                backgroundColor: theme.surfaceElevated,
-                borderColor: theme.border,
-              },
-            ]}
-          >
-            {/* Search field if multiple plants */}
-            {plants.length > 3 && (
-              <View
-                style={[
-                  styles.dropdownSearchRow,
-                  {
-                    borderBottomColor: theme.border,
-                    backgroundColor: theme.surface,
-                  },
-                ]}
-              >
-                <Text style={{ fontSize: 14 }}>🔍</Text>
-                <TextInput
-                  value={plantSearchQuery}
-                  onChangeText={setPlantSearchQuery}
-                  placeholder={
-                    lang === 'bn'
-                      ? 'গাছের নাম বা জাত লিখে খুঁজুন...'
-                      : 'Search plant by name or variety...'
-                  }
-                  placeholderTextColor={theme.textSecondary}
-                  style={[
-                    styles.dropdownSearchInput,
-                    { color: theme.textPrimary, fontFamily: fontFam },
-                  ]}
-                />
-                {plantSearchQuery.length > 0 && (
-                  <TouchableOpacity onPress={() => setPlantSearchQuery('')}>
-                    <Text
-                      style={{
-                        fontSize: 13,
-                        color: theme.textSecondary,
-                        paddingHorizontal: 4,
-                      }}
-                    >
-                      ✕
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            )}
-
-            <ScrollView
-              nestedScrollEnabled={true}
-              style={{ maxHeight: 240 }}
-              showsVerticalScrollIndicator={true}
-            >
-              {filteredPlants.map((plant) => {
-                const isSelected = selectedPlant?.id === plant.id;
-                const icon =
-                  plant.category === 'fruit'
-                    ? '🍋'
-                    : plant.category === 'flower'
-                    ? '🌸'
-                    : '🌿';
-                return (
-                  <TouchableOpacity
-                    key={plant.id}
-                    onPress={() => handleChoosePlant(plant)}
-                    activeOpacity={0.7}
-                    style={[
-                      styles.dropdownItem,
-                      {
-                        backgroundColor: isSelected
-                          ? theme.selectedSurface
-                          : 'transparent',
-                        borderBottomColor: theme.border,
-                      },
-                    ]}
-                  >
-                    <Text style={{ fontSize: 20 }}>{icon}</Text>
-                    <View style={{ flex: 1 }}>
-                      <Text
-                        style={[
-                          styles.dropdownItemTitle,
-                          {
-                            color: isSelected ? theme.primary : theme.textPrimary,
-                            fontFamily: fontFam,
-                          },
-                        ]}
-                      >
-                        {lang === 'bn'
-                          ? `${plant.nameBengali} (${plant.nameEnglish})`
-                          : `${plant.nameEnglish} (${plant.nameBengali})`}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.dropdownItemSub,
-                          { color: theme.textSecondary, fontFamily: fontFam },
-                        ]}
-                      >
-                        {plant.variety} • 📍 {plant.rooftopZone}
-                      </Text>
-                    </View>
-                    {isSelected && (
-                      <Text
-                        style={{
-                          color: theme.primary,
-                          fontWeight: '800',
-                          fontSize: 16,
-                        }}
-                      >
-                        ✓
-                      </Text>
-                    )}
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-          </View>
-        )}
+        {/* Reusable Shared Plant Selector Dropdown */}
+        <PlantSelectorDropdown
+          plants={plants}
+          selectedPlantId={selectedPlant?.id || ''}
+          onSelectPlantId={(id) => {
+            const chosen = plants.find((p) => p.id === id);
+            if (chosen) handleChoosePlant(chosen);
+          }}
+          theme={theme}
+          lang={lang}
+          allowAllPlantsOption={false}
+        />
       </View>
 
       {selectedPlant && (
@@ -841,7 +668,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     padding: 20,
     gap: 16,
-    paddingBottom: 36,
+    paddingBottom: 90,
   },
   scannerBanner: {
     padding: 18,

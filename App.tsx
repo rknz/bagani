@@ -450,31 +450,31 @@ export default function App() {
           <View style={styles.toggleRow}>
             {/* 1. Notifications Bell with Modern Scaled SVG and Minimalist Badge */}
             <TouchableOpacity
-              activeOpacity={0.78}
+              activeOpacity={0.75}
               style={[
                 styles.iconBtn,
                 {
                   backgroundColor: notificationsOpen
                     ? theme.selectedSurface
                     : theme.surfaceElevated,
-                  borderColor: notificationsOpen ? theme.primary : theme.border,
+                  borderColor: theme.border,
                 },
               ]}
               onPress={() => setNotificationsOpen(true)}
               accessibilityLabel={lang === 'bn' ? 'নোটিফিকেশন' : 'Notifications'}
             >
-              <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+              <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
                 <Path
                   d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21S18 15 18 8Z"
                   stroke={notificationsOpen ? theme.primary : theme.textPrimary}
-                  strokeWidth="2.1"
+                  strokeWidth="1.9"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
                 <Path
                   d="M13.73 21A2 2 0 0 1 10.27 21"
                   stroke={notificationsOpen ? theme.primary : theme.textPrimary}
-                  strokeWidth="2.1"
+                  strokeWidth="1.9"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
@@ -495,7 +495,7 @@ export default function App() {
 
             {/* 2. Language Toggle with Modern SVG Globe */}
             <TouchableOpacity
-              activeOpacity={0.78}
+              activeOpacity={0.75}
               style={[
                 styles.iconBtn,
                 {
@@ -508,24 +508,24 @@ export default function App() {
                 lang === 'bn' ? 'ভাষা পরিবর্তন করুন (Switch Language)' : 'Switch Language'
               }
             >
-              <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+              <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
                 <Circle
                   cx="12"
                   cy="12"
                   r="9.5"
                   stroke={theme.textPrimary}
-                  strokeWidth="2"
+                  strokeWidth="1.9"
                 />
                 <Path
                   d="M2.5 12H21.5"
                   stroke={theme.textPrimary}
-                  strokeWidth="2"
+                  strokeWidth="1.9"
                   strokeLinecap="round"
                 />
                 <Path
                   d="M12 2.5C15 6 16.5 9 16.5 12C16.5 15 15 18 12 21.5C9 18 7.5 15 7.5 12C7.5 9 9 6 12 2.5Z"
                   stroke={theme.textPrimary}
-                  strokeWidth="2"
+                  strokeWidth="1.9"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
@@ -534,16 +534,12 @@ export default function App() {
 
             {/* 3. Theme Mode Toggle with Modern SVG Sun / Moon */}
             <TouchableOpacity
-              activeOpacity={0.78}
+              activeOpacity={0.75}
               style={[
                 styles.iconBtn,
                 {
-                  backgroundColor:
-                    activeMode === 'dark'
-                      ? theme.selectedSurface
-                      : theme.surfaceElevated,
-                  borderColor:
-                    activeMode === 'dark' ? theme.primary : theme.border,
+                  backgroundColor: theme.surfaceElevated,
+                  borderColor: theme.border,
                 },
               ]}
               onPress={() =>
@@ -556,28 +552,28 @@ export default function App() {
               }
             >
               {activeMode === 'dark' ? (
-                <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+                <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
                   <Path
                     d="M21 12.79A9 9 0 1 1 11.21 3A7 7 0 0 0 21 12.79Z"
                     stroke={theme.textPrimary}
-                    strokeWidth="2.1"
+                    strokeWidth="1.9"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                 </Svg>
               ) : (
-                <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+                <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
                   <Circle
                     cx="12"
                     cy="12"
                     r="4.5"
                     stroke={theme.textPrimary}
-                    strokeWidth="2"
+                    strokeWidth="1.9"
                   />
                   <Path
                     d="M12 2V4M12 20V22M4.93 4.93L6.34 6.34M17.66 17.66L19.07 19.07M2 12H4M20 12H22M6.34 17.66L4.93 19.07M19.07 4.93L17.66 6.34"
                     stroke={theme.textPrimary}
-                    strokeWidth="2"
+                    strokeWidth="1.9"
                     strokeLinecap="round"
                   />
                 </Svg>
@@ -934,57 +930,64 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: DESIGN_TOKENS.screenHorizontalPadding,
-    paddingVertical: 10,
-    gap: 10,
+    paddingVertical: 8,
+    gap: 12,
   },
   brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 9,
     flex: 1,
     minWidth: 0,
   },
   brandLogo: {
-    width: 56,
-    height: 46,
+    width: 36,
+    height: 36,
+    borderRadius: 8,
   },
   brandTextCol: {
     flex: 1,
     minWidth: 0,
     justifyContent: 'center',
+    gap: 1,
   },
   brandTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 17,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+    lineHeight: 20,
   },
   brandSub: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '500',
+    letterSpacing: 0.1,
+    lineHeight: 14,
+    opacity: 0.85,
   },
   toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 7,
+    gap: 8,
     flexShrink: 0,
   },
   iconBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 9,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
+    shadowOpacity: 0.03,
     shadowRadius: 2,
     elevation: 1,
   },
   notifCountBadge: {
     position: 'absolute',
-    top: -4,
-    right: -4,
+    top: -3,
+    right: -3,
     minWidth: 15,
     height: 15,
     borderRadius: 7.5,

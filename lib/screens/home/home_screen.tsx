@@ -26,8 +26,9 @@ import { AppLanguage, TRANSLATIONS } from '../../core/l10n/translations';
 import { AddPlantModal } from '../../core/components/add_plant_modal';
 import { AddCareTaskModal } from '../../core/components/add_care_task_modal';
 import { BotanicalSearchModal } from '../../core/components/botanical_search_modal';
+import { PlantSelectorDropdown } from '../../core/components/plant_selector_dropdown';
 import { QrCameraScannerModal } from '../../core/components/qr_camera_scanner_modal';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import {
   APP_TYPOGRAPHY,
   AppThemeColors,
@@ -103,6 +104,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [taskFilter, setTaskFilter] = useState<
     'all' | 'pending' | 'do_later' | 'completed'
   >('all');
+  const [urgentCareSelectedPlantId, setUrgentCareSelectedPlantId] =
+    useState<string>('all');
   const [careTaskModalOpen, setCareTaskModalOpen] = useState(false);
 
   // New Plant Form state
@@ -208,7 +211,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       contentContainerStyle={styles.scrollOuter}
     >
       <View style={styles.container}>
-        {/* 1. Modern Header Row (Matching Reference) */}
+        {/* 1. Header & Greeting Row */}
         <View style={styles.modernHeaderRow}>
           <View style={styles.modernHeaderLeft}>
             <View
@@ -216,7 +219,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 styles.modernAvatarCircle,
                 {
                   backgroundColor: theme.selectedSurface,
-                  borderColor: theme.primary,
+                  borderColor: theme.border,
                 },
               ]}
             >
@@ -226,68 +229,67 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   style={styles.modernAvatarImg}
                 />
               ) : (
-                <Image
-                  source={require('../../../assets/images/logo.png')}
-                  style={{ width: 34, height: 28 }}
-                  resizeMode="contain"
-                />
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontWeight: '800',
+                    color: theme.primary,
+                    fontFamily: fontFam,
+                  }}
+                >
+                  {(user.displayName || 'B').slice(0, 2).toUpperCase()}
+                </Text>
               )}
             </View>
-            <View style={{ justifyContent: 'center' }}>
+            <View style={{ justifyContent: 'center', gap: 1 }}>
               <Text
                 style={[
                   styles.modernGreetingSubtitle,
                   { color: theme.textSecondary, fontFamily: fontFam },
                 ]}
               >
-                {greeting}!
+                {greeting} 👋
               </Text>
               <Text
+                numberOfLines={1}
                 style={[
                   styles.modernUserName,
                   { color: theme.textPrimary, fontFamily: fontFam },
                 ]}
               >
-                {user.displayName || 'Antony Thomas'}
-              </Text>
-              <Text
-                style={{
-                  color: theme.primary,
-                  fontSize: 11.5,
-                  fontWeight: '600',
-                  fontFamily: fontFam,
-                }}
-              >
-                📍 {user.district}
+                {user.displayName || (lang === 'bn' ? 'বাগানপ্রেমী' : 'Gardener')}
               </Text>
             </View>
           </View>
 
-          {/* Floating Circular Notification Bell Button */}
-          <TouchableOpacity
-            activeOpacity={0.82}
-            onPress={() => setWeatherExpanded(!weatherExpanded)}
+          {/* District Location Chip */}
+          <View
             style={[
-              styles.modernBellBtn,
+              styles.modernDistrictChip,
               {
-                backgroundColor: theme.surface,
+                backgroundColor: theme.selectedSurface,
                 borderColor: theme.border,
               },
             ]}
           >
-            <Text style={{ fontSize: 18 }}>🔔</Text>
-            {attentionCount > 0 && (
-              <View
-                style={[
-                  styles.modernBellBadge,
-                  { backgroundColor: theme.danger },
-                ]}
+            <Svg width={12} height={12} viewBox="0 0 24 24" fill="none">
+              <Path
+                d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z"
+                fill={theme.primary}
               />
-            )}
-          </TouchableOpacity>
+            </Svg>
+            <Text
+              style={[
+                styles.modernDistrictText,
+                { color: theme.primary, fontFamily: fontFam },
+              ]}
+            >
+              {user.district}
+            </Text>
+          </View>
         </View>
 
-        {/* 2. Modern Capsule-Style Search Bar (Matching Reference) */}
+        {/* 2. Modern Balanced Search Bar */}
         <View style={styles.modernSearchRow}>
           <TouchableOpacity
             activeOpacity={0.88}
@@ -298,13 +300,27 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             style={[
               styles.modernSearchPill,
               {
-                backgroundColor: theme.surface,
+                backgroundColor: theme.surfaceElevated,
                 borderColor: theme.border,
               },
             ]}
           >
             <View style={styles.modernSearchInnerLeft}>
-              <Text style={{ fontSize: 16 }}>🔍</Text>
+              <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+                <Circle
+                  cx="11"
+                  cy="11"
+                  r="7"
+                  stroke={theme.textSecondary}
+                  strokeWidth="2"
+                />
+                <Path
+                  d="M20 20L16 16"
+                  stroke={theme.textSecondary}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </Svg>
               <Text
                 style={[
                   styles.modernSearchPlaceholder,
@@ -315,7 +331,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   ? searchQuery
                   : lang === 'bn'
                   ? 'গাছ বা পরিচর্যার গাইড খুঁজুন...'
-                  : 'Search ...'}
+                  : 'Search plants or care guides...'}
               </Text>
             </View>
 
@@ -333,35 +349,35 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 lang === 'bn' ? 'ক্যামেরা দিয়ে QR স্ক্যান করুন' : 'Scan Plant QR Tag'
               }
             >
-              <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+              <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
                 <Path
                   d="M3 7V5C3 3.89543 3.89543 3 5 3H7"
                   stroke="#FFFFFF"
-                  strokeWidth="2.4"
+                  strokeWidth="2.2"
                   strokeLinecap="round"
                 />
                 <Path
                   d="M17 3H19C20.1046 3 21 3.89543 21 5V7"
                   stroke="#FFFFFF"
-                  strokeWidth="2.4"
+                  strokeWidth="2.2"
                   strokeLinecap="round"
                 />
                 <Path
                   d="M21 17V19C21 20.1046 20.1046 21 19 21H17"
                   stroke="#FFFFFF"
-                  strokeWidth="2.4"
+                  strokeWidth="2.2"
                   strokeLinecap="round"
                 />
                 <Path
                   d="M7 21H5C3.89543 21 3 20.1046 3 19V17"
                   stroke="#FFFFFF"
-                  strokeWidth="2.4"
+                  strokeWidth="2.2"
                   strokeLinecap="round"
                 />
                 <Path
                   d="M7 12H17"
                   stroke="#FFFFFF"
-                  strokeWidth="2.2"
+                  strokeWidth="2"
                   strokeLinecap="round"
                 />
               </Svg>
@@ -369,7 +385,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </TouchableOpacity>
         </View>
 
-        {/* 3. Modern Hero Banner Card (Matching Reference) */}
+        {/* 3. Modern Hero Banner Card */}
         <View
           style={[
             styles.modernHeroCard,
@@ -378,7 +394,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             },
           ]}
         >
-          {/* Decorative ambient elements */}
+          {/* Decorative ambient element */}
           <View style={styles.heroGlowCircle} />
 
           <View style={styles.heroContentWrap}>
@@ -426,50 +442,192 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </View>
         </View>
 
-        {/* 4. Dual Date & Live District Weather Bar */}
+        {/* 4. Weather Information Card */}
         <View
           style={[
             styles.card,
             { backgroundColor: theme.surface, borderColor: theme.border },
           ]}
         >
+          {/* Header Row: Dual Date & Time with SVG icons */}
+          <View style={styles.weatherCardTopRow}>
+            <View style={styles.weatherDateRow}>
+              <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+                <Rect
+                  x="3"
+                  y="4"
+                  width="18"
+                  height="18"
+                  rx="2"
+                  stroke={theme.textSecondary}
+                  strokeWidth="1.9"
+                />
+                <Path
+                  d="M16 2V6M8 2V6M3 10H21"
+                  stroke={theme.textSecondary}
+                  strokeWidth="1.9"
+                  strokeLinecap="round"
+                />
+              </Svg>
+              <Text
+                style={[
+                  styles.weatherDateText,
+                  { color: theme.textSecondary, fontFamily: fontFam },
+                ]}
+              >
+                {bengaliDate}  •  {englishDate}
+              </Text>
+            </View>
 
-          {/* Dual Date (Bengali + English) & Live District Weather Bar */}
+            <View style={styles.weatherTimeRow}>
+              <Svg width={13} height={13} viewBox="0 0 24 24" fill="none">
+                <Circle
+                  cx="12"
+                  cy="12"
+                  r="9"
+                  stroke={theme.textSecondary}
+                  strokeWidth="1.9"
+                />
+                <Path
+                  d="M12 7V12L15 15"
+                  stroke={theme.textSecondary}
+                  strokeWidth="1.9"
+                  strokeLinecap="round"
+                />
+              </Svg>
+              <Text
+                style={[
+                  styles.weatherTimeText,
+                  { color: theme.textSecondary, fontFamily: fontFam },
+                ]}
+              >
+                {timeString}
+              </Text>
+            </View>
+          </View>
+
+          {/* Main Weather Metric Block */}
           <TouchableOpacity
             activeOpacity={0.85}
             onPress={() => setWeatherExpanded(!weatherExpanded)}
             style={[
-              styles.weatherSummaryBar,
+              styles.weatherMainBlock,
               {
                 backgroundColor: theme.selectedSurface,
                 borderColor: theme.border,
               },
             ]}
           >
-            <Text
-              style={[
-                styles.dateText,
-                { color: theme.textPrimary, fontFamily: fontFam },
-              ]}
-            >
-              📅 {bengaliDate}  •  {englishDate}  •  ⏰ {timeString}
-            </Text>
-            <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 6, marginTop: 4 }}>
-              <Text style={{ fontSize: 13, lineHeight: 18 }}>☀️</Text>
+            <View style={styles.weatherMainLeft}>
               <Text
                 style={[
-                  styles.weatherLiveText,
-                  { flex: 1, color: theme.primary, fontFamily: fontFam, lineHeight: 18 },
+                  styles.weatherTempBig,
+                  { color: theme.primary, fontFamily: fontFam },
                 ]}
               >
-                {user.district}: {weatherWindow.today.tempCelsius}°C (আর্দ্রতা{' '}
-                {weatherWindow.today.humidityPercent}% • বৃষ্টি{' '}
-                {weatherWindow.today.rainProbabilityPercent}%) —{' '}
-                {lang === 'bn'
-                  ? 'গত ৭ দিন ও আগামী ৭ দিনের পূর্বাভাস ▾'
-                  : 'Tap for 15-Day Weather & Care ▾'}
+                {weatherWindow.today.tempCelsius}°C
               </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+                  <Circle
+                    cx="12"
+                    cy="12"
+                    r="4.5"
+                    stroke={theme.primary}
+                    strokeWidth="1.9"
+                  />
+                  <Path
+                    d="M12 2V4M12 20V22M4.93 4.93L6.34 6.34M17.66 17.66L19.07 19.07M2 12H4M20 12H22M6.34 17.66L4.93 19.07M19.07 4.93L17.66 6.34"
+                    stroke={theme.primary}
+                    strokeWidth="1.9"
+                    strokeLinecap="round"
+                  />
+                </Svg>
+                <Text
+                  style={[
+                    styles.weatherDistrictLabel,
+                    { color: theme.textPrimary, fontFamily: fontFam },
+                  ]}
+                >
+                  {user.district} • {weatherWindow.today.condition === 'rainy' ? (lang === 'bn' ? 'বৃষ্টিপাত' : 'Rainy') : (lang === 'bn' ? 'রৌদ্রোজ্জ্বল' : 'Sunny')}
+                </Text>
+              </View>
             </View>
+
+            <View style={styles.weatherMainRight}>
+              <View
+                style={[
+                  styles.weatherMetricPill,
+                  {
+                    backgroundColor: theme.surface,
+                    borderColor: theme.border,
+                  },
+                ]}
+              >
+                <Svg width={12} height={12} viewBox="0 0 24 24" fill="none">
+                  <Path
+                    d="M12 2.69L17.66 8.35C19.22 9.91 20 11.83 20 14C20 18.42 16.42 22 12 22C7.58 22 4 18.42 4 14C4 11.83 4.78 9.91 6.34 8.35L12 2.69Z"
+                    stroke="#0284C7"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </Svg>
+                <Text
+                  style={[
+                    styles.weatherMetricText,
+                    { color: theme.textPrimary, fontFamily: fontFam },
+                  ]}
+                >
+                  {lang === 'bn' ? 'আর্দ্রতা' : 'Humidity'} {weatherWindow.today.humidityPercent}%
+                </Text>
+              </View>
+              <View
+                style={[
+                  styles.weatherMetricPill,
+                  {
+                    backgroundColor: theme.surface,
+                    borderColor: theme.border,
+                  },
+                ]}
+              >
+                <Svg width={12} height={12} viewBox="0 0 24 24" fill="none">
+                  <Path
+                    d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242M8 19v2M8 13v2M12 21v2M12 15v2M16 19v2M16 13v2"
+                    stroke="#2563EB"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </Svg>
+                <Text
+                  style={[
+                    styles.weatherMetricText,
+                    { color: theme.textPrimary, fontFamily: fontFam },
+                  ]}
+                >
+                  {lang === 'bn' ? 'বৃষ্টি' : 'Rain'} {weatherWindow.today.rainProbabilityPercent}%
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+
+          {/* Expand Toggle Link */}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => setWeatherExpanded(!weatherExpanded)}
+            style={styles.weatherToggleFooter}
+          >
+            <Text
+              style={[
+                styles.weatherToggleText,
+                { color: theme.primary, fontFamily: fontFam },
+              ]}
+            >
+              {weatherExpanded
+                ? (lang === 'bn' ? '▲ পূর্বাভাস বন্ধ করুন' : '▲ Close Forecast')
+                : (lang === 'bn' ? '▼ ১৫ দিনের আবহাওয়া ও সেচ পরামর্শ দেখুন' : '▼ View 15-Day Forecast & Watering Guide')}
+            </Text>
           </TouchableOpacity>
 
           {/* Expandable 15-Day Weather Window + Plant Watering Prescriptions */}
@@ -648,7 +806,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           )}
         </View>
 
-        {/* Tier 3: Garden Health (Visual Score & Progress Bar) */}
+        {/* 5. Garden Health (Visual Score & Progress Bar) */}
         <View
           style={[
             styles.card,
@@ -656,8 +814,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           ]}
         >
           <View style={styles.sectionHeaderBetween}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <Text style={{ fontSize: 18 }}>🌿</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}>
+              <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+                <Path
+                  d="M12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z"
+                  stroke={theme.primary}
+                  strokeWidth="1.9"
+                />
+                <Path
+                  d="M12 6C8.5 6 6 8.5 6 12C6 14.5 7.5 16.5 9.5 17.5L12 11L14.5 17.5C16.5 16.5 18 14.5 18 12C18 8.5 15.5 6 12 6Z"
+                  fill={theme.primary}
+                  opacity={0.3}
+                />
+              </Svg>
               <Text
                 style={[
                   styles.sectionHeaderTitle,
@@ -667,16 +836,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 {lang === 'bn' ? 'বাগানের স্বাস্থ্য' : 'Garden Health'}
               </Text>
             </View>
+
             <View
               style={[
                 styles.healthScoreBadge,
                 {
                   backgroundColor:
                     healthScorePercent >= 80
-                      ? 'rgba(20, 99, 59, 0.12)'
+                      ? 'rgba(20, 99, 59, 0.10)'
                       : healthScorePercent >= 50
-                      ? 'rgba(217, 119, 6, 0.12)'
-                      : 'rgba(220, 38, 38, 0.12)',
+                      ? 'rgba(217, 119, 6, 0.10)'
+                      : 'rgba(220, 38, 38, 0.10)',
                   borderColor:
                     healthScorePercent >= 80
                       ? theme.primary
@@ -694,7 +864,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                       : healthScorePercent >= 50
                       ? theme.warning
                       : theme.danger,
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: '800',
                   fontFamily: fontFam,
                 }}
@@ -704,7 +874,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </View>
           </View>
 
-          {/* Visual Progress Bar */}
+          {/* Visual Progress Bar - Sleek 6px height */}
           <View
             style={[
               styles.healthTrackWrap,
@@ -731,7 +901,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <Text
               style={{
                 color: theme.textSecondary,
-                fontSize: 12.5,
+                fontSize: 12,
+                lineHeight: 16.5,
                 fontFamily: fontFam,
                 flex: 1,
               }}
@@ -772,8 +943,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </View>
         </View>
 
-        {/* Tier 4: Spacious 2x2 Garden Statistics Grid (Single-Line Labels, Zero Overflow) */}
+        {/* 6. Harmonized 2x2 Garden Statistics Grid */}
         <View style={styles.statsGrid}>
+          {/* Card 1: Total Plants */}
           <View
             style={[
               styles.statCard,
@@ -783,10 +955,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <View
               style={[
                 styles.statIconWrap,
-                { backgroundColor: theme.selectedSurface },
+                { backgroundColor: 'rgba(20, 99, 59, 0.10)' },
               ]}
             >
-              <Text style={styles.statIconText}>🌳</Text>
+              <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+                <Path
+                  d="M12 22V13M12 13C12 13 8 11.5 8 7C10.5 7 12 9 12 13ZM12 13C12 13 16 11.5 16 7C13.5 7 12 9 12 13Z"
+                  stroke="#14633B"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </Svg>
             </View>
             <View style={styles.statTextCol}>
               <Text style={[styles.statNumber, { color: theme.textPrimary }]}>
@@ -804,6 +984,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </View>
           </View>
 
+          {/* Card 2: Healthy Plants */}
           <View
             style={[
               styles.statCard,
@@ -813,13 +994,22 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <View
               style={[
                 styles.statIconWrap,
-                { backgroundColor: theme.selectedSurface },
+                { backgroundColor: 'rgba(22, 163, 74, 0.10)' },
               ]}
             >
-              <Text style={styles.statIconText}>✅</Text>
+              <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+                <Circle cx="12" cy="12" r="9" stroke="#16A34A" strokeWidth="2" />
+                <Path
+                  d="M8.5 12.5L10.5 14.5L15.5 9.5"
+                  stroke="#16A34A"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </Svg>
             </View>
             <View style={styles.statTextCol}>
-              <Text style={[styles.statNumber, { color: theme.primary }]}>
+              <Text style={[styles.statNumber, { color: '#16A34A' }]}>
                 {lang === 'bn' ? toBengaliNumber(healthyPlants) : healthyPlants}
               </Text>
               <Text
@@ -834,6 +1024,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </View>
           </View>
 
+          {/* Card 3: Needs Care */}
           <View
             style={[
               styles.statCard,
@@ -843,13 +1034,41 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <View
               style={[
                 styles.statIconWrap,
-                { backgroundColor: theme.selectedSurface },
+                {
+                  backgroundColor:
+                    attentionCount > 0
+                      ? 'rgba(234, 88, 12, 0.10)'
+                      : 'rgba(107, 127, 114, 0.08)',
+                },
               ]}
             >
-              <Text style={styles.statIconText}>⚠️</Text>
+              <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+                <Path
+                  d="M10.29 3.86L1.82 18C1.64 18.3 1.55 18.65 1.55 19C1.55 19.35 1.64 19.7 1.82 20C2 20.3 2.26 20.55 2.58 20.73C2.89 20.9 3.24 21 3.6 21H20.4C20.76 21 21.11 20.9 21.42 20.73C21.74 20.55 22 20.3 22.18 20C22.36 19.7 22.45 19.35 22.45 19C22.45 18.65 22.36 18.3 22.18 18L13.71 3.86C13.53 3.56 13.27 3.32 12.96 3.15C12.65 2.98 12.3 2.89 11.94 2.89C11.58 2.89 11.23 2.98 10.92 3.15C10.61 3.32 10.35 3.56 10.17 3.86L10.29 3.86Z"
+                  stroke={attentionCount > 0 ? '#EA580C' : theme.textSecondary}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <Path
+                  d="M12 9V13M12 17H12.01"
+                  stroke={attentionCount > 0 ? '#EA580C' : theme.textSecondary}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </Svg>
             </View>
             <View style={styles.statTextCol}>
-              <Text style={[styles.statNumber, { color: theme.warning }]}>
+              <Text
+                style={[
+                  styles.statNumber,
+                  {
+                    color:
+                      attentionCount > 0 ? '#EA580C' : theme.textSecondary,
+                  },
+                ]}
+              >
                 {lang === 'bn'
                   ? toBengaliNumber(attentionCount)
                   : attentionCount}
@@ -866,6 +1085,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </View>
           </View>
 
+          {/* Card 4: Average Moisture */}
           <View
             style={[
               styles.statCard,
@@ -875,13 +1095,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <View
               style={[
                 styles.statIconWrap,
-                { backgroundColor: theme.selectedSurface },
+                { backgroundColor: 'rgba(2, 132, 199, 0.10)' },
               ]}
             >
-              <Text style={styles.statIconText}>💧</Text>
+              <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+                <Path
+                  d="M12 2.69L17.66 8.35C19.22 9.91 20 11.83 20 14C20 18.42 16.42 22 12 22C7.58 22 4 18.42 4 14C4 11.83 4.78 9.91 6.34 8.35L12 2.69Z"
+                  stroke="#0284C7"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </Svg>
             </View>
             <View style={styles.statTextCol}>
-              <Text style={[styles.statNumber, { color: theme.secondary }]}>
+              <Text style={[styles.statNumber, { color: '#0284C7' }]}>
                 {lang === 'bn'
                   ? `${toBengaliNumber(avgMoisture)}%`
                   : `${avgMoisture}%`}
@@ -899,7 +1127,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </View>
         </View>
 
-        {/* 3. Urgent Care Notification & Interactive Selection with Right-Side Save Button */}
+        {/* 7. Urgent Care Notification & Interactive Selection with Right-Side Save Button */}
         <View
           style={[
             styles.card,
@@ -914,8 +1142,31 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               gap: 8,
             }}
           >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, minWidth: 0 }}>
-              <Text style={{ fontSize: 16 }}>🔔</Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 7,
+                flex: 1,
+                minWidth: 0,
+              }}
+            >
+              <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+                <Path
+                  d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21S18 15 18 8Z"
+                  stroke="#DC2626"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <Path
+                  d="M13.73 21A2 2 0 0 1 10.27 21"
+                  stroke="#DC2626"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </Svg>
               <Text
                 numberOfLines={1}
                 style={[
@@ -931,7 +1182,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               onPress={() => setCareTaskModalOpen(true)}
               activeOpacity={0.82}
               style={{
-                paddingHorizontal: 10,
+                paddingHorizontal: 11,
                 paddingVertical: 6,
                 borderRadius: 8,
                 backgroundColor: theme.primary,
@@ -939,14 +1190,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 alignItems: 'center',
                 gap: 5,
                 flexShrink: 0,
-                shadowColor: theme.primary,
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.15,
-                shadowRadius: 3,
-                elevation: 2,
               }}
             >
-              <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '800' }}>➕</Text>
+              <Svg width={12} height={12} viewBox="0 0 24 24" fill="none">
+                <Path d="M12 5V19M5 12H19" stroke="#FFFFFF" strokeWidth="2.8" strokeLinecap="round" />
+              </Svg>
               <Text
                 numberOfLines={1}
                 style={{
@@ -960,6 +1208,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               </Text>
             </TouchableOpacity>
           </View>
+
+          {/* Plant Selector Filter: Reusing the exact Step 1 Plant Selector */}
+          <PlantSelectorDropdown
+            plants={plants}
+            selectedPlantId={urgentCareSelectedPlantId}
+            onSelectPlantId={(id) => setUrgentCareSelectedPlantId(id)}
+            theme={theme}
+            lang={lang}
+            allowAllPlantsOption={true}
+            label={
+              lang === 'bn'
+                ? 'নির্দিষ্ট গাছের কাজ ফিল্টার করুন:'
+                : 'Filter tasks by target plant:'
+            }
+          />
 
           {/* Filter Tabs: All | Pending | Do Later | Completed */}
           <View
@@ -1020,8 +1283,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   onPress={() => setTaskFilter(tab.id)}
                   style={{
                     paddingHorizontal: 10,
-                    paddingVertical: 6,
-                    borderRadius: 8,
+                    paddingVertical: 5,
+                    borderRadius: 7,
                     borderWidth: 1,
                     backgroundColor: active
                       ? theme.primary
@@ -1032,7 +1295,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   <Text
                     style={{
                       color: active ? '#FFFFFF' : theme.textSecondary,
-                      fontSize: 12,
+                      fontSize: 11.5,
                       fontWeight: '700',
                       fontFamily: fontFam,
                     }}
@@ -1046,6 +1309,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
           {careTasks
             .filter((task) => {
+              if (
+                urgentCareSelectedPlantId !== 'all' &&
+                task.plantId !== urgentCareSelectedPlantId
+              ) {
+                return false;
+              }
               const effectiveStatus: CareTaskStatus = task.isCompleted
                 ? 'completed'
                 : task.status || 'pending';
@@ -1624,8 +1893,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             onChangeText={setSearchQuery}
             placeholder={
               lang === 'bn'
-                ? '🔍 গাছের নাম, জাত বা QR কোড দিয়ে খুঁজুন...'
-                : '🔍 Search by plant name, variety or QR ID...'
+                ? 'গাছের নাম, জাত বা QR কোড দিয়ে খুঁজুন...'
+                : 'Search by plant name, variety or QR ID...'
             }
             placeholderTextColor={theme.textSecondary}
             style={[
@@ -1832,23 +2101,29 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                     { backgroundColor: theme.primary },
                   ]}
                 >
-                  <Text
-                    style={{
-                      color: '#FFFFFF',
-                      fontWeight: '700',
-                      fontSize: 13.5,
-                      fontFamily: fontFam,
-                    }}
-                  >
-                    🌐{' '}
-                    {searchQuery.trim()
-                      ? lang === 'bn'
-                        ? `ইন্টারনেটে "${searchQuery}" অনুসন্ধান করুন`
-                        : `Search "${searchQuery}" Online`
-                      : lang === 'bn'
-                      ? 'অনলাইনে গাছ ও প্রজাতি অনুসন্ধান করুন'
-                      : 'Search Species Online'}
-                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
+                    <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+                      <Circle cx="12" cy="12" r="9" stroke="#FFFFFF" strokeWidth="2" />
+                      <Path d="M3 12H21" stroke="#FFFFFF" strokeWidth="1.8" />
+                      <Path d="M12 3C14.5 5.5 15.5 8.5 15.5 12C15.5 15.5 14.5 18.5 12 21C9.5 18.5 8.5 15.5 8.5 12C8.5 8.5 9.5 5.5 12 3Z" stroke="#FFFFFF" strokeWidth="1.8" />
+                    </Svg>
+                    <Text
+                      style={{
+                        color: '#FFFFFF',
+                        fontWeight: '700',
+                        fontSize: 13.5,
+                        fontFamily: fontFam,
+                      }}
+                    >
+                      {searchQuery.trim()
+                        ? lang === 'bn'
+                          ? `ইন্টারনেটে "${searchQuery}" অনুসন্ধান করুন`
+                          : `Search "${searchQuery}" Online`
+                        : lang === 'bn'
+                        ? 'অনলাইনে গাছ ও প্রজাতি অনুসন্ধান করুন'
+                        : 'Search Species Online'}
+                    </Text>
+                  </View>
                 </TouchableOpacity>
               </View>
             )}
@@ -2021,7 +2296,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: DESIGN_TOKENS.screenHorizontalPadding,
     paddingVertical: DESIGN_TOKENS.spacing.md,
     gap: DESIGN_TOKENS.spacing.md,
-    paddingBottom: 32,
+    paddingBottom: 90,
   },
   modernHeaderRow: {
     width: '100%',
@@ -2033,172 +2308,205 @@ const styles = StyleSheet.create({
   modernHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
     flex: 1,
     minWidth: 0,
   },
   modernAvatarCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 1.8,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 3,
   },
   modernAvatarImg: {
     width: '100%',
     height: '100%',
   },
   modernGreetingSubtitle: {
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: '500',
     lineHeight: 16,
   },
   modernUserName: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '800',
-    lineHeight: 22,
+    lineHeight: 21,
   },
-  modernBellBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 1,
+  modernDistrictChip: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
-    position: 'relative',
+    gap: 4,
+    paddingHorizontal: 9,
+    paddingVertical: 4.5,
+    borderRadius: 8,
+    borderWidth: 1,
+    flexShrink: 0,
   },
-  modernBellBadge: {
-    width: 9,
-    height: 9,
-    borderRadius: 4.5,
-    position: 'absolute',
-    top: 9,
-    right: 9,
-    borderWidth: 1.5,
-    borderColor: '#FFFFFF',
+  modernDistrictText: {
+    fontSize: 11.5,
+    fontWeight: '700',
   },
   modernSearchRow: {
     width: '100%',
-    marginTop: 2,
+    marginVertical: 4,
   },
   modernSearchPill: {
     width: '100%',
-    height: 50,
-    borderRadius: 25,
+    height: 44,
+    borderRadius: 12,
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
+    paddingHorizontal: 12,
   },
   modernSearchInnerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
     flex: 1,
   },
   modernSearchPlaceholder: {
-    fontSize: 14.5,
+    fontSize: 13.5,
   },
   modernSearchScanBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#167A45',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  modernSearchFilterBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 32,
+    height: 32,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   modernHeroCard: {
     width: '100%',
-    borderRadius: 26,
+    borderRadius: 16,
     overflow: 'hidden',
     position: 'relative',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    elevation: 6,
-    minHeight: 170,
-    justifyContent: 'flex-end',
-    padding: 22,
+    minHeight: 128,
+    justifyContent: 'center',
+    padding: 16,
   },
   heroGlowCircle: {
     position: 'absolute',
-    top: -40,
-    right: -40,
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    top: -30,
+    right: -30,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
   },
   heroContentWrap: {
-    gap: 14,
+    gap: 8,
     zIndex: 2,
   },
   heroTextWrap: {
-    gap: 8,
+    gap: 5,
   },
   heroTagBadge: {
     alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
   },
   heroTagText: {
     color: '#EAF8EE',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
   },
   modernHeroHeading: {
-    fontSize: 22,
+    fontSize: 17,
     fontWeight: '800',
     color: '#FFFFFF',
-    lineHeight: 28,
+    lineHeight: 23,
     maxWidth: 320,
   },
   heroCtaPillBtn: {
     alignSelf: 'flex-start',
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 22,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 3,
+    paddingHorizontal: 14,
+    height: 34,
+    borderRadius: 10,
+    justifyContent: 'center',
+    marginTop: 4,
   },
   heroCtaPillText: {
-    fontSize: 13.5,
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
+  weatherCardTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 2,
+  },
+  weatherDateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  weatherDateText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  weatherTimeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  weatherTimeText: {
+    fontSize: 11.5,
+    fontWeight: '600',
+  },
+  weatherMainBlock: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 10,
+  },
+  weatherMainLeft: {
+    flex: 1,
+    minWidth: 0,
+    gap: 2,
+  },
+  weatherTempBig: {
+    fontSize: 26,
+    fontWeight: '800',
+    lineHeight: 30,
+  },
+  weatherDistrictLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  weatherMainRight: {
+    gap: 6,
+    alignItems: 'flex-end',
+  },
+  weatherMetricPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 3.5,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  weatherMetricText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  weatherToggleFooter: {
+    alignItems: 'center',
+    paddingTop: 2,
+  },
+  weatherToggleText: {
+    fontSize: 12,
     fontWeight: '700',
   },
   sectionHeaderBetween: {
@@ -2208,21 +2516,21 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   healthScoreBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 14,
-    borderWidth: 1.2,
+    paddingHorizontal: 8,
+    paddingVertical: 2.5,
+    borderRadius: 6,
+    borderWidth: 1,
   },
   healthTrackWrap: {
     width: '100%',
-    height: 10,
-    borderRadius: 5,
+    height: 6,
+    borderRadius: 3,
     borderWidth: 1,
     overflow: 'hidden',
   },
   healthFillBar: {
     height: '100%',
-    borderRadius: 5,
+    borderRadius: 3,
   },
   healthStatusFooter: {
     flexDirection: 'row',
@@ -2336,21 +2644,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    rowGap: 12,
+    rowGap: 10,
   },
   statCard: {
     width: '48.6%',
-    padding: 14,
-    borderRadius: DESIGN_TOKENS.smallCardRadius,
+    height: 72,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 12,
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
     minWidth: 0,
   },
   statIconWrap: {
-    width: 40,
-    height: 40,
+    width: 38,
+    height: 38,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
@@ -2362,30 +2672,31 @@ const styles = StyleSheet.create({
   statTextCol: {
     flex: 1,
     minWidth: 0,
-    gap: 2,
+    justifyContent: 'center',
   },
   statNumber: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 22,
+    fontWeight: '800',
+    lineHeight: 26,
   },
   statLabel: {
-    fontSize: 12.5,
+    fontSize: 11.5,
+    fontWeight: '500',
+    lineHeight: 15,
   },
   sectionHeaderTitle: {
     fontSize: 16,
     fontWeight: '700',
   },
   taskItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 13,
-    borderRadius: DESIGN_TOKENS.smallCardRadius,
+    padding: 12,
+    borderRadius: 12,
     borderWidth: 1,
-    gap: 12,
+    gap: 8,
   },
   checkboxBox: {
-    width: 22,
-    height: 22,
+    width: 20,
+    height: 20,
     borderRadius: 6,
     borderWidth: 1.5,
     alignItems: 'center',

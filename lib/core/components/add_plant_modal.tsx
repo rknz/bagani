@@ -8,6 +8,7 @@ import {
   TextInput,
   ScrollView,
 } from 'react-native';
+import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import {
   AppThemeColors,
   APP_TYPOGRAPHY,
@@ -191,7 +192,8 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({
     try {
       const res = await OnlineBotanicalService.verifyAndEnrichPlant(
         query,
-        varietyInput
+        varietyInput,
+        category
       );
       setVerificationResult(res);
       if (res.isValid) {
@@ -667,52 +669,58 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({
                   ? 'গাছের নাম (অনলাইনে স্বয়ংক্রিয় বানান যাচাই ও সংশোধন সহ) *'
                   : 'Plant Name (Online Verified & Auto-Spell Corrected) *'}
               </Text>
-              <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-                <TextInput
-                  style={[
-                    styles.inputField,
-                    {
-                      flex: 1,
-                      backgroundColor: theme.surface,
-                      color: theme.textPrimary,
-                      borderColor:
-                        verificationResult && !verificationResult.isValid
-                          ? theme.danger
-                          : verificationResult?.isValid
-                          ? theme.primary
-                          : theme.border,
-                      fontFamily: fontFam,
-                    },
-                  ]}
-                  placeholder={
-                    isBn
-                      ? 'যেমন: সবেদা, কাটিমন আম, মাল্টা, টমেটো (ভুল বানান যেমন chabeda লিখলেও ঠিক হয়ে যাবে)...'
-                      : 'e.g., Sapodilla, Katimon Mango, Malta (typos like "chabeda" auto-correct)...'
+              <TextInput
+                style={[
+                  styles.inputField,
+                  {
+                    width: '100%',
+                    backgroundColor: theme.surface,
+                    color: theme.textPrimary,
+                    borderColor:
+                      verificationResult && !verificationResult.isValid
+                        ? theme.danger
+                        : verificationResult?.isValid
+                        ? theme.primary
+                        : theme.border,
+                    fontFamily: fontFam,
+                  },
+                ]}
+                placeholder={
+                  isBn
+                    ? 'যেমন: সবেদা, কাটিমন আম, মাল্টা, টমেটো, মরিচ, গোলাপ, জবা, তুলসী...'
+                    : 'e.g., Sapodilla, Katimon Mango, Malta, Tomato, Chili, Rose, Tulsi...'
+                }
+                placeholderTextColor={theme.textMuted}
+                value={nameInput}
+                onChangeText={(txt) => {
+                  setNameInput(txt);
+                  if (verificationResult) setVerificationResult(null);
+                }}
+                onBlur={() => {
+                  if (nameInput.trim().length >= 2) {
+                    handleVerifyPlantOnline(nameInput);
                   }
-                  placeholderTextColor={theme.textMuted}
-                  value={nameInput}
-                  onChangeText={(txt) => {
-                    setNameInput(txt);
-                    if (verificationResult) setVerificationResult(null);
-                  }}
-                  onBlur={() => {
-                    if (nameInput.trim().length >= 2) {
-                      handleVerifyPlantOnline(nameInput);
-                    }
-                  }}
-                />
+                }}
+              />
+              <View style={{ width: '100%', marginTop: 7, alignItems: 'flex-start' }}>
                 <TouchableOpacity
                   onPress={() => handleVerifyPlantOnline(nameInput)}
                   disabled={isVerifying || !nameInput.trim()}
+                  activeOpacity={0.8}
                   style={{
-                    backgroundColor: theme.primary,
-                    paddingHorizontal: 14,
-                    paddingVertical: 11,
-                    borderRadius: DESIGN_TOKENS.buttonRadius,
+                    flexDirection: 'row',
                     alignItems: 'center',
-                    justifyContent: 'center',
+                    gap: 6,
+                    backgroundColor: theme.primary,
+                    paddingHorizontal: 15,
+                    paddingVertical: 9,
+                    borderRadius: DESIGN_TOKENS.buttonRadius,
                   }}
                 >
+                  <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+                    <Circle cx="11" cy="11" r="7" stroke="#FFFFFF" strokeWidth="2.2" />
+                    <Path d="M16.5 16.5L21 21" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" />
+                  </Svg>
                   <Text
                     style={{
                       color: '#FFFFFF',
@@ -726,8 +734,8 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({
                         ? 'যাচাই হচ্ছে...'
                         : 'Checking...'
                       : isBn
-                      ? '🔍 অনলাইন যাচাই'
-                      : '🔍 Verify Online'}
+                      ? 'অনলাইন যাচাই'
+                      : 'Verify Online'}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -1003,8 +1011,8 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({
                 ]}
               >
                 {isBn
-                  ? '২. কখন লাগানো হয়েছে, বয়স ও আকার (When Planted, Age & Size)'
-                  : '2. When Was It Planted, Age & Current Size'}
+                  ? '২. বয়স ও ধাপ (Age & Stage)'
+                  : '2. Age & Stage'}
               </Text>
 
               <View style={styles.twoColRow}>
@@ -1026,30 +1034,45 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({
                     setCanopySize('small');
                   }}
                 >
-                  <Text
-                    style={[
-                      styles.modeToggleTitle,
-                      {
-                        color: !isExistingPlant ? '#FFFFFF' : theme.textPrimary,
-                        fontFamily: fontFam,
-                      },
-                    ]}
-                  >
-                    {isBn ? '🌱 আজ লাগানো হয়েছে' : '🌱 Planted Today'}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.modeToggleSub,
-                      {
-                        color: !isExistingPlant
-                          ? 'rgba(255,255,255,0.85)'
-                          : theme.textSecondary,
-                        fontFamily: fontFam,
-                      },
-                    ]}
-                  >
-                    {isBn ? 'নতুন চারা বা টব' : 'New sapling / fresh planting'}
-                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
+                    <View style={{ marginTop: 2 }}>
+                      <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+                        <Path
+                          d="M12 22V13M12 13C12 13 8 11.5 8 7C10.5 7 12 9 12 13ZM12 13C12 13 16 11.5 16 7C13.5 7 12 9 12 13Z"
+                          stroke={!isExistingPlant ? '#FFFFFF' : theme.primary}
+                          strokeWidth="2.2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </Svg>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={[
+                          styles.modeToggleTitle,
+                          {
+                            color: !isExistingPlant ? '#FFFFFF' : theme.textPrimary,
+                            fontFamily: fontFam,
+                          },
+                        ]}
+                      >
+                        {isBn ? 'আজ লাগানো হয়েছে' : 'Planted Today'}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.modeToggleSub,
+                          {
+                            color: !isExistingPlant
+                              ? 'rgba(255,255,255,0.85)'
+                              : theme.textSecondary,
+                            fontFamily: fontFam,
+                          },
+                        ]}
+                      >
+                        {isBn ? 'নতুন চারা বা টব' : 'New sapling / fresh planting'}
+                      </Text>
+                    </View>
+                  </View>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -1070,32 +1093,54 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({
                     setCanopySize('medium');
                   }}
                 >
-                  <Text
-                    style={[
-                      styles.modeToggleTitle,
-                      {
-                        color: isExistingPlant ? '#FFFFFF' : theme.textPrimary,
-                        fontFamily: fontFam,
-                      },
-                    ]}
-                  >
-                    {isBn ? '🌳 আগে থেকেই বাগানে আছে' : '🌳 Existing Plant'}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.modeToggleSub,
-                      {
-                        color: isExistingPlant
-                          ? 'rgba(255,255,255,0.85)'
-                          : theme.textSecondary,
-                        fontFamily: fontFam,
-                      },
-                    ]}
-                  >
-                    {isBn
-                      ? 'পুরাতন বা প্রতিষ্ঠিত গাছ'
-                      : 'Planted earlier in garden'}
-                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
+                    <View style={{ marginTop: 2 }}>
+                      <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+                        <Path
+                          d="M12 22V14M12 14C12 14 6 13 6 8C9 8 11 10.5 12 14ZM12 14C12 14 18 13 18 8C15 8 13 10.5 12 14Z"
+                          stroke={isExistingPlant ? '#FFFFFF' : theme.primary}
+                          strokeWidth="2.2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <Path
+                          d="M12 9C12 5.5 14 3 12 2C10 3 12 5.5 12 9Z"
+                          stroke={isExistingPlant ? '#FFFFFF' : theme.primary}
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </Svg>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={[
+                          styles.modeToggleTitle,
+                          {
+                            color: isExistingPlant ? '#FFFFFF' : theme.textPrimary,
+                            fontFamily: fontFam,
+                          },
+                        ]}
+                      >
+                        {isBn ? 'আগে থেকেই বাগানে আছে' : 'Existing Plant'}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.modeToggleSub,
+                          {
+                            color: isExistingPlant
+                              ? 'rgba(255,255,255,0.85)'
+                              : theme.textSecondary,
+                            fontFamily: fontFam,
+                          },
+                        ]}
+                      >
+                        {isBn
+                          ? 'পুরাতন বা প্রতিষ্ঠিত গাছ'
+                          : 'Planted earlier in garden'}
+                      </Text>
+                    </View>
+                  </View>
                 </TouchableOpacity>
               </View>
 
@@ -1991,7 +2036,7 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({
                       { color: theme.textSecondary, fontFamily: fontFam },
                     ]}
                   >
-                    {isBn ? 'গাছের বয়স ও ধাপ' : 'Registered Age & Stage'}
+                    {isBn ? 'বয়স ও ধাপ' : 'Age & Stage'}
                   </Text>
                   <Text
                     style={[
@@ -2105,9 +2150,7 @@ export const AddPlantModal: React.FC<AddPlantModalProps> = ({
               onPress={handleConfirmSave}
             >
               <Text style={[styles.saveBtnText, { fontFamily: fontFam }]}>
-                {isBn
-                  ? '✓ গাছ সংরক্ষণ ও পরিচর্যা শুরু করুন'
-                  : '✓ Save Plant & Generate Care Plan'}
+                {isBn ? 'গাছ সংরক্ষণ' : 'Save Plant'}
               </Text>
             </TouchableOpacity>
           </View>

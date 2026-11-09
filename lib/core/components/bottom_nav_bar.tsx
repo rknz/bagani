@@ -9,6 +9,7 @@ import React from 'react';
 import {
   Animated,
   Easing,
+  Keyboard,
   Platform,
   StyleSheet,
   Text,
@@ -311,6 +312,23 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
   theme,
   lang,
 }) => {
+  const [isKeyboardVisible, setIsKeyboardVisible] = React.useState(false);
+
+  React.useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => setIsKeyboardVisible(true)
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => setIsKeyboardVisible(false)
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
   const fontFam =
     lang === 'bn'
       ? APP_TYPOGRAPHY.fontFamilyBengali
@@ -325,6 +343,10 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
     if ((activeRoute === 'settings' || activeRoute === 'notifications') && itemRoute === 'profile') return true;
     return false;
   };
+
+  if (isKeyboardVisible) {
+    return null;
+  }
 
   return (
     <View style={styles.barOuter}>

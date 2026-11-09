@@ -775,7 +775,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     padding: 20,
     gap: 16,
-    paddingBottom: 36,
+    paddingBottom: 90,
   },
   card: {
     padding: 16,

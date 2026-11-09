@@ -25,6 +25,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { AppLanguage } from '../l10n/translations';
 import {
   APP_TYPOGRAPHY,
@@ -217,8 +218,12 @@ export const BotanicalSearchModal: React.FC<BotanicalSearchModalProps> = ({
             ]}
           >
             <View style={{ flex: 1, minWidth: 200 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                <Text style={{ fontSize: 18 }}>🌐</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+                  <Circle cx="12" cy="12" r="9" stroke={theme.primary} strokeWidth="2" />
+                  <Path d="M3 12H21" stroke={theme.primary} strokeWidth="1.8" />
+                  <Path d="M12 3C14.5 5.5 15.5 8.5 15.5 12C15.5 15.5 14.5 18.5 12 21C9.5 18.5 8.5 15.5 8.5 12C8.5 8.5 9.5 5.5 12 3Z" stroke={theme.primary} strokeWidth="1.8" />
+                </Svg>
                 <Text
                   style={[
                     styles.titleText,
@@ -249,9 +254,9 @@ export const BotanicalSearchModal: React.FC<BotanicalSearchModalProps> = ({
                 { backgroundColor: theme.surface, borderColor: theme.border },
               ]}
             >
-              <Text style={{ color: theme.textPrimary, fontWeight: '700', fontSize: 16 }}>
-                ✕
-              </Text>
+              <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+                <Path d="M18 6L6 18M6 6L18 18" stroke={theme.textPrimary} strokeWidth="2.4" strokeLinecap="round" />
+              </Svg>
             </TouchableOpacity>
           </View>
 
@@ -266,7 +271,10 @@ export const BotanicalSearchModal: React.FC<BotanicalSearchModalProps> = ({
                 },
               ]}
             >
-              <Text style={{ fontSize: 16 }}>🔍</Text>
+              <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+                <Circle cx="11" cy="11" r="7" stroke={theme.textSecondary} strokeWidth="2" />
+                <Path d="M16.5 16.5L21 21" stroke={theme.textSecondary} strokeWidth="2.2" strokeLinecap="round" />
+              </Svg>
               <TextInput
                 value={searchQuery}
                 onChangeText={handleQueryChange}
@@ -283,13 +291,19 @@ export const BotanicalSearchModal: React.FC<BotanicalSearchModalProps> = ({
               />
               {searchQuery ? (
                 <TouchableOpacity onPress={() => handleQueryChange('')} style={{ padding: 4 }}>
-                  <Text style={{ color: theme.textSecondary, fontSize: 14 }}>✕</Text>
+                  <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+                    <Path d="M18 6L6 18M6 6L18 18" stroke={theme.textSecondary} strokeWidth="2.2" strokeLinecap="round" />
+                  </Svg>
                 </TouchableOpacity>
               ) : null}
               <TouchableOpacity
                 onPress={() => executeGlobalSearch(searchQuery)}
-                style={[styles.searchGoBtn, { backgroundColor: theme.primary }]}
+                style={[styles.searchGoBtn, { backgroundColor: theme.primary, flexDirection: 'row', alignItems: 'center', gap: 5 }]}
               >
+                <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+                  <Circle cx="11" cy="11" r="7" stroke="#FFFFFF" strokeWidth="2.2" />
+                  <Path d="M16.5 16.5L21 21" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" />
+                </Svg>
                 <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 12.5, fontFamily: fontFam }}>
                   {lang === 'bn' ? 'খুঁজুন' : 'Search'}
                 </Text>

@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Svg, { Circle, Path } from 'react-native-svg';
 import { AppLanguage } from '../../core/l10n/translations';
 import { AddPlantModal } from '../../core/components/add_plant_modal';
 import { BotanicalSearchModal } from '../../core/components/botanical_search_modal';
@@ -205,8 +206,8 @@ export const MyGardenScreen: React.FC<MyGardenScreenProps> = ({
             onChangeText={setSearchQuery}
             placeholder={
               lang === 'bn'
-                ? '🔍 গাছের নাম, জাত বা QR কোড দিয়ে খুঁজুন...'
-                : '🔍 Search plant by name, variety or QR ID...'
+                ? 'গাছের নাম, জাত বা QR কোড দিয়ে খুঁজুন...'
+                : 'Search plant by name, variety or QR ID...'
             }
             placeholderTextColor={theme.textSecondary}
             style={[
@@ -638,23 +639,29 @@ export const MyGardenScreen: React.FC<MyGardenScreenProps> = ({
                   { backgroundColor: theme.primary },
                 ]}
               >
-                <Text
-                  style={{
-                    color: '#FFFFFF',
-                    fontWeight: '700',
-                    fontSize: 13.5,
-                    fontFamily: fontFam,
-                  }}
-                >
-                  🌐{' '}
-                  {searchQuery.trim()
-                    ? lang === 'bn'
-                      ? `ইন্টারনেটে "${searchQuery}" অনুসন্ধান করুন`
-                      : `Search "${searchQuery}" Online`
-                    : lang === 'bn'
-                    ? 'অনলাইনে উদ্ভিদ সার্চ করুন'
-                    : 'Search Species Online'}
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
+                  <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+                    <Circle cx="12" cy="12" r="9" stroke="#FFFFFF" strokeWidth="2" />
+                    <Path d="M3 12H21" stroke="#FFFFFF" strokeWidth="1.8" />
+                    <Path d="M12 3C14.5 5.5 15.5 8.5 15.5 12C15.5 15.5 14.5 18.5 12 21C9.5 18.5 8.5 15.5 8.5 12C8.5 8.5 9.5 5.5 12 3Z" stroke="#FFFFFF" strokeWidth="1.8" />
+                  </Svg>
+                  <Text
+                    style={{
+                      color: '#FFFFFF',
+                      fontWeight: '700',
+                      fontSize: 13.5,
+                      fontFamily: fontFam,
+                    }}
+                  >
+                    {searchQuery.trim()
+                      ? lang === 'bn'
+                        ? `ইন্টারনেটে "${searchQuery}" অনুসন্ধান করুন`
+                        : `Search "${searchQuery}" Online`
+                      : lang === 'bn'
+                      ? 'অনলাইনে উদ্ভিদ সার্চ করুন'
+                      : 'Search Species Online'}
+                  </Text>
+                </View>
               </TouchableOpacity>
             </View>
           )}
@@ -737,7 +744,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: DESIGN_TOKENS.screenHorizontalPadding,
     paddingVertical: DESIGN_TOKENS.spacing.md,
     gap: DESIGN_TOKENS.spacing.md,
-    paddingBottom: 32,
+    paddingBottom: 90,
   },
   mainCard: {
     width: '100%',
@@ -775,11 +782,11 @@ const styles = StyleSheet.create({
   },
   inputField: {
     width: '100%',
+    height: 44,
     borderWidth: 1,
-    borderRadius: DESIGN_TOKENS.inputRadius,
+    borderRadius: 12,
     paddingHorizontal: 14,
-    paddingVertical: 11,
-    fontSize: 14,
+    fontSize: 13.5,
   },
   filterRow: {
     flexDirection: 'row',

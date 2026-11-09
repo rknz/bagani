@@ -15,6 +15,7 @@
  */
 
 import * as ImagePicker from 'expo-image-picker';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import jsQR from 'jsqr';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -30,7 +31,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { PlantModel } from '../../models/plant_model';
 import { AppLanguage } from '../l10n/translations';
 import { APP_TYPOGRAPHY, AppThemeColors } from '../theme/app_theme';
@@ -54,6 +55,7 @@ export const QrCameraScannerModal: React.FC<QrCameraScannerModalProps> = ({
   theme,
   lang,
 }) => {
+  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [cameraActive, setCameraActive] = useState<boolean>(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
@@ -168,7 +170,31 @@ export const QrCameraScannerModal: React.FC<QrCameraScannerModalProps> = ({
         );
       }
     } else {
-      setCameraActive(true);
+      try {
+        if (!cameraPermission?.granted) {
+          const req = await requestCameraPermission();
+          if (req?.granted) {
+            setCameraActive(true);
+          } else {
+            setCameraActive(false);
+            setCameraError(
+              lang === 'bn'
+                ? 'ক্যামেরা ব্যবহারের অনুমতি প্রয়োজন। অনুগ্রহ করে সেটিংসে গিয়ে অনুমতি দিন অথবা গ্যালারি থেকে QR নির্বাচন করুন।'
+                : 'Camera permission is required. Please grant permission in device settings or pick from gallery below.'
+            );
+          }
+        } else {
+          setCameraActive(true);
+        }
+      } catch (err) {
+        console.warn('Native camera permission error:', err);
+        setCameraActive(false);
+        setCameraError(
+          lang === 'bn'
+            ? 'ক্যামেরা চালু করা সম্ভব হয়নি। গ্যালারি আপলোড ব্যবহার করুন।'
+            : 'Could not access device camera. Please use QR From Gallery.'
+        );
+      }
     }
   };
 
@@ -565,7 +591,7 @@ export const QrCameraScannerModal: React.FC<QrCameraScannerModalProps> = ({
                 },
               ]}
             >
-              {Platform.OS === 'web' && (
+              {Platform.OS === 'web' ? (
                 <video
                   ref={(el) => {
                     videoRef.current = el;
@@ -587,6 +613,21 @@ export const QrCameraScannerModal: React.FC<QrCameraScannerModalProps> = ({
                     left: 0,
                   }}
                 />
+              ) : (
+                cameraPermission?.granted && (
+                  <CameraView
+                    style={StyleSheet.absoluteFillObject}
+                    facing={facingMode === 'environment' ? 'back' : 'front'}
+                    barcodeScannerSettings={{
+                      barcodeTypes: ['qr'],
+                    }}
+                    onBarcodeScanned={(result) => {
+                      if (result && result.data && !matchedPlant) {
+                        handleQrCodeDetected(result.data);
+                      }
+                    }}
+                  />
+                )
               )}
 
               {/* Target Reticle Brackets (4 Corners) */}
@@ -841,7 +882,11 @@ export const QrCameraScannerModal: React.FC<QrCameraScannerModalProps> = ({
                 },
               ]}
             >
-              <Text style={{ fontSize: 18 }}>🖼️</Text>
+              <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+                <Rect x="3" y="3" width="18" height="18" rx="4" stroke={theme.primary} strokeWidth="2" />
+                <Circle cx="8.5" cy="8.5" r="1.5" fill={theme.primary} />
+                <Path d="M21 15L16 10L5 21" stroke={theme.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </Svg>
               <Text
                 style={[
                   styles.galleryBtnText,
@@ -852,9 +897,7 @@ export const QrCameraScannerModal: React.FC<QrCameraScannerModalProps> = ({
                   ? lang === 'bn'
                     ? 'ছবি প্রসেস হচ্ছে...'
                     : 'Processing image...'
-                  : lang === 'bn'
-                  ? 'গ্যালারি থেকে QR কোডের ছবি নির্বাচন করুন'
-                  : 'Scan QR Tag from Gallery Photo'}
+                  : 'QR From Gallery'}
               </Text>
             </TouchableOpacity>
 

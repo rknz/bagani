@@ -1145,7 +1145,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     padding: 20,
     gap: 14,
-    paddingBottom: 32,
+    paddingBottom: 90,
   },
   topRow: {
     flexDirection: 'row',

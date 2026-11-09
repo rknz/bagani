@@ -811,7 +811,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     padding: 20,
     gap: 14,
-    paddingBottom: 36,
+    paddingBottom: 90,
   },
   helplineBanner: {
     flexDirection: 'row',

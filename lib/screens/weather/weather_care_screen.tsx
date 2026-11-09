@@ -859,7 +859,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: DESIGN_TOKENS.screenHorizontalPadding,
     paddingVertical: DESIGN_TOKENS.spacing.md,
     gap: DESIGN_TOKENS.spacing.md,
-    paddingBottom: DESIGN_TOKENS.spacing.xl,
+    paddingBottom: 90,
   },
   card: {
     padding: DESIGN_TOKENS.cardPadding,
