@@ -565,7 +565,7 @@ export const MyGardenScreen: React.FC<MyGardenScreenProps> = ({
               >
                 {lang === 'bn'
                   ? 'উদ্ভিদ প্রজাতি ও জাত খুঁজুন'
-                  : 'Search Species & Varieties'}
+                  : 'Find Species & Varieties'}
               </Text>
             </TouchableOpacity>
           </View>

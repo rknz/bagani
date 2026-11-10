@@ -45,6 +45,7 @@ import { PlantProfileScreen } from './lib/screens/plant_profile/plant_profile_sc
 import { QrTrackerScreen } from './lib/screens/qr_tracker/qr_tracker_screen';
 import { ScannerScreen } from './lib/screens/scanner/scanner_screen';
 import { SettingsScreen } from './lib/screens/settings/settings_screen';
+import { QrCameraScannerModal } from './lib/core/components/qr_camera_scanner_modal';
 import {
   AdConfiguration,
   AdService,
@@ -79,13 +80,17 @@ export default function App() {
 
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
-  const [scanSubTab, setScanSubTab] = useState<'ai' | 'qr'>('ai');
+  const [globalQrModalOpen, setGlobalQrModalOpen] = useState(false);
   const [guideSubTab, setGuideSubTab] = useState<GuideSubTab>('planner');
   const [exitAdVisible, setExitAdVisible] = useState(false);
 
   // Android Hardware Back button & App Exit Interstitial Ad Handler
   useEffect(() => {
     const onBackPress = () => {
+      if (globalQrModalOpen) {
+        setGlobalQrModalOpen(false);
+        return true;
+      }
       if (exitAdVisible) {
         setExitAdVisible(false);
         return true;
@@ -593,7 +598,7 @@ export default function App() {
               : activeRoute === 'scan' ||
                 activeRoute === 'scanner' ||
                 activeRoute === 'qr_tracker'
-              ? `scan_${scanSubTab}_${activeRoute}`
+              ? `scan_${activeRoute}`
               : activeRoute === 'guide' ||
                 activeRoute === 'planner' ||
                 activeRoute === 'directory'
@@ -641,154 +646,46 @@ export default function App() {
             onAddNewPlant={handleAddNewPlant}
             onOpenQrTagDesigner={() => setActiveRoute('qr_tracker')}
           />
-        ) : activeRoute === 'scan' ||
-          activeRoute === 'scanner' ||
-          activeRoute === 'qr_tracker' ? (
-          <View style={{ flex: 1, width: '100%' }}>
-            {/* Cohesive App-Style Sub-Navigation inside the Scan Tab: AI Diagnosis vs QR Scanner */}
-            <View
-              style={[
-                styles.scanTabHeaderOuter,
-                {
-                  backgroundColor: theme.surface,
-                  borderBottomColor: theme.border,
+        ) : activeRoute === 'scan' || activeRoute === 'scanner' ? (
+          <ScannerScreen
+            theme={theme}
+            lang={lang}
+            plants={plants}
+            onSaveScanToPlant={handleSaveAiScanToPlant}
+            onAddNewPlant={handleAddNewPlant}
+            onSelectPlant={(plant) => {
+              setSelectedPlant(plant);
+              setActiveRoute('plant_profile');
+            }}
+          />
+        ) : activeRoute === 'qr_tracker' ? (
+          <QrTrackerScreen
+            theme={theme}
+            lang={lang}
+            plants={plants}
+            ownerName={currentUser.displayName}
+            onSelectPlant={(plant) => {
+              setSelectedPlant(plant);
+              setActiveRoute('plant_profile');
+            }}
+            onUpdatePlantQrSettings={async (plantId, updates) => {
+              const target = plants.find((p) => p.id === plantId);
+              if (!target) return;
+              const updatedPlant: PlantModel = {
+                ...target,
+                qrTagConfig: {
+                  ...target.qrTagConfig,
+                  tagSize: updates.qrTagSize,
+                  customQuoteBengali: updates.customTagQuote,
+                  ownerName: updates.ownerDisplayName,
                 },
-              ]}
-            >
-              <View
-                style={[
-                  styles.scanTabHeaderInner,
-                  {
-                    backgroundColor: theme.surfaceElevated,
-                    borderColor: theme.border,
-                  },
-                ]}
-              >
-                <TouchableOpacity
-                  onPress={() => {
-                    setScanSubTab('ai');
-                    setActiveRoute('scan');
-                  }}
-                  activeOpacity={0.82}
-                  style={[
-                    styles.scanSegmentBtn,
-                    {
-                      backgroundColor:
-                        scanSubTab === 'ai' && activeRoute !== 'qr_tracker'
-                          ? theme.primary
-                          : 'transparent',
-                      borderColor:
-                        scanSubTab === 'ai' && activeRoute !== 'qr_tracker'
-                          ? theme.primary
-                          : 'transparent',
-                    },
-                  ]}
-                >
-                  <Text
-                    numberOfLines={1}
-                    style={{
-                      color:
-                        scanSubTab === 'ai' && activeRoute !== 'qr_tracker'
-                          ? '#FFFFFF'
-                          : theme.textSecondary,
-                      fontWeight: '700',
-                      fontSize: 13,
-                      fontFamily: fontFam,
-                    }}
-                  >
-                    🔬{' '}
-                    {lang === 'bn'
-                      ? 'এআই রোগ ও গাছ নির্ণয়'
-                      : 'AI Disease & Plant Scan'}
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={() => {
-                    setScanSubTab('qr');
-                    setActiveRoute('scan');
-                  }}
-                  activeOpacity={0.82}
-                  style={[
-                    styles.scanSegmentBtn,
-                    {
-                      backgroundColor:
-                        scanSubTab === 'qr' || activeRoute === 'qr_tracker'
-                          ? theme.primary
-                          : 'transparent',
-                      borderColor:
-                        scanSubTab === 'qr' || activeRoute === 'qr_tracker'
-                          ? theme.primary
-                          : 'transparent',
-                    },
-                  ]}
-                >
-                  <Text
-                    numberOfLines={1}
-                    style={{
-                      color:
-                        scanSubTab === 'qr' || activeRoute === 'qr_tracker'
-                          ? '#FFFFFF'
-                          : theme.textSecondary,
-                      fontWeight: '700',
-                      fontSize: 13,
-                      fontFamily: fontFam,
-                    }}
-                  >
-                    📷{' '}
-                    {lang === 'bn'
-                      ? 'QR স্ক্যানার ও পিডিএফ ট্যাগ'
-                      : 'QR Scanner & PDF Tag'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            <View style={{ flex: 1, width: '100%' }}>
-              {scanSubTab === 'qr' || activeRoute === 'qr_tracker' ? (
-                <QrTrackerScreen
-                  theme={theme}
-                  lang={lang}
-                  plants={plants}
-                  ownerName={currentUser.displayName}
-                  onSelectPlant={(plant) => {
-                    setSelectedPlant(plant);
-                    setActiveRoute('plant_profile');
-                  }}
-                  onUpdatePlantQrSettings={async (plantId, updates) => {
-                    const target = plants.find((p) => p.id === plantId);
-                    if (!target) return;
-                    const updatedPlant: PlantModel = {
-                      ...target,
-                      qrTagConfig: {
-                        ...target.qrTagConfig,
-                        tagSize: updates.qrTagSize,
-                        customQuoteBengali: updates.customTagQuote,
-                        ownerName: updates.ownerDisplayName,
-                      },
-                    };
-                    const nextPlants = await LocalDbService.updatePlant(
-                      updatedPlant
-                    );
-                    setPlants(nextPlants);
-                  }}
-                />
-              ) : (
-                <ScannerScreen
-                  theme={theme}
-                  lang={lang}
-                  plants={plants}
-                  onSaveScanToPlant={handleSaveAiScanToPlant}
-                  onOpenQrScannerTab={() => setScanSubTab('qr')}
-                  onAddNewPlant={handleAddNewPlant}
-                  onSelectPlant={(plant) => {
-                    setSelectedPlant(plant);
-                    setActiveRoute('plant_profile');
-                  }}
-                />
-              )}
-            </View>
-          </View>
+              };
+              const nextPlants = await LocalDbService.updatePlant(
+                updatedPlant
+              );
+              setPlants(nextPlants);
+            }}
+          />
         ) : activeRoute === 'guide' ||
           activeRoute === 'planner' ||
           activeRoute === 'directory' ? (
@@ -843,14 +740,8 @@ export default function App() {
             onSaveTaskStatus={handleSaveTaskStatus}
             onAddCareTask={handleAddCareTask}
             onAddNewPlant={handleAddNewPlant}
-            onOpenQrScanner={() => {
-              setScanSubTab('qr');
-              setActiveRoute('scan');
-            }}
-            onOpenAiDiagnosis={() => {
-              setScanSubTab('ai');
-              setActiveRoute('scan');
-            }}
+            onOpenQrScanner={() => setActiveRoute('qr_tracker')}
+            onOpenAiDiagnosis={() => setActiveRoute('scan')}
             onOpenMyGarden={() => setActiveRoute('my_garden')}
             onOpenWeatherDashboard={() => {
               setGuideSubTab('weather');
@@ -864,6 +755,68 @@ export default function App() {
         )}
         </ScreenTransition>
       </View>
+
+      {/* Global Floating QR Tag Scanner Action Button (Top-Right near Profile/Menu) */}
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={() => setGlobalQrModalOpen(true)}
+        style={[
+          styles.globalFloatingQrBtn,
+          {
+            backgroundColor: theme.primary,
+            borderColor: theme.surface,
+          },
+        ]}
+        accessibilityLabel={
+          lang === 'bn' ? 'QR ট্যাগ স্ক্যান' : 'Scan Plant QR Tag'
+        }
+      >
+        <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
+          <Path
+            d="M3 3H9V9H3V3Z"
+            stroke="#FFFFFF"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <Path
+            d="M15 3H21V9H15V3Z"
+            stroke="#FFFFFF"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <Path
+            d="M3 15H9V21H3V15Z"
+            stroke="#FFFFFF"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <Path d="M15 15H18V18H15V15Z" fill="#FFFFFF" />
+          <Path d="M18 18H21V21H18V18Z" fill="#FFFFFF" />
+          <Path
+            d="M15 21H18"
+            stroke="#FFFFFF"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+        </Svg>
+      </TouchableOpacity>
+
+      {/* Global Real-Time QR Camera Scanner Modal */}
+      <QrCameraScannerModal
+        visible={globalQrModalOpen}
+        onClose={() => setGlobalQrModalOpen(false)}
+        plants={plants}
+        onScanSuccess={(scannedPlant) => {
+          setGlobalQrModalOpen(false);
+          setSelectedPlant(scannedPlant);
+          setActiveRoute('plant_profile');
+        }}
+        theme={theme}
+        lang={lang}
+      />
 
       {/* Always show Bottom Navigation Bar when logged in (including on Edit Profile) */}
       <BottomNavBar
@@ -1022,31 +975,21 @@ const styles = StyleSheet.create({
     width: '100%',
     overflow: 'hidden',
   },
-  scanTabHeaderOuter: {
-    width: '100%',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    paddingHorizontal: DESIGN_TOKENS.screenHorizontalPadding,
-    paddingVertical: 8,
-  },
-  scanTabHeaderInner: {
-    width: '100%',
-    maxWidth: 960,
-    flexDirection: 'row',
-    padding: 5,
-    borderRadius: 14,
-    borderWidth: 1,
-    gap: 6,
-  },
-  scanSegmentBtn: {
-    flex: 1,
-    flexDirection: 'row',
+  globalFloatingQrBtn: {
+    position: 'absolute',
+    top: 66,
+    right: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    minHeight: 40,
-    borderRadius: 10,
-    borderWidth: 1,
-    paddingHorizontal: 12,
+    zIndex: 9999,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
   },
 });

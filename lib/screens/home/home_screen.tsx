@@ -27,7 +27,6 @@ import { AddPlantModal } from '../../core/components/add_plant_modal';
 import { AddCareTaskModal } from '../../core/components/add_care_task_modal';
 import { BotanicalSearchModal } from '../../core/components/botanical_search_modal';
 import { PlantSelectorDropdown } from '../../core/components/plant_selector_dropdown';
-import { QrCameraScannerModal } from '../../core/components/qr_camera_scanner_modal';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import {
   APP_TYPOGRAPHY,
@@ -94,7 +93,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [botanicalSearchOpen, setBotanicalSearchOpen] = useState(false);
   const [botanicalInitialQuery, setBotanicalInitialQuery] = useState('');
-  const [cameraScannerOpen, setCameraScannerOpen] = useState(false);
   const [recentLogs, setRecentLogs] = useState<PlantTimelineLog[]>([]);
 
   // Urgent Care Selection & Status Draft Map (taskId -> 'completed' | 'do_later')
@@ -337,54 +335,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   : 'Search plants or care guides...'}
               </Text>
             </View>
-
-            <TouchableOpacity
-              activeOpacity={0.82}
-              onPress={(e) => {
-                e?.stopPropagation?.();
-                setCameraScannerOpen(true);
-              }}
-              style={[
-                styles.modernSearchScanBtn,
-                { backgroundColor: theme.primary },
-              ]}
-              accessibilityLabel={
-                lang === 'bn' ? 'ক্যামেরা দিয়ে QR স্ক্যান করুন' : 'Scan Plant QR Tag'
-              }
-            >
-              <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
-                <Path
-                  d="M3 7V5C3 3.89543 3.89543 3 5 3H7"
-                  stroke="#FFFFFF"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                />
-                <Path
-                  d="M17 3H19C20.1046 3 21 3.89543 21 5V7"
-                  stroke="#FFFFFF"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                />
-                <Path
-                  d="M21 17V19C21 20.1046 20.1046 21 19 21H17"
-                  stroke="#FFFFFF"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                />
-                <Path
-                  d="M7 21H5C3.89543 21 3 20.1046 3 19V17"
-                  stroke="#FFFFFF"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                />
-                <Path
-                  d="M7 12H17"
-                  stroke="#FFFFFF"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </Svg>
-            </TouchableOpacity>
           </TouchableOpacity>
         </View>
 
@@ -1733,7 +1683,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           {/* Button 2: Plant QR (Secondary Action) */}
           <TouchableOpacity
             activeOpacity={0.85}
-            onPress={() => setCameraScannerOpen(true)}
+            onPress={onOpenQrScanner}
             style={[
               styles.shortcutGridBtn,
               {
@@ -2474,23 +2424,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             if (onAddCareTask) {
               onAddCareTask(newTask);
             }
-          }}
-          theme={theme}
-          lang={lang}
-        />
-
-        {/* Real-Time Live Camera QR Tag Scanner Modal */}
-        <QrCameraScannerModal
-          visible={cameraScannerOpen}
-          onClose={() => setCameraScannerOpen(false)}
-          plants={plants}
-          onScanSuccess={(scannedPlant) => {
-            setCameraScannerOpen(false);
-            onSelectPlant(scannedPlant);
-          }}
-          onAddNewPlantWithQr={(qrCode) => {
-            setCameraScannerOpen(false);
-            setAddModalOpen(true);
           }}
           theme={theme}
           lang={lang}

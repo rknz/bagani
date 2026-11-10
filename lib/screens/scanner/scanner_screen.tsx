@@ -44,7 +44,6 @@ import {
   ExaminedPart,
   ScanMode,
 } from '../../services/ai_scanner_service';
-import { QrCameraScannerModal } from '../../core/components/qr_camera_scanner_modal';
 
 interface ScannerScreenProps {
   theme: AppThemeColors;
@@ -60,7 +59,6 @@ interface ScannerScreenProps {
   ) => void;
   onSelectPlant?: (plant: PlantModel) => void;
   onAddNewPlant?: (plant: PlantModel) => void;
-  onOpenQrScannerTab?: () => void;
 }
 
 const EXAMINED_PARTS: {
@@ -69,12 +67,12 @@ const EXAMINED_PARTS: {
   nameBn: string;
   nameEn: string;
 }[] = [
-  { id: 'leaf', icon: '🌿', nameBn: 'পাতা (Leaf)', nameEn: 'Leaf' },
-  { id: 'fruit', icon: '🍋', nameBn: 'ফল (Fruit)', nameEn: 'Fruit' },
-  { id: 'flower', icon: '🌸', nameBn: 'ফুল (Flower)', nameEn: 'Flower' },
-  { id: 'soil', icon: '🪴', nameBn: 'মাটি ও শিকড় (Soil)', nameEn: 'Soil/Root' },
-  { id: 'plant', icon: '🌱', nameBn: 'সমগ্র গাছ (Plant)', nameEn: 'Whole Plant' },
-];
+    { id: 'leaf', icon: '🌿', nameBn: 'পাতা (Leaf)', nameEn: 'Leaf' },
+    { id: 'fruit', icon: '🍋', nameBn: 'ফল (Fruit)', nameEn: 'Fruit' },
+    { id: 'flower', icon: '🌸', nameBn: 'ফুল (Flower)', nameEn: 'Flower' },
+    { id: 'soil', icon: '🪴', nameBn: 'মাটি ও শিকড় (Soil)', nameEn: 'Soil/Root' },
+    { id: 'plant', icon: '🌱', nameBn: 'সমগ্র গাছ (Plant)', nameEn: 'Whole Plant' },
+  ];
 
 export const ScannerScreen: React.FC<ScannerScreenProps> = ({
   theme,
@@ -83,7 +81,6 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
   onSaveScanToPlant,
   onSelectPlant,
   onAddNewPlant,
-  onOpenQrScannerTab,
 }) => {
   const [scanMode, setScanMode] = useState<ScanMode>('diagnose');
   const [examinedPart, setExaminedPart] = useState<ExaminedPart>('leaf');
@@ -105,9 +102,6 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
   const [cameraFacing, setCameraFacing] = useState<'environment' | 'user'>('environment');
   const cameraVideoRef = useRef<any>(null);
   const cameraStreamRef = useRef<MediaStream | null>(null);
-
-  // Live QR Camera Scanner Modal State
-  const [qrModalVisible, setQrModalVisible] = useState<boolean>(false);
 
   const fontFam =
     lang === 'bn'
@@ -161,7 +155,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
         if (cameraVideoRef.current) {
           cameraVideoRef.current.srcObject = stream;
           cameraVideoRef.current.setAttribute('playsinline', 'true');
-          cameraVideoRef.current.play().catch(() => {});
+          cameraVideoRef.current.play().catch(() => { });
         }
       } catch (err) {
         console.warn('Camera stream error, using fallback:', err);
@@ -176,7 +170,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
     if (cameraStreamRef.current) {
       try {
         cameraStreamRef.current.getTracks().forEach((t) => t.stop());
-      } catch {}
+      } catch { }
       cameraStreamRef.current = null;
     }
     setIsLiveCameraOpen(false);
@@ -400,8 +394,8 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
                   ]}
                 >
                   {lang === 'bn'
-                    ? 'অনলাইন এআই প্ল্যান্ট ডায়াগনোসিস ও স্ক্যানার'
-                    : 'Online AI Plant Diagnosis & Global Scanner'}
+                    ? 'অনলাইন ডায়াগনোসিস ও স্ক্যান'
+                    : 'Online Diagnosis & Scan'}
                 </Text>
               </View>
               <Text style={[styles.captionText, { color: theme.textSecondary, fontFamily: fontFam }]}>
@@ -410,38 +404,15 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
                   : 'Point camera or upload image of any plant globally for online taxonomy identification & organic pathology remedies.'}
               </Text>
             </View>
-
-            {/* Direct 1-Tap QR Camera Scanner Trigger */}
-            <TouchableOpacity
-              onPress={() => setQrModalVisible(true)}
-              style={[
-                styles.qrSwitchPill,
-                {
-                  backgroundColor: theme.selectedSurface,
-                  borderColor: theme.primary,
-                },
-              ]}
-            >
-              <Text
-                style={{
-                  color: theme.primary,
-                  fontSize: 13,
-                  fontWeight: '700',
-                  fontFamily: fontFam,
-                }}
-              >
-                📷 {lang === 'bn' ? 'QR ট্যাগ স্ক্যান' : 'QR Tag Scan'}
-              </Text>
-            </TouchableOpacity>
           </View>
 
-          {/* Mode Switcher: Disease Diagnosis vs Species Identifier */}
-          <View style={styles.modeRow}>
+          {/* Mode Switcher: Disease Diagnosis vs Species Identifier (Arranged vertically: one above the other) */}
+          <View style={styles.modeCol}>
             <TouchableOpacity
               activeOpacity={0.82}
               onPress={() => handleSwitchMode('diagnose')}
               style={[
-                styles.modeBtn,
+                styles.modeBtnFull,
                 {
                   backgroundColor:
                     scanMode === 'diagnose'
@@ -459,7 +430,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
                   style={{
                     color: scanMode === 'diagnose' ? '#FFFFFF' : theme.textPrimary,
                     fontWeight: '700',
-                    fontSize: 12.5,
+                    fontSize: 13,
                     fontFamily: fontFam,
                     textAlign: 'center',
                   }}
@@ -473,7 +444,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
               activeOpacity={0.82}
               onPress={() => handleSwitchMode('identify')}
               style={[
-                styles.modeBtn,
+                styles.modeBtnFull,
                 {
                   backgroundColor:
                     scanMode === 'identify'
@@ -491,7 +462,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
                   style={{
                     color: scanMode === 'identify' ? '#FFFFFF' : theme.textPrimary,
                     fontWeight: '700',
-                    fontSize: 12.5,
+                    fontSize: 13,
                     fontFamily: fontFam,
                     textAlign: 'center',
                   }}
@@ -512,7 +483,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
                     if (el && cameraStreamRef.current && el.srcObject !== cameraStreamRef.current) {
                       el.srcObject = cameraStreamRef.current;
                       el.setAttribute('playsinline', 'true');
-                      el.play().catch(() => {});
+                      el.play().catch(() => { });
                     }
                   }}
                   autoPlay
@@ -794,7 +765,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
               <Path d="M12 3C14.5 5.5 15.5 8.5 15.5 12C15.5 15.5 14.5 18.5 12 21C9.5 18.5 8.5 15.5 8.5 12C8.5 8.5 9.5 5.5 12 3Z" stroke={theme.primary} strokeWidth="1.8" />
             </Svg>
             <Text style={[styles.cardHeading, { color: theme.textPrimary, fontFamily: fontFam, marginBottom: 0 }]}>
-              {lang === 'bn' ? 'কোন উদ্ভিদ বা প্রজাতির রোগ নির্ণয় করবেন? (Global Search)' : 'Target Plant or Species (Global Search):'}
+              {lang === 'bn' ? 'উদ্ভিদ বা প্রজাতি খুঁজুন' : 'Find Plant or Species'}
             </Text>
           </View>
 
@@ -1104,14 +1075,20 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
 
             {/* Live Online Sourced Knowledge Card (Wikipedia REST API) */}
             <View style={[styles.onlineSourceCard, { backgroundColor: theme.surfaceElevated, borderColor: theme.border }]}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <View style={styles.onlineSourceCenterHeader}>
+                <View style={styles.onlineSourceTitleRow}>
                   <Text style={{ fontSize: 16 }}>🌐</Text>
-                  <Text style={[styles.sourceTag, { color: theme.primary, fontFamily: fontFam }]}>
-                    {scanResult.onlineSource.sourceName}
+                  <Text style={[styles.sourceTagCentered, { color: theme.primary, fontFamily: fontFam }]}>
+                    {lang === 'bn'
+                      ? 'উইকিপিডিয়া বোটানিক্যাল এনসাইক্লোপিডিয়া'
+                      : 'Wikipedia Botanical Encyclopedia'}
                   </Text>
                 </View>
-                <TouchableOpacity onPress={handleOpenOnlineSource} activeOpacity={0.75}>
+                <TouchableOpacity
+                  onPress={handleOpenOnlineSource}
+                  activeOpacity={0.75}
+                  style={styles.wikiLinkBtn}
+                >
                   <Text style={{ color: theme.primary, fontSize: 12, fontWeight: '700', fontFamily: fontFam }}>
                     {lang === 'bn' ? 'উইকিপিডিয়া দেখুন ↗' : 'View Wikipedia ↗'}
                   </Text>
@@ -1123,7 +1100,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
               </Text>
             </View>
 
-            {/* Action 1: Add Newly Identified Plant to My Garden */}
+            {/* Action 1: Add Plant to Garden */}
             {onAddNewPlant && (
               <TouchableOpacity
                 onPress={handleAddScannedPlantToGarden}
@@ -1132,90 +1109,13 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
               >
                 <Text style={{ fontSize: 18 }}>🌱</Text>
                 <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 14, fontFamily: fontFam }}>
-                  + {lang === 'bn' ? 'এই গাছটি আমার ছাদবাগানে যুক্ত করুন' : 'Add This Plant to My Garden'}
+                  + {lang === 'bn' ? 'বাগানে গাছ যুক্ত করুন' : 'Add Plant to Garden'}
                 </Text>
               </TouchableOpacity>
-            )}
-
-            {/* Action 2: Save Report to Plant History */}
-            {plants.length > 0 && (
-              <View style={styles.saveSection}>
-                <Text style={[styles.captionText, { color: theme.textSecondary, fontWeight: '700', fontFamily: fontFam }]}>
-                  {lang === 'bn' ? 'কোন গাছের ইতিহাসে এই রিপোর্ট সংরক্ষণ করবেন?' : 'Log this diagnosis to plant history:'}
-                </Text>
-
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 6 }}>
-                  {plants.map((p) => {
-                    const active = p.id === targetPlantId;
-                    return (
-                      <TouchableOpacity
-                        key={p.id}
-                        onPress={() => setTargetPlantId(p.id)}
-                        style={[
-                          styles.plantChip,
-                          {
-                            backgroundColor: active ? theme.primary : theme.surfaceElevated,
-                            borderColor: active ? theme.primary : theme.border,
-                          },
-                        ]}
-                      >
-                        <Text style={{ color: active ? '#FFFFFF' : theme.textPrimary, fontSize: 13, fontWeight: '600', fontFamily: fontFam }}>
-                          🌱 {lang === 'bn' ? p.nameBengali : p.nameEnglish}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </ScrollView>
-
-                <TouchableOpacity
-                  onPress={() => {
-                    if (onSaveScanToPlant && targetPlantId) {
-                      onSaveScanToPlant(
-                        targetPlantId,
-                        scanResult.issueTitleBn,
-                        scanResult.issueTitleEn,
-                        scanResult.organicTreatmentsBn[0] || 'জৈব প্রতিকার সম্পন্ন',
-                        scanResult.organicTreatmentsEn[0] || 'Organic remedy applied',
-                        scanResult.healthState
-                      );
-                      Alert.alert(
-                        lang === 'bn' ? '✓ টাইমলাইনে সংরক্ষিত' : '✓ Saved to Plant History',
-                        lang === 'bn'
-                          ? 'এআই ডায়াগনোসিস ফলাফলটি গাছের পরিচর্যা ইতিহাসে সংরক্ষিত হয়েছে।'
-                          : 'Diagnostic report logged to plant timeline.'
-                      );
-                    }
-                  }}
-                  activeOpacity={0.85}
-                  style={[styles.prominentSaveBtn, { backgroundColor: theme.primary }]}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                    <Text style={{ fontSize: 18 }}>💾</Text>
-                    <Text style={[styles.buttonText, { color: '#FFFFFF', fontSize: 14.5, fontWeight: '700', fontFamily: fontFam }]}>
-                      {lang === 'bn'
-                        ? 'আক্রান্ত গাছের টাইমলাইনে রিপোর্ট সংরক্ষণ করুন'
-                        : 'Save Report to Plant History'}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              </View>
             )}
           </View>
         )}
       </View>
-
-      {/* Responsive Live Camera & Gallery QR Scanner Modal */}
-      <QrCameraScannerModal
-        visible={qrModalVisible}
-        onClose={() => setQrModalVisible(false)}
-        plants={plants}
-        onScanSuccess={(plant) => {
-          setQrModalVisible(false);
-          if (onSelectPlant) onSelectPlant(plant);
-        }}
-        theme={theme}
-        lang={lang}
-      />
     </ScrollView>
   );
 };
@@ -1259,23 +1159,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  qrSwitchPill: {
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 20,
-    borderWidth: 1.5,
-  },
-  modeRow: {
-    flexDirection: 'row',
+  modeCol: {
+    flexDirection: 'column',
     gap: 8,
-    marginTop: 4,
+    marginTop: 6,
     width: '100%',
   },
-  modeBtn: {
-    flex: 1,
+  modeBtnFull: {
+    width: '100%',
     minHeight: 44,
     paddingVertical: 10,
-    paddingHorizontal: 8,
+    paddingHorizontal: 12,
     borderRadius: 12,
     borderWidth: 1.5,
     alignItems: 'center',
@@ -1578,19 +1472,40 @@ const styles = StyleSheet.create({
     lineHeight: 17,
   },
   onlineSourceCard: {
-    padding: 12,
-    borderRadius: 12,
+    padding: 14,
+    borderRadius: 14,
     borderWidth: 1,
-    gap: 6,
+    gap: 8,
   },
-  sourceTag: {
-    fontSize: 12,
-    fontWeight: '700',
+  onlineSourceCenterHeader: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    width: '100%',
+  },
+  onlineSourceTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    flexWrap: 'wrap',
+    width: '100%',
+  },
+  sourceTagCentered: {
+    fontSize: 13.5,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  wikiLinkBtn: {
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    alignItems: 'center',
   },
   sourceSummary: {
     fontSize: 11.5,
     lineHeight: 17,
     fontStyle: 'italic',
+    textAlign: 'center',
   },
   addGardenBtn: {
     flexDirection: 'row',
@@ -1601,26 +1516,5 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1.5,
     marginTop: 4,
-  },
-  saveSection: {
-    gap: 8,
-    marginTop: 4,
-  },
-  plantChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
-  prominentSaveBtn: {
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 4,
-  },
-  buttonText: {
-    fontSize: 13.5,
-    fontWeight: '700',
   },
 });

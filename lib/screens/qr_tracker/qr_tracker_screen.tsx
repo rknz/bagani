@@ -17,7 +17,6 @@ import { AppLanguage } from '../../core/l10n/translations';
 import { APP_TYPOGRAPHY, AppThemeColors } from '../../core/theme/app_theme';
 import { PlantModel, QrTagSize } from '../../models/plant_model';
 import { QrPdfService } from '../../services/qr_pdf_service';
-import { QrCameraScannerModal } from '../../core/components/qr_camera_scanner_modal';
 import { PlantSelectorDropdown } from '../../core/components/plant_selector_dropdown';
 
 interface QrTrackerScreenProps {
@@ -112,7 +111,6 @@ export const QrTrackerScreen: React.FC<QrTrackerScreenProps> = ({
   );
   const [isPlantDropdownOpen, setIsPlantDropdownOpen] = useState(false);
   const [plantSearchQuery, setPlantSearchQuery] = useState('');
-  const [scannerOpen, setScannerOpen] = useState(false);
   const [manualQrInput, setManualQrInput] = useState('');
 
   const calculatePlantAge = (dateStr: string): { textBn: string; textEn: string; totalDays: number } => {
@@ -249,22 +247,9 @@ export const QrTrackerScreen: React.FC<QrTrackerScreenProps> = ({
           >
             {lang === 'bn'
               ? 'গাছের টবে লাগানো QR ট্যাগ স্ক্যান করলে সাথে সাথে গাছের বর্তমান বয়স, পানির তথ্য ও ভবিষ্যৎ পূর্বাভাস ওপেন হবে।'
-              : 'Scan any pot QR tag to immediately open that plant’s Current Status & Future Forecast profile.'}
+              : 'Design and generate custom QR tags for your plants to track status and forecasts.'}
           </Text>
         </View>
-
-        <TouchableOpacity
-          onPress={() => setScannerOpen(true)}
-          style={[styles.scanNowBtn, { backgroundColor: theme.primary, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }]}
-        >
-          <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
-            <Circle cx="11" cy="11" r="7" stroke="#FFFFFF" strokeWidth="2.2" />
-            <Path d="M16.5 16.5L21 21" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" />
-          </Svg>
-          <Text style={styles.scanNowBtnText}>
-            {lang === 'bn' ? 'QR স্ক্যান করুন' : 'Scan QR Tag'}
-          </Text>
-        </TouchableOpacity>
       </View>
 
       {/* Step 1: Select Registered Plant (Dropdown Selector) */}
@@ -644,19 +629,6 @@ export const QrTrackerScreen: React.FC<QrTrackerScreenProps> = ({
           </View>
         </>
       )}
-
-      {/* Live Camera & Gallery QR Scanner Modal */}
-      <QrCameraScannerModal
-        visible={scannerOpen}
-        onClose={() => setScannerOpen(false)}
-        plants={plants}
-        onScanSuccess={(plant) => {
-          setScannerOpen(false);
-          onSelectPlant(plant);
-        }}
-        theme={theme}
-        lang={lang}
-      />
     </ScrollView>
   );
 };
