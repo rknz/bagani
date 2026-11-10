@@ -287,58 +287,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </View>
         </View>
 
-        {/* 2. Modern Balanced Search Bar */}
-        <View style={styles.modernSearchRow}>
-          <TouchableOpacity
-            activeOpacity={0.88}
-            onPress={() => {
-              setBotanicalInitialQuery(searchQuery || '');
-              setBotanicalSearchOpen(true);
-            }}
-            style={[
-              styles.modernSearchPill,
-              {
-                backgroundColor: theme.surfaceElevated,
-                borderColor: theme.border,
-              },
-            ]}
-          >
-            <View style={styles.modernSearchInnerLeft}>
-              <Svg width={17} height={17} viewBox="0 0 24 24" fill="none">
-                <Circle
-                  cx="11"
-                  cy="11"
-                  r="8"
-                  stroke={theme.textSecondary}
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <Path
-                  d="M21 21L16.65 16.65"
-                  stroke={theme.textSecondary}
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </Svg>
-              <Text
-                style={[
-                  styles.modernSearchPlaceholder,
-                  { color: theme.textSecondary, fontFamily: fontFam },
-                ]}
-              >
-                {searchQuery
-                  ? searchQuery
-                  : lang === 'bn'
-                  ? 'গাছ বা পরিচর্যার গাইড খুঁজুন...'
-                  : 'Search plants or care guides...'}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        {/* 3. Modern Hero Banner Card */}
+        {/* 2. Modern Hero Banner Card */}
         <View
           style={[
             styles.modernHeroCard,

@@ -267,56 +267,99 @@ export const DirectoryScreen: React.FC<DirectoryScreenProps> = ({
           [
             {
               id: 'agri_office',
-              bn: '🏛️ কৃষি অফিস',
-              en: '🏛️ Agri Offices',
+              icon: '🏛️',
+              line1Bn: 'কৃষি',
+              line2Bn: 'অফিস',
+              line1En: 'Agriculture',
+              line2En: 'Office',
             },
             {
               id: 'experts',
-              bn: '👨‍🌾 অভিজ্ঞ বাগানী',
-              en: '👨‍🌾 Master Gardeners',
+              icon: '👨‍🌾',
+              line1Bn: 'অভিজ্ঞ',
+              line2Bn: 'বাগানী',
+              line1En: 'Master',
+              line2En: 'Gardeners',
             },
             {
               id: 'nurseries',
-              bn: '🪴 নার্সারি ও চারা',
-              en: '🪴 Nurseries',
+              icon: '🪴',
+              line1Bn: 'নার্সারি',
+              line2Bn: 'ও চারা',
+              line1En: 'Nurseries',
+              line2En: '',
             },
             {
               id: 'insights',
-              bn: '💡 অভিজ্ঞতা ভল্ট',
-              en: '💡 Experience Vault',
+              icon: '💡',
+              line1Bn: 'অভিজ্ঞতা',
+              line2Bn: 'ভল্ট',
+              line1En: 'Experience',
+              line2En: 'Vault',
             },
             {
               id: 'community',
-              bn: '💬 বাগানী আড্ডা',
-              en: '💬 Community',
+              icon: '💬',
+              line1Bn: 'বাগানী',
+              line2Bn: 'আড্ডা',
+              line1En: 'Community',
+              line2En: '',
             },
-          ] as { id: DirectoryTab; bn: string; en: string }[]
+          ] as {
+            id: DirectoryTab;
+            icon: string;
+            line1Bn: string;
+            line2Bn?: string;
+            line1En: string;
+            line2En?: string;
+          }[]
         ).map((tab) => {
           const active = activeTab === tab.id;
+          const line2 = lang === 'bn' ? tab.line2Bn : tab.line2En;
           return (
             <TouchableOpacity
               key={tab.id}
               onPress={() => setActiveTab(tab.id)}
+              activeOpacity={0.82}
               style={[
                 styles.tabBtn,
                 {
                   backgroundColor: active
                     ? theme.primary
-                    : theme.cardBackground,
+                    : (theme.cardBackground || theme.surface),
                   borderColor: active ? theme.primary : theme.border,
                 },
               ]}
             >
-              <Text
-                style={{
-                  color: active ? '#FFFFFF' : theme.textPrimary,
-                  fontWeight: '800',
-                  fontSize: 12,
-                  fontFamily: fontFam,
-                }}
-              >
-                {lang === 'bn' ? tab.bn : tab.en}
-              </Text>
+              <Text style={styles.tabIcon}>{tab.icon}</Text>
+              <View style={styles.tabTextContainer}>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.tabLabelLine,
+                    {
+                      color: active ? '#FFFFFF' : theme.textPrimary,
+                      fontFamily: fontFam,
+                    },
+                  ]}
+                >
+                  {lang === 'bn' ? tab.line1Bn : tab.line1En}
+                </Text>
+                {line2 ? (
+                  <Text
+                    numberOfLines={1}
+                    style={[
+                      styles.tabLabelLine,
+                      {
+                        color: active ? '#FFFFFF' : theme.textPrimary,
+                        fontFamily: fontFam,
+                      },
+                    ]}
+                  >
+                    {line2}
+                  </Text>
+                ) : null}
+              </View>
             </TouchableOpacity>
           );
         })}
@@ -516,7 +559,7 @@ export const DirectoryScreen: React.FC<DirectoryScreenProps> = ({
               ]}
             >
               <View style={styles.postHeaderRow}>
-                <View>
+                <View style={{ flex: 1, minWidth: 0, marginRight: 8 }}>
                   <Text style={{ color: theme.textPrimary, fontWeight: '800', fontSize: 14, fontFamily: fontFam }}>
                     👤 {exp.authorName} • <Text style={{ color: theme.primary }}>{exp.district}</Text>
                   </Text>
@@ -542,43 +585,55 @@ export const DirectoryScreen: React.FC<DirectoryScreenProps> = ({
               </View>
 
               {/* Container & Soil Used */}
-              <View style={[styles.insightRow, { backgroundColor: theme.surfaceElevated }]}>
-                <Text style={{ color: theme.textPrimary, fontWeight: '700', fontSize: 12, fontFamily: fontFam }}>
-                  🪴 টব ও মাটি:
-                </Text>
-                <Text style={{ color: theme.textSecondary, fontSize: 12.5, flex: 1, fontFamily: fontFam }}>
+              <View style={[styles.expBlock, { backgroundColor: theme.surfaceElevated, borderColor: theme.border }]}>
+                <View style={styles.expBlockLabelRow}>
+                  <Text style={{ fontSize: 13 }}>🪴</Text>
+                  <Text style={{ color: theme.textPrimary, fontWeight: '700', fontSize: 12, fontFamily: fontFam }}>
+                    {lang === 'bn' ? 'টব ও মাটির মিশ্রণ:' : 'Container & Soil Media:'}
+                  </Text>
+                </View>
+                <Text style={[styles.expBlockText, { color: theme.textSecondary, fontFamily: fontFam }]}>
                   {exp.containerAndSoilUsed}
                 </Text>
               </View>
 
               {/* Key Pruning or Success Tip */}
-              <View style={[styles.insightRow, { backgroundColor: theme.selectedSurface, borderColor: theme.primary, borderWidth: 1 }]}>
-                <Text style={{ color: theme.primary, fontWeight: '700', fontSize: 12, fontFamily: fontFam }}>
-                  ✂️ ফলন বাড়ানোর সিক্রেট টিপস:
-                </Text>
-                <Text style={{ color: theme.textPrimary, fontSize: 12.5, flex: 1, lineHeight: 18, fontFamily: fontFam }}>
+              <View style={[styles.expBlock, { backgroundColor: theme.selectedSurface, borderColor: theme.primary, borderWidth: 1.2 }]}>
+                <View style={styles.expBlockLabelRow}>
+                  <Text style={{ fontSize: 13 }}>✂️</Text>
+                  <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12, fontFamily: fontFam }}>
+                    {lang === 'bn' ? 'ফলন বাড়ানোর সিক্রেট কৌশল:' : 'Key Pruning & Yield Secret:'}
+                  </Text>
+                </View>
+                <Text style={[styles.expBlockText, { color: theme.textPrimary, fontFamily: fontFam, fontWeight: '600' }]}>
                   {exp.keySuccessOrPruningTip}
                 </Text>
               </View>
 
               {/* Disease Solved if any */}
               {exp.diseaseOrChallengeSolved ? (
-                <View style={[styles.insightRow, { backgroundColor: theme.surfaceElevated }]}>
-                  <Text style={{ color: theme.warning, fontWeight: '700', fontSize: 12, fontFamily: fontFam }}>
-                    🩺 রোগ সমাধান:
-                  </Text>
-                  <Text style={{ color: theme.textSecondary, fontSize: 12.5, flex: 1, fontFamily: fontFam }}>
+                <View style={[styles.expBlock, { backgroundColor: theme.surfaceElevated, borderColor: theme.warning, borderWidth: 1 }]}>
+                  <View style={styles.expBlockLabelRow}>
+                    <Text style={{ fontSize: 13 }}>🩺</Text>
+                    <Text style={{ color: theme.warning, fontWeight: '700', fontSize: 12, fontFamily: fontFam }}>
+                      {lang === 'bn' ? 'রোগ বা সমস্যার সমাধান:' : 'Challenge or Disease Solved:'}
+                    </Text>
+                  </View>
+                  <Text style={[styles.expBlockText, { color: theme.textSecondary, fontFamily: fontFam }]}>
                     {exp.diseaseOrChallengeSolved}
                   </Text>
                 </View>
               ) : null}
 
               {/* Yield Result Summary */}
-              <View style={[styles.insightRow, { backgroundColor: theme.surfaceElevated, borderLeftWidth: 3, borderLeftColor: theme.secondary }]}>
-                <Text style={{ color: theme.secondary, fontWeight: '800', fontSize: 12, fontFamily: fontFam }}>
-                  🧺 অর্জিত ফলন:
-                </Text>
-                <Text style={{ color: theme.textPrimary, fontWeight: '700', fontSize: 12.5, flex: 1, fontFamily: fontFam }}>
+              <View style={[styles.expBlock, { backgroundColor: theme.surfaceElevated, borderLeftWidth: 3.5, borderLeftColor: theme.secondary }]}>
+                <View style={styles.expBlockLabelRow}>
+                  <Text style={{ fontSize: 13 }}>🧺</Text>
+                  <Text style={{ color: theme.secondary, fontWeight: '800', fontSize: 12, fontFamily: fontFam }}>
+                    {lang === 'bn' ? 'বাস্তব ফলনের খতিয়ান:' : 'Harvested Yield Record:'}
+                  </Text>
+                </View>
+                <Text style={[styles.expBlockText, { color: theme.textPrimary, fontFamily: fontFam, fontWeight: '700' }]}>
                   {exp.yieldResultSummary}
                 </Text>
               </View>
@@ -850,19 +905,42 @@ const styles = StyleSheet.create({
   },
   tabBtn: {
     flex: 1,
-    minWidth: 100,
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-    borderRadius: 10,
-    borderWidth: 1,
+    minWidth: 96,
+    paddingVertical: 12,
+    paddingHorizontal: 6,
+    borderRadius: 14,
+    borderWidth: 1.2,
     alignItems: 'center',
     justifyContent: 'center',
+    minHeight: 82,
+    gap: 5,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+  },
+  tabIcon: {
+    fontSize: 22,
+    lineHeight: 26,
+    textAlign: 'center',
+  },
+  tabTextContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  tabLabelLine: {
+    fontSize: 12,
+    fontWeight: '800',
+    lineHeight: 16,
+    textAlign: 'center',
   },
   distChip: {
     paddingHorizontal: 12,
     paddingVertical: 7,
-    borderRadius: 20,
-    borderWidth: 1,
+    borderRadius: 10,
+    borderWidth: 1.2,
   },
   matchedBanner: {
     paddingHorizontal: 14,
@@ -872,9 +950,9 @@ const styles = StyleSheet.create({
   },
   dirCard: {
     padding: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    gap: 8,
+    borderRadius: 14,
+    borderWidth: 1.2,
+    gap: 10,
   },
   dirHeaderRow: {
     flexDirection: 'row',
@@ -897,12 +975,31 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    gap: 8,
   },
   upvoteBtn: {
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
     borderWidth: 1,
+  },
+  expBlock: {
+    width: '100%',
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 4,
+  },
+  expBlockLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  expBlockText: {
+    fontSize: 12.5,
+    lineHeight: 19,
+    width: '100%',
+    flexWrap: 'wrap',
   },
   insightRow: {
     flexDirection: 'row',

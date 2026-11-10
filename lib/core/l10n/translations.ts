@@ -32,7 +32,7 @@ export interface TranslationStrings {
 
 export const TRANSLATIONS: Record<AppLanguage, TranslationStrings> = {
   bn: {
-    appName: 'BAGANI (বাগানি)',
+    appName: 'Bagani (বাগানি)',
     subtitle: 'স্মার্ট ছাদ বাগান ও গাছের পরিচর্যা',
     tagline: 'Grow Smart, Live Green.',
     inspQuote: '“গাছ লাগান, পরিবেশ বাঁচান — সবুজ হোক প্রতিটি ছাদ”',
@@ -56,7 +56,7 @@ export const TRANSLATIONS: Record<AppLanguage, TranslationStrings> = {
     developerCredit: 'Developed by ProFix - Web & Soft',
   },
   en: {
-    appName: 'BAGANI',
+    appName: 'Bagani',
     subtitle: 'Smart Gardening & Plant Care',
     tagline: 'Grow Smart, Live Green.',
     inspQuote: '“Plant Trees, Save Nature — Make Every Rooftop Green”',

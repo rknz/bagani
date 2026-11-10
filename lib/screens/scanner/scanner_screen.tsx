@@ -16,6 +16,7 @@
  */
 
 import * as ImagePicker from 'expo-image-picker';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Alert,
@@ -100,7 +101,9 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
   // Live Camera Scanner State
   const [isLiveCameraOpen, setIsLiveCameraOpen] = useState<boolean>(false);
   const [cameraFacing, setCameraFacing] = useState<'environment' | 'user'>('environment');
+  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const cameraVideoRef = useRef<any>(null);
+  const nativeCameraRef = useRef<any>(null);
   const cameraStreamRef = useRef<MediaStream | null>(null);
 
   const fontFam =
@@ -162,7 +165,27 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
         handleNativeCameraFallback();
       }
     } else {
-      handleNativeCameraFallback();
+      // Native Android / iOS
+      try {
+        if (!cameraPermission?.granted) {
+          const req = await requestCameraPermission();
+          if (req?.granted) {
+            setIsLiveCameraOpen(true);
+          } else {
+            Alert.alert(
+              lang === 'bn' ? 'ক্যামেরা পারমিশন প্রয়োজন' : 'Camera Permission Required',
+              lang === 'bn'
+                ? 'গাছের পাতার রোগ নির্ণয় ও ছবি তোলার জন্য ক্যামেরা ব্যবহারের অনুমতি দিন।'
+                : 'Please allow camera access in device settings to capture plant photos.'
+            );
+          }
+        } else {
+          setIsLiveCameraOpen(true);
+        }
+      } catch (err) {
+        console.warn('Native camera permission error:', err);
+        handleNativeCameraFallback();
+      }
     }
   };
 
@@ -176,24 +199,51 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
     setIsLiveCameraOpen(false);
   };
 
-  const handleCaptureSnapshot = () => {
-    if (cameraVideoRef.current) {
-      const video = cameraVideoRef.current;
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth || 640;
-        canvas.height = video.videoHeight || 480;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-          setCapturedImageUri(dataUrl);
-          stopLiveCamera();
-          executeAnalysis(activePlantHint, examinedPart, scanMode, dataUrl);
-          return;
+  const handleCaptureSnapshot = async () => {
+    if (Platform.OS === 'web') {
+      if (cameraVideoRef.current) {
+        const video = cameraVideoRef.current;
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth || 640;
+          canvas.height = video.videoHeight || 480;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            const base64 = dataUrl.split(',')[1];
+            setCapturedImageUri(dataUrl);
+            stopLiveCamera();
+            executeAnalysis(activePlantHint, examinedPart, scanMode, dataUrl, base64);
+            return;
+          }
+        } catch (e) {
+          console.warn('Snapshot capture error', e);
         }
-      } catch (e) {
-        console.warn('Snapshot capture error', e);
+      }
+    } else {
+      // Native Android / iOS snapshot capture from CameraView
+      try {
+        if (nativeCameraRef.current) {
+          const photo = await nativeCameraRef.current.takePictureAsync({
+            base64: true,
+            quality: 0.85,
+          });
+          if (photo && photo.uri) {
+            setCapturedImageUri(photo.uri);
+            stopLiveCamera();
+            executeAnalysis(
+              activePlantHint,
+              examinedPart,
+              scanMode,
+              photo.uri,
+              photo.base64 || undefined
+            );
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Native camera capture error', err);
       }
     }
     stopLiveCamera();
@@ -201,15 +251,27 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
 
   const handleNativeCameraFallback = async () => {
     try {
+      const perm = await ImagePicker.requestCameraPermissionsAsync();
+      if (!perm.granted) {
+        Alert.alert(
+          lang === 'bn' ? 'ক্যামেরা পারমিশন প্রয়োজন' : 'Camera Permission Required',
+          lang === 'bn'
+            ? 'গাছের পাতার ছবি তোলার জন্য ক্যামেরা ব্যবহারের অনুমতি দিন।'
+            : 'Please allow camera access in device settings.'
+        );
+        return;
+      }
       const res = await ImagePicker.launchCameraAsync({
         mediaTypes: ['images'],
-        quality: 0.9,
+        quality: 0.85,
+        base64: true,
       });
 
       if (!res.canceled && res.assets && res.assets.length > 0) {
         const uri = res.assets[0].uri;
+        const base64 = res.assets[0].base64 || undefined;
         setCapturedImageUri(uri);
-        executeAnalysis(activePlantHint, examinedPart, scanMode, uri);
+        executeAnalysis(activePlantHint, examinedPart, scanMode, uri, base64);
       }
     } catch (e) {
       console.warn('Camera capture error', e);
@@ -220,7 +282,8 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
     plantIdentifier: string,
     part: ExaminedPart,
     mode: ScanMode,
-    customUri?: string
+    customUri?: string,
+    customBase64?: string
   ) => {
     setIsAnalyzing(true);
     setAnalysisProgress(20);
@@ -230,12 +293,18 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
         : '1. Extracting visual leaf morphology & image vectors...'
     );
 
+    const targetUri = customUri || capturedImageUri || '';
+    let targetBase64 = customBase64;
+    if (!targetBase64 && targetUri.startsWith('data:image/')) {
+      targetBase64 = targetUri.split(',')[1];
+    }
+
     const timer1 = setTimeout(() => {
       setAnalysisProgress(60);
       setAnalysisPhaseText(
         lang === 'bn'
-          ? '২. গ্লোবাল ইন্টারনেট ও উইকিপিডিয়া ক্লাউড অনুসন্ধান হচ্ছে...'
-          : '2. Querying global Wikipedia Botanical Cloud & scientific repository...'
+          ? '২. AI প্যাথলজি ও ক্লাউড বিশ্লেষণ হচ্ছে...'
+          : '2. Querying AI Pathology & global botanical cloud...'
       );
     }, 350);
 
@@ -249,7 +318,8 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
 
       try {
         const result = await AiScannerService.analyzePlantImage({
-          imageUri: customUri || capturedImageUri || '',
+          imageUri: targetUri,
+          base64Image: targetBase64,
           mode,
           examinedPart: part,
           plantHintId: plantIdentifier || activePlantHint,
@@ -278,15 +348,27 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
 
   const handleGalleryUpload = async () => {
     try {
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!perm.granted) {
+        Alert.alert(
+          lang === 'bn' ? 'গ্যালারি পারমিশন প্রয়োজন' : 'Permission Required',
+          lang === 'bn'
+            ? 'ছবি নির্বাচনের জন্য ডিভাইসের গ্যালারি ব্যবহারের অনুমতি দিন।'
+            : 'Please grant permission to access your photo gallery.'
+        );
+        return;
+      }
       const res = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
-        quality: 0.9,
+        quality: 0.85,
+        base64: true,
       });
 
       if (!res.canceled && res.assets && res.assets.length > 0) {
         const uri = res.assets[0].uri;
+        const base64 = res.assets[0].base64 || undefined;
         setCapturedImageUri(uri);
-        executeAnalysis(activePlantHint, examinedPart, scanMode, uri);
+        executeAnalysis(activePlantHint, examinedPart, scanMode, uri, base64);
       }
     } catch (e) {
       console.warn('Gallery pick error', e);
@@ -476,7 +558,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
           {/* Live Camera Viewfinder Stream */}
           {isLiveCameraOpen && (
             <View style={[styles.liveCameraBox, { borderColor: theme.primary }]}>
-              {Platform.OS === 'web' && (
+              {Platform.OS === 'web' ? (
                 <video
                   ref={(el) => {
                     cameraVideoRef.current = el;
@@ -498,6 +580,14 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
                     left: 0,
                   }}
                 />
+              ) : (
+                cameraPermission?.granted && (
+                  <CameraView
+                    ref={nativeCameraRef}
+                    style={StyleSheet.absoluteFillObject}
+                    facing={cameraFacing === 'environment' ? 'back' : 'front'}
+                  />
+                )
               )}
 
               {/* Viewfinder Target Reticle */}
@@ -947,7 +1037,11 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
                     </Text>
                   </View>
                   <Text style={{ fontSize: 11, color: theme.primary, fontWeight: '700' }}>
-                    🌐 {lang === 'bn' ? 'অনলাইন ক্লাউড ভেরিফাইড' : 'Online Verified'}
+                    {scanResult.isAiVisualInference
+                      ? '⚡ Gemini AI Vision'
+                      : lang === 'bn'
+                      ? '🌐 অনলাইন ভেরিফাইড'
+                      : '🌐 Online Verified'}
                   </Text>
                 </View>
               </View>
@@ -992,6 +1086,29 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
                 </Text>
               </View>
             </View>
+
+            {/* Uncertainty Warning Banner */}
+            {scanResult.uncertaintyWarning && (
+              <View
+                style={[
+                  styles.uncertaintyBox,
+                  {
+                    backgroundColor: 'rgba(217, 119, 6, 0.12)',
+                    borderColor: theme.warning,
+                  },
+                ]}
+              >
+                <Text style={{ fontSize: 16 }}>⚠️</Text>
+                <Text
+                  style={[
+                    styles.uncertaintyText,
+                    { color: '#B45309', fontFamily: fontFam },
+                  ]}
+                >
+                  {scanResult.uncertaintyWarning}
+                </Text>
+              </View>
+            )}
 
             {/* Symptoms Description */}
             <View style={styles.sectionBlock}>
@@ -1099,6 +1216,59 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
                 "{lang === 'bn' ? scanResult.onlineSource.summaryBn : scanResult.onlineSource.summaryEn}"
               </Text>
             </View>
+
+            {/* DAE Bangladesh Krishi Call Center Helpline Touchpoint */}
+            {scanResult.expertConsultContact && (
+              <View
+                style={[
+                  styles.expertCard,
+                  {
+                    backgroundColor: theme.surfaceElevated,
+                    borderColor: theme.border,
+                  },
+                ]}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <Text style={{ fontSize: 24 }}>👨‍🌾</Text>
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <Text
+                      style={[
+                        styles.expertTitle,
+                        { color: theme.textPrimary, fontFamily: fontFam },
+                      ]}
+                    >
+                      {lang === 'bn'
+                        ? 'সরকারি কৃষি কর্মকর্তার পরামর্শ'
+                        : 'Agricultural Extension Expert Support'}
+                    </Text>
+                    <Text
+                      numberOfLines={1}
+                      style={[
+                        styles.expertSub,
+                        { color: theme.textSecondary, fontFamily: fontFam },
+                      ]}
+                    >
+                      {lang === 'bn'
+                        ? scanResult.expertConsultContact.serviceNameBn
+                        : scanResult.expertConsultContact.serviceNameEn}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    activeOpacity={0.85}
+                    onPress={() =>
+                      Linking.openURL(
+                        `tel:${scanResult.expertConsultContact?.hotline || '16123'}`
+                      )
+                    }
+                    style={[styles.callBtn, { backgroundColor: theme.primary }]}
+                  >
+                    <Text style={styles.callBtnText}>
+                      📞 {scanResult.expertConsultContact.hotline}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
 
             {/* Action 1: Add Plant to Garden */}
             {onAddNewPlant && (
@@ -1516,5 +1686,46 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1.5,
     marginTop: 4,
+  },
+  uncertaintyBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginVertical: 4,
+  },
+  uncertaintyText: {
+    flex: 1,
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: '600',
+  },
+  expertCard: {
+    padding: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginVertical: 6,
+  },
+  expertTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  expertSub: {
+    fontSize: 11,
+    marginTop: 2,
+  },
+  callBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  callBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '800',
   },
 });

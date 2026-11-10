@@ -24,6 +24,7 @@ interface QrTrackerScreenProps {
   lang: AppLanguage;
   plants: PlantModel[];
   ownerName: string;
+  onBack?: () => void;
   onSelectPlant: (plant: PlantModel) => void;
   onUpdatePlantQrSettings?: (
     plantId: string,
@@ -35,56 +36,12 @@ interface QrTrackerScreenProps {
   ) => void;
 }
 
-/**
- * Deterministic visual QR matrix generator from payload string
- * so every plant gets a unique, authentic scannable-style matrix preview
- */
-function generateVisualQrMatrix(payload: string, size = 15): boolean[][] {
-  let hash = 2166136261;
-  for (let i = 0; i < payload.length; i++) {
-    hash ^= payload.charCodeAt(i);
-    hash = Math.imul(hash, 16777619);
-  }
-
-  const matrix: boolean[][] = Array.from({ length: size }, () =>
-    Array(size).fill(false)
-  );
-
-  const drawFinder = (r0: number, c0: number) => {
-    for (let r = 0; r < 5; r++) {
-      for (let c = 0; c < 5; c++) {
-        const isBorder = r === 0 || r === 4 || c === 0 || c === 4;
-        const isCenter =
-          r >= 1 && r <= 3 && c >= 1 && c <= 3 && r === 2 && c === 2;
-        matrix[r0 + r][c0 + c] = isBorder || isCenter;
-      }
-    }
-  };
-
-  drawFinder(0, 0);
-  drawFinder(0, size - 5);
-  drawFinder(size - 5, 0);
-
-  let seed = Math.abs(hash) || 1234567;
-  for (let r = 0; r < size; r++) {
-    for (let c = 0; c < size; c++) {
-      const inTopLeft = r < 6 && c < 6;
-      const inTopRight = r < 6 && c >= size - 6;
-      const inBottomLeft = r >= size - 6 && c < 6;
-      if (inTopLeft || inTopRight || inBottomLeft) continue;
-
-      seed = (seed * 1664525 + 1013904223) % 4294967296;
-      matrix[r][c] = seed % 100 < 48;
-    }
-  }
-  return matrix;
-}
-
 export const QrTrackerScreen: React.FC<QrTrackerScreenProps> = ({
   theme,
   lang,
   plants,
   ownerName,
+  onBack,
   onSelectPlant,
   onUpdatePlantQrSettings,
 }) => {
@@ -171,9 +128,8 @@ export const QrTrackerScreen: React.FC<QrTrackerScreenProps> = ({
 
   const qrMatrix = useMemo(
     () =>
-      generateVisualQrMatrix(
-        selectedPlant?.qrCodeId || 'BAGANI-QR-1001',
-        15
+      QrPdfService.generateVisualQrMatrix(
+        selectedPlant?.qrCodeId || 'BAGANI-QR-1001'
       ),
     [selectedPlant]
   );
@@ -218,6 +174,40 @@ export const QrTrackerScreen: React.FC<QrTrackerScreenProps> = ({
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.container}
     >
+      {/* Return to Garden Touchpoint */}
+      {onBack && (
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={onBack}
+          style={[
+            styles.backToGardenBtn,
+            {
+              backgroundColor: theme.surfaceElevated,
+              borderColor: theme.border,
+            },
+          ]}
+          accessibilityLabel={lang === 'bn' ? 'বাগানে ফিরুন' : 'Back to Garden'}
+        >
+          <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+            <Path
+              d="M19 12H5M5 12L12 19M5 12L12 5"
+              stroke={theme.primary}
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </Svg>
+          <Text
+            style={[
+              styles.backToGardenText,
+              { color: theme.primary, fontFamily: fontFam },
+            ]}
+          >
+            {lang === 'bn' ? 'বাগানে ফিরুন' : 'Back to Garden'}
+          </Text>
+        </TouchableOpacity>
+      )}
+
       {/* Top Action Header: Futuristic QR Scanner Launcher */}
       <View
         style={[
@@ -510,23 +500,31 @@ export const QrTrackerScreen: React.FC<QrTrackerScreenProps> = ({
                 </>
               )}
 
-              {/* Crisp Visual QR Code Matrix */}
+              {/* Crisp Standard ISO/IEC 18004 QR Code Matrix */}
               <View style={styles.qrMatrixBox}>
-                {qrMatrix.map((row, rIdx) => (
-                  <View key={rIdx} style={styles.qrRow}>
-                    {row.map((cell, cIdx) => (
-                      <View
-                        key={cIdx}
-                        style={[
-                          styles.qrCell,
-                          {
-                            backgroundColor: cell ? '#111827' : '#FFFFFF',
-                          },
-                        ]}
-                      />
-                    ))}
-                  </View>
-                ))}
+                {qrMatrix.map((row, rIdx) => {
+                  const cellDim =
+                    row.length > 0
+                      ? Math.max(5, Math.min(8.5, Math.floor(190 / row.length)))
+                      : 7;
+                  return (
+                    <View key={rIdx} style={styles.qrRow}>
+                      {row.map((cell, cIdx) => (
+                        <View
+                          key={cIdx}
+                          style={[
+                            styles.qrCell,
+                            {
+                              width: cellDim,
+                              height: cellDim,
+                              backgroundColor: cell ? '#111827' : '#FFFFFF',
+                            },
+                          ]}
+                        />
+                      ))}
+                    </View>
+                  );
+                })}
               </View>
 
               <Text style={styles.tagPayloadCode}>
@@ -641,6 +639,20 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 16,
     paddingBottom: 90,
+  },
+  backToGardenBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 18,
+    borderWidth: 1,
+  },
+  backToGardenText: {
+    fontSize: 13,
+    fontWeight: '700',
   },
   scannerBanner: {
     padding: 18,

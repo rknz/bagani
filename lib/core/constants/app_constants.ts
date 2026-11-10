@@ -14,8 +14,8 @@ export const APP_CONFIG = {
   packageName: 'com.profix.bagani',
   bundleIdentifier: 'com.profix.bagani',
   developerName: 'ProFix - Web & Soft',
-  version: '1.0.0',
-  buildNumber: 1,
+  version: '2.5.0',
+  buildNumber: 25,
 
   osSupport: {
     androidMinSdk: 29, // Android 10

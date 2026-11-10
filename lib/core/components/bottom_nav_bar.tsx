@@ -346,8 +346,12 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
   const resolveActive = (itemRoute: AppScreenRoute): boolean => {
     if (activeRoute === itemRoute) return true;
     if (activeRoute === 'weather_dashboard' && itemRoute === 'home') return true;
-    if (activeRoute === 'plant_profile' && itemRoute === 'my_garden') return true;
-    if ((activeRoute === 'scanner' || activeRoute === 'qr_tracker') && itemRoute === 'scan') return true;
+    if (
+      (activeRoute === 'plant_profile' || activeRoute === 'qr_tracker') &&
+      itemRoute === 'my_garden'
+    )
+      return true;
+    if (activeRoute === 'scanner' && itemRoute === 'scan') return true;
     if ((activeRoute === 'planner' || activeRoute === 'directory') && itemRoute === 'guide') return true;
     if ((activeRoute === 'settings' || activeRoute === 'notifications') && itemRoute === 'profile') return true;
     return false;

@@ -7,6 +7,7 @@
 
 import * as Print from 'expo-print';
 import { Image, Platform } from 'react-native';
+import QRCode from 'qrcode';
 import { PlantModel, QrTagSize } from '../models/plant_model';
 
 const LOGO_ASSET = require('../../assets/images/logo.png');
@@ -34,55 +35,35 @@ export class QrPdfService {
   }
 
   /**
-   * Deterministic visual QR matrix generator from payload string
+   * Generates standard ISO/IEC 18004 QR code boolean matrix with Reed-Solomon error correction
+   * Scannable by any smartphone camera (Google Lens, Apple iOS Camera, Xiaomi, Samsung)
    */
-  static generateVisualQrMatrix(payload: string, size = 15): boolean[][] {
-    let hash = 2166136261;
-    for (let i = 0; i < payload.length; i++) {
-      hash ^= payload.charCodeAt(i);
-      hash = Math.imul(hash, 16777619);
-    }
-
-    const matrix: boolean[][] = Array.from({ length: size }, () =>
-      Array(size).fill(false)
-    );
-
-    const drawFinder = (r0: number, c0: number) => {
-      for (let r = 0; r < 5; r++) {
-        for (let c = 0; c < 5; c++) {
-          const isBorder = r === 0 || r === 4 || c === 0 || c === 4;
-          const isCenter =
-            r >= 1 && r <= 3 && c >= 1 && c <= 3 && r === 2 && c === 2;
-          matrix[r0 + r][c0 + c] = isBorder || isCenter;
+  static generateVisualQrMatrix(payload: string): boolean[][] {
+    try {
+      const qr = QRCode.create(payload || 'BAGANI-QR', {
+        errorCorrectionLevel: 'M',
+      });
+      const size = qr.modules.size;
+      const matrix: boolean[][] = [];
+      for (let r = 0; r < size; r++) {
+        const row: boolean[] = [];
+        for (let c = 0; c < size; c++) {
+          row.push(qr.modules.get(r, c) === 1);
         }
+        matrix.push(row);
       }
-    };
-
-    drawFinder(0, 0);
-    drawFinder(0, size - 5);
-    drawFinder(size - 5, 0);
-
-    let seed = Math.abs(hash) || 1234567;
-    for (let r = 0; r < size; r++) {
-      for (let c = 0; c < size; c++) {
-        const inTopLeft = r < 6 && c < 6;
-        const inTopRight = r < 6 && c >= size - 6;
-        const inBottomLeft = r >= size - 6 && c < 6;
-        if (inTopLeft || inTopRight || inBottomLeft) continue;
-
-        seed = (seed * 1664525 + 1013904223) % 4294967296;
-        matrix[r][c] = seed % 100 < 48;
-      }
+      return matrix;
+    } catch {
+      return Array.from({ length: 21 }, () => Array(21).fill(false));
     }
-    return matrix;
   }
 
   /**
    * Generates a crisp vector <svg> QR code so browsers and printers always
    * render solid black modules even when "Background graphics" is disabled.
    */
-  static buildQrSvg(payload: string, cellPx = 9): string {
-    const matrix = this.generateVisualQrMatrix(payload, 15);
+  static buildQrSvg(payload: string, cellPx = 8): string {
+    const matrix = this.generateVisualQrMatrix(payload);
     const dim = matrix.length * cellPx;
     const rects: string[] = [];
 
@@ -92,7 +73,7 @@ export class QrPdfService {
           rects.push(
             `<rect x="${c * cellPx}" y="${
               r * cellPx
-            }" width="${cellPx}" height="${cellPx}" fill="#17231C" />`
+            }" width="${cellPx}" height="${cellPx}" fill="#111827" />`
           );
         }
       }

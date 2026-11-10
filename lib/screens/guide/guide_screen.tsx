@@ -80,19 +80,29 @@ export const GuideScreen: React.FC<GuideScreenProps> = ({
             activeOpacity={0.82}
             style={[
               styles.segmentBtn,
-              {
-                backgroundColor:
-                  subTab === 'planner' ? theme.primary : 'transparent',
-                borderColor:
-                  subTab === 'planner' ? theme.primary : 'transparent',
-              },
+              subTab === 'planner'
+                ? [
+                    styles.segmentBtnActive,
+                    {
+                      backgroundColor: theme.primary,
+                      borderColor: theme.primary,
+                      shadowColor: theme.primary,
+                    },
+                  ]
+                : [
+                    styles.segmentBtnInactive,
+                    {
+                      backgroundColor: theme.cardBackground || theme.surface,
+                      borderColor: theme.border,
+                    },
+                  ],
             ]}
           >
             <Text
               numberOfLines={1}
               style={{
-                color: subTab === 'planner' ? '#FFFFFF' : theme.textSecondary,
-                fontWeight: '700',
+                color: subTab === 'planner' ? '#FFFFFF' : theme.textPrimary,
+                fontWeight: subTab === 'planner' ? '800' : '700',
                 fontSize: 13,
                 fontFamily: fontFam,
               }}
@@ -106,19 +116,29 @@ export const GuideScreen: React.FC<GuideScreenProps> = ({
             activeOpacity={0.82}
             style={[
               styles.segmentBtn,
-              {
-                backgroundColor:
-                  subTab === 'weather' ? theme.primary : 'transparent',
-                borderColor:
-                  subTab === 'weather' ? theme.primary : 'transparent',
-              },
+              subTab === 'weather'
+                ? [
+                    styles.segmentBtnActive,
+                    {
+                      backgroundColor: theme.primary,
+                      borderColor: theme.primary,
+                      shadowColor: theme.primary,
+                    },
+                  ]
+                : [
+                    styles.segmentBtnInactive,
+                    {
+                      backgroundColor: theme.cardBackground || theme.surface,
+                      borderColor: theme.border,
+                    },
+                  ],
             ]}
           >
             <Text
               numberOfLines={1}
               style={{
-                color: subTab === 'weather' ? '#FFFFFF' : theme.textSecondary,
-                fontWeight: '700',
+                color: subTab === 'weather' ? '#FFFFFF' : theme.textPrimary,
+                fontWeight: subTab === 'weather' ? '800' : '700',
                 fontSize: 13,
                 fontFamily: fontFam,
               }}
@@ -132,20 +152,29 @@ export const GuideScreen: React.FC<GuideScreenProps> = ({
             activeOpacity={0.82}
             style={[
               styles.segmentBtn,
-              {
-                backgroundColor:
-                  subTab === 'directory' ? theme.primary : 'transparent',
-                borderColor:
-                  subTab === 'directory' ? theme.primary : 'transparent',
-              },
+              subTab === 'directory'
+                ? [
+                    styles.segmentBtnActive,
+                    {
+                      backgroundColor: theme.primary,
+                      borderColor: theme.primary,
+                      shadowColor: theme.primary,
+                    },
+                  ]
+                : [
+                    styles.segmentBtnInactive,
+                    {
+                      backgroundColor: theme.cardBackground || theme.surface,
+                      borderColor: theme.border,
+                    },
+                  ],
             ]}
           >
             <Text
               numberOfLines={1}
               style={{
-                color:
-                  subTab === 'directory' ? '#FFFFFF' : theme.textSecondary,
-                fontWeight: '700',
+                color: subTab === 'directory' ? '#FFFFFF' : theme.textPrimary,
+                fontWeight: subTab === 'directory' ? '800' : '700',
                 fontSize: 13,
                 fontFamily: fontFam,
               }}
@@ -194,17 +223,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderBottomWidth: 1,
     paddingHorizontal: DESIGN_TOKENS.screenHorizontalPadding,
-    paddingVertical: 8,
+    paddingVertical: 10,
   },
   switcherBar: {
     width: '100%',
     maxWidth: 960,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    padding: 5,
+    padding: 6,
     borderRadius: 14,
     borderWidth: 1,
-    gap: 6,
+    gap: 8,
   },
   segmentBtn: {
     flex: 1,
@@ -213,9 +242,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    minHeight: 40,
+    minHeight: 44,
     borderRadius: 10,
-    borderWidth: 1,
-    paddingHorizontal: 10,
+    borderWidth: 1.5,
+    paddingHorizontal: 12,
+  },
+  segmentBtnActive: {
+    elevation: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  segmentBtnInactive: {
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
   },
 });

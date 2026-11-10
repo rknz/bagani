@@ -2,7 +2,7 @@
   "expo": {
     "name": "BAGANI",
     "slug": "bagani",
-    "version": "1.0.0",
+    "version": "2.5.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "userInterfaceStyle": "automatic",
@@ -15,7 +15,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.profix.bagani",
-      "buildNumber": "1",
+      "buildNumber": "25",
       "supportsTablet": true,
       "deploymentTarget": "15.0",
       "usesAppleSignIn": true,
@@ -24,8 +24,7 @@
         "NSCameraUsageDescription": "BAGANI uses your camera to scan plant QR code tags on your rooftop pots and capture leaf photos for instant AI disease diagnosis.",
         "NSPhotoLibraryUsageDescription": "BAGANI accesses your photo library so you can attach plant growth timeline photos and analyze leaf health.",
         "NSPhotoLibraryAddUsageDescription": "BAGANI saves printable QR code plant tags and growth photos to your library.",
-        "NSLocationWhenInUseUsageDescription": "BAGANI uses your coarse location while using the app to provide local weather-based watering schedules and nearby agriculture directories.",
-        "NSUserTrackingUsageDescription": "This identifier will be used to deliver relevant gardening tips and non-intrusive ads to support free app features."
+        "NSLocationWhenInUseUsageDescription": "BAGANI uses your coarse location while using the app to provide local weather-based watering schedules and nearby agriculture directories."
       },
       "privacyManifests": {
         "NSPrivacyAccessedAPITypes": [
@@ -50,7 +49,7 @@
     },
     "android": {
       "package": "com.profix.bagani",
-      "versionCode": 1,
+      "versionCode": 25,
       "edgeToEdgeEnabled": true,
       "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
@@ -59,13 +58,14 @@
       },
       "permissions": [
         "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.POST_NOTIFICATIONS",
         "android.permission.INTERNET"
       ],
       "blockedPermissions": [
-        "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.MANAGE_EXTERNAL_STORAGE",
         "android.permission.ACCESS_BACKGROUND_LOCATION",
         "android.permission.SCHEDULE_EXACT_ALARM"

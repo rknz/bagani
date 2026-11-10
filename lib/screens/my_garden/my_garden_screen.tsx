@@ -26,6 +26,7 @@ import { toBengaliNumber } from '../../core/utils/date_utils';
 import { PlantModel } from '../../models/plant_model';
 import { UserModel } from '../../models/user_model';
 import { LocalDbService } from '../../services/local_db_service';
+import { WateringCalculatorModal } from './watering_calculator_modal';
 
 interface MyGardenScreenProps {
   user: UserModel;
@@ -35,6 +36,7 @@ interface MyGardenScreenProps {
   onSelectPlant: (plant: PlantModel) => void;
   onAddNewPlant: (plant: PlantModel) => void;
   onOpenQrTagDesigner: () => void;
+  onOpenQrScanner?: () => void;
 }
 
 /**
@@ -106,6 +108,7 @@ export const MyGardenScreen: React.FC<MyGardenScreenProps> = ({
   onSelectPlant,
   onAddNewPlant,
   onOpenQrTagDesigner,
+  onOpenQrScanner,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterMode, setFilterMode] = useState<
@@ -115,6 +118,7 @@ export const MyGardenScreen: React.FC<MyGardenScreenProps> = ({
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [botanicalSearchOpen, setBotanicalSearchOpen] = useState(false);
   const [botanicalInitialQuery, setBotanicalInitialQuery] = useState('');
+  const [wateringCalculatorOpen, setWateringCalculatorOpen] = useState(false);
 
   const fontFam =
     lang === 'bn'
@@ -433,8 +437,9 @@ export const MyGardenScreen: React.FC<MyGardenScreenProps> = ({
             </ScrollView>
           </View>
 
-          {/* Symmetrical Action Buttons: Add Plant, Plant QR, Search Species */}
+          {/* Symmetrical Action Buttons: Add Plant, QR Scanner, Plant QR, Find Species */}
           <View style={styles.actionBlock}>
+            {/* Row 1: Add Plant (Primary) & QR Scanner (Elevated) */}
             <View style={styles.actionRowTwoCol}>
               <TouchableOpacity
                 activeOpacity={0.88}
@@ -454,6 +459,7 @@ export const MyGardenScreen: React.FC<MyGardenScreenProps> = ({
                   />
                 </Svg>
                 <Text
+                  numberOfLines={1}
                   style={[
                     styles.actionBtnText,
                     { color: '#FFFFFF', fontFamily: fontFam },
@@ -463,6 +469,64 @@ export const MyGardenScreen: React.FC<MyGardenScreenProps> = ({
                 </Text>
               </TouchableOpacity>
 
+              <TouchableOpacity
+                activeOpacity={0.88}
+                onPress={onOpenQrScanner}
+                style={[
+                  styles.actionBtnHalf,
+                  {
+                    backgroundColor: theme.surfaceElevated,
+                    borderColor: theme.border,
+                    borderWidth: 1,
+                  },
+                ]}
+              >
+                <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+                  <Path
+                    d="M3 7V5C3 3.89543 3.89543 3 5 3H7"
+                    stroke={theme.primary}
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                  <Path
+                    d="M17 3H19C20.1046 3 21 3.89543 21 5V7"
+                    stroke={theme.primary}
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                  <Path
+                    d="M21 17V19C21 20.1046 20.1046 21 19 21H17"
+                    stroke={theme.primary}
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                  <Path
+                    d="M7 21H5C3.89543 21 3 20.1046 3 19V17"
+                    stroke={theme.primary}
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                  <Path
+                    d="M7 12H17"
+                    stroke={theme.primary}
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
+                </Svg>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.actionBtnText,
+                    { color: theme.textPrimary, fontFamily: fontFam },
+                  ]}
+                >
+                  {lang === 'bn' ? 'QR স্ক্যানার' : 'QR Scanner'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Row 2: Plant QR (Tag Designer) & Find Species & Varieties */}
+            <View style={styles.actionRowTwoCol}>
               <TouchableOpacity
                 activeOpacity={0.88}
                 onPress={onOpenQrTagDesigner}
@@ -513,6 +577,7 @@ export const MyGardenScreen: React.FC<MyGardenScreenProps> = ({
                   />
                 </Svg>
                 <Text
+                  numberOfLines={1}
                   style={[
                     styles.actionBtnText,
                     { color: theme.textPrimary, fontFamily: fontFam },
@@ -521,51 +586,79 @@ export const MyGardenScreen: React.FC<MyGardenScreenProps> = ({
                   {lang === 'bn' ? 'প্ল্যান্ট QR' : 'Plant QR'}
                 </Text>
               </TouchableOpacity>
+
+              <TouchableOpacity
+                activeOpacity={0.88}
+                onPress={() => {
+                  setBotanicalInitialQuery(searchQuery || '');
+                  setBotanicalSearchOpen(true);
+                }}
+                style={[
+                  styles.actionBtnHalf,
+                  {
+                    backgroundColor: theme.surfaceElevated,
+                    borderColor: theme.border,
+                    borderWidth: 1,
+                  },
+                ]}
+              >
+                <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+                  <Circle
+                    cx="12"
+                    cy="12"
+                    r="9"
+                    stroke={theme.textPrimary}
+                    strokeWidth="1.8"
+                  />
+                  <Path
+                    d="M3 12H21"
+                    stroke={theme.textPrimary}
+                    strokeWidth="1.5"
+                  />
+                  <Path
+                    d="M12 3C14.5 5.5 15.5 8.5 15.5 12C15.5 15.5 14.5 18.5 12 21C9.5 18.5 8.5 15.5 8.5 12C8.5 8.5 9.5 5.5 12 3Z"
+                    stroke={theme.textPrimary}
+                    strokeWidth="1.5"
+                  />
+                </Svg>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.actionBtnText,
+                    { color: theme.textPrimary, fontFamily: fontFam },
+                  ]}
+                >
+                  {lang === 'bn'
+                    ? 'প্রজাতি ও জাত খুঁজুন'
+                    : 'Find Species & Varieties'}
+                </Text>
+              </TouchableOpacity>
             </View>
 
+            {/* Smart Watering Calculator Action */}
             <TouchableOpacity
               activeOpacity={0.88}
-              onPress={() => {
-                setBotanicalInitialQuery(searchQuery || '');
-                setBotanicalSearchOpen(true);
-              }}
+              onPress={() => setWateringCalculatorOpen(true)}
               style={[
                 styles.actionBtnFull,
                 {
                   backgroundColor: theme.surfaceElevated,
                   borderColor: theme.border,
                   borderWidth: 1,
+                  marginTop: 8,
                 },
               ]}
             >
-              <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
-                <Circle
-                  cx="12"
-                  cy="12"
-                  r="9"
-                  stroke={theme.textPrimary}
-                  strokeWidth="1.8"
-                />
-                <Path
-                  d="M3 12H21"
-                  stroke={theme.textPrimary}
-                  strokeWidth="1.5"
-                />
-                <Path
-                  d="M12 3C14.5 5.5 15.5 8.5 15.5 12C15.5 15.5 14.5 18.5 12 21C9.5 18.5 8.5 15.5 8.5 12C8.5 8.5 9.5 5.5 12 3Z"
-                  stroke={theme.textPrimary}
-                  strokeWidth="1.5"
-                />
-              </Svg>
               <Text
+                numberOfLines={1}
                 style={[
                   styles.actionBtnText,
-                  { color: theme.textPrimary, fontFamily: fontFam },
+                  { color: theme.textPrimary, fontFamily: fontFam, fontWeight: '700' },
                 ]}
               >
                 {lang === 'bn'
-                  ? 'উদ্ভিদ প্রজাতি ও জাত খুঁজুন'
-                  : 'Find Species & Varieties'}
+                  ? 'স্মার্ট ওয়াটারিং ক্যালকুলেটর'
+                  : 'Smart Watering Calculator'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -1101,6 +1194,16 @@ export const MyGardenScreen: React.FC<MyGardenScreenProps> = ({
             };
             onAddNewPlant(createdPlant);
           }}
+        />
+
+        {/* Smart Watering & Container Hydration Calculator Modal */}
+        <WateringCalculatorModal
+          visible={wateringCalculatorOpen}
+          onClose={() => setWateringCalculatorOpen(false)}
+          plants={plants}
+          initialPlant={plants[0] || null}
+          theme={theme}
+          lang={lang}
         />
       </View>
     </ScrollView>

@@ -262,49 +262,74 @@ export const BotanicalSearchModal: React.FC<BotanicalSearchModalProps> = ({
 
           {/* Search Input Bar */}
           <View style={styles.searchBarWrap}>
-            <View
-              style={[
-                styles.searchInputBox,
-                {
-                  backgroundColor: theme.surfaceElevated,
-                  borderColor: theme.border,
-                },
-              ]}
-            >
-              <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
-                <Circle cx="11" cy="11" r="7" stroke={theme.textSecondary} strokeWidth="2" />
-                <Path d="M16.5 16.5L21 21" stroke={theme.textSecondary} strokeWidth="2.2" strokeLinecap="round" />
-              </Svg>
-              <TextInput
-                value={searchQuery}
-                onChangeText={handleQueryChange}
-                placeholder={
-                  lang === 'bn'
-                    ? 'গাছের নাম লিখুন (যেমন: গোলাপ, গাঁদা, জবা, স্ট্রবেরি, ড্রাগন ফল, টমেটো, লাউ, ক্যাকটাস, তুলসী)...'
-                    : 'Search plant (e.g. Rose, Marigold, Hibiscus, Strawberry, Dragon fruit, Tomato, Cactus, Basil)...'
-                }
-                placeholderTextColor={theme.textSecondary}
+            <View style={styles.searchRow}>
+              <View
                 style={[
-                  styles.searchInput,
-                  { color: theme.textPrimary, fontFamily: fontFam },
+                  styles.searchInputBox,
+                  {
+                    backgroundColor: theme.surfaceElevated,
+                    borderColor: theme.border,
+                  },
                 ]}
-              />
-              {searchQuery ? (
-                <TouchableOpacity onPress={() => handleQueryChange('')} style={{ padding: 4 }}>
-                  <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
-                    <Path d="M18 6L6 18M6 6L18 18" stroke={theme.textSecondary} strokeWidth="2.2" strokeLinecap="round" />
-                  </Svg>
-                </TouchableOpacity>
-              ) : null}
+              >
+                <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+                  <Circle cx="11" cy="11" r="7" stroke={theme.textSecondary} strokeWidth="2" />
+                  <Path d="M16.5 16.5L21 21" stroke={theme.textSecondary} strokeWidth="2.2" strokeLinecap="round" />
+                </Svg>
+                <TextInput
+                  value={searchQuery}
+                  onChangeText={handleQueryChange}
+                  onSubmitEditing={() => executeGlobalSearch(searchQuery)}
+                  onKeyPress={(e: any) => {
+                    if (e?.nativeEvent?.key === 'Enter' || e?.key === 'Enter') {
+                      executeGlobalSearch(searchQuery);
+                    }
+                  }}
+                  returnKeyType="search"
+                  blurOnSubmit={true}
+                  placeholder={
+                    lang === 'bn'
+                      ? 'গাছের নাম লিখুন (যেমন: গোলাপ, আম, টমেটো)...'
+                      : 'Search plant (e.g. Rose, Mango, Tomato)...'
+                  }
+                  placeholderTextColor={theme.textSecondary}
+                  style={[
+                    styles.searchInput,
+                    { color: theme.textPrimary, fontFamily: fontFam },
+                  ]}
+                />
+                {searchQuery ? (
+                  <TouchableOpacity
+                    onPress={() => handleQueryChange('')}
+                    style={styles.clearBtn}
+                    accessibilityLabel={lang === 'bn' ? 'মুছে ফেলুন' : 'Clear search'}
+                  >
+                    <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+                      <Path d="M18 6L6 18M6 6L18 18" stroke={theme.textSecondary} strokeWidth="2.2" strokeLinecap="round" />
+                    </Svg>
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+
               <TouchableOpacity
                 onPress={() => executeGlobalSearch(searchQuery)}
-                style={[styles.searchGoBtn, { backgroundColor: theme.primary, flexDirection: 'row', alignItems: 'center', gap: 5 }]}
+                activeOpacity={0.82}
+                style={[
+                  styles.searchGoBtn,
+                  { backgroundColor: theme.primary },
+                ]}
+                accessibilityLabel={lang === 'bn' ? 'অনুসন্ধান করুন' : 'Search'}
               >
-                <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+                <Svg width={15} height={15} viewBox="0 0 24 24" fill="none">
                   <Circle cx="11" cy="11" r="7" stroke="#FFFFFF" strokeWidth="2.2" />
                   <Path d="M16.5 16.5L21 21" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" />
                 </Svg>
-                <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 12.5, fontFamily: fontFam }}>
+                <Text
+                  style={[
+                    styles.searchGoBtnText,
+                    { fontFamily: fontFam },
+                  ]}
+                >
                   {lang === 'bn' ? 'খুঁজুন' : 'Search'}
                 </Text>
               </TouchableOpacity>
@@ -968,25 +993,55 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.06)',
+    width: '100%',
+  },
+  searchRow: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   searchInputBox: {
+    flex: 1,
+    minWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    height: 44,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    height: 42,
     gap: 8,
+    overflow: 'hidden',
   },
   searchInput: {
     flex: 1,
+    minWidth: 0,
+    width: '100%',
     fontSize: 13,
     height: '100%',
+    padding: 0,
+    margin: 0,
+  },
+  clearBtn: {
+    padding: 4,
+    flexShrink: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   searchGoBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    height: 42,
     paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 8,
+    borderRadius: 10,
+    flexShrink: 0,
+  },
+  searchGoBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 12.5,
   },
   chipBtn: {
     paddingHorizontal: 12,

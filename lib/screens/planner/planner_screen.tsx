@@ -8,7 +8,11 @@ import {
   View,
 } from 'react-native';
 import { AppLanguage } from '../../core/l10n/translations';
-import { AppThemeColors } from '../../core/theme/app_theme';
+import {
+  APP_TYPOGRAPHY,
+  AppThemeColors,
+  DESIGN_TOKENS,
+} from '../../core/theme/app_theme';
 import { PlantCategory } from '../../models/plant_model';
 import {
   RooftopLifecycleStage,
@@ -21,7 +25,8 @@ interface PlannerScreenProps {
 }
 
 interface GeoBagRecommendation {
-  bagSizeInches: string;
+  bagSizeInchesBn: string;
+  bagSizeInchesEn: string;
   suitablePlantsBn: string;
   suitablePlantsEn: string;
   recommendedCount: number;
@@ -161,21 +166,24 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
 
     const geoBags: GeoBagRecommendation[] = [
       {
-        bagSizeInches: '12x12 inch (১০ গ্যালন)',
+        bagSizeInchesBn: '12x12 inch (১০ গ্যালন)',
+        bagSizeInchesEn: '12x12 inch (10-gallon)',
         suitablePlantsBn: 'মরিচ, বেগুন, টমেটো, পুদিনা ও ধনেপাতা',
         suitablePlantsEn: 'Chili, Brinjal, Tomato, Mint & Coriander',
         recommendedCount: smallCount,
         estimatedSoilWeightKg: smallCount * 14,
       },
       {
-        bagSizeInches: '16x16 inch (২০ গ্যালন)',
+        bagSizeInchesBn: '16x16 inch (২০ গ্যালন)',
+        bagSizeInchesEn: '16x16 inch (20-gallon)',
         suitablePlantsBn: 'বারোমাসি লেবু, ডালিম, পেয়ারা ও শিম',
         suitablePlantsEn: 'All-Season Lemon, Pomegranate, Guava & Beans',
         recommendedCount: mediumCount,
         estimatedSoilWeightKg: mediumCount * 28,
       },
       {
-        bagSizeInches: '24x24 inch (৪৫ গ্যালন - হাফ ড্রাম বিকল্প)',
+        bagSizeInchesBn: '24x24 inch (৪৫ গ্যালন - হাফ ড্রাম বিকল্প)',
+        bagSizeInchesEn: '24x24 inch (45-gallon - half-drum alternative)',
         suitablePlantsBn: 'কাটিমন বারোমাসি আম, মাল্টা ও ড্রাগন ফল',
         suitablePlantsEn: 'Katimon Mango, Malta & Dragon Fruit',
         recommendedCount: largeCount,
@@ -232,6 +240,11 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
     };
   }, [totalRoofSqFtInput, sunlight, hasHighDust, isDroughtProne, lang]);
 
+  const fontFam =
+    lang === 'bn'
+      ? APP_TYPOGRAPHY.fontFamilyBengali
+      : APP_TYPOGRAPHY.fontFamilyEnglish;
+
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
@@ -245,45 +258,53 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
           { backgroundColor: theme.cardBackground, borderColor: theme.border },
         ]}
       >
-        <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
-          🏡{' '}
-          {lang === 'bn'
-            ? 'স্মার্ট ছাদবাগান প্ল্যানার উইজার্ড (Smart Rooftop Wizard)'
-            : 'Smart Rooftop Garden Planner Wizard'}
-        </Text>
-        <Text style={[styles.subText, { color: theme.textSecondary }]}>
-          {lang === 'bn'
-            ? 'আপনার ছাদের আয়তন, রোদ ও পরিবেশ অনুযায়ী নিরাপদ ওজন, জিও ব্যাগ ও জৈব মাটির নিখুঁত হিসাব।'
-            : 'Calculate safe structural load, Geo-Bag layout, and exact organic soil mix for your roof.'}
-        </Text>
+        <View style={styles.cardHeaderRow}>
+          <View style={[styles.headerIconCircle, { backgroundColor: theme.selectedSurface }]}>
+            <Text style={{ fontSize: 20 }}>🏡</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.sectionTitle, { color: theme.textPrimary, fontFamily: fontFam }]}>
+              {lang === 'bn'
+                ? 'স্মার্ট ছাদবাগান প্ল্যানার উইজার্ড'
+                : 'Smart Rooftop Garden Planner Wizard'}
+            </Text>
+            <Text style={[styles.subText, { color: theme.textSecondary, fontFamily: fontFam }]}>
+              {lang === 'bn'
+                ? 'আপনার ছাদের আয়তন, রোদ ও পরিবেশ অনুযায়ী নিরাপদ ওজন, জিও ব্যাগ ও জৈব মাটির নিখুঁত হিসাব।'
+                : 'Calculate safe structural load, Geo-Bag layout, and exact organic soil mix for your roof.'}
+            </Text>
+          </View>
+        </View>
 
         {/* Roof Area Input */}
-        <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
-          {lang === 'bn'
-            ? 'ছাদের মোট আয়তন (বর্গফুট / Sq. Ft.):'
-            : 'Total Roof Area (Sq. Ft.):'}
+        <Text style={[styles.fieldLabel, { color: theme.textPrimary, fontFamily: fontFam }]}>
+          📐 {lang === 'bn' ? 'ছাদের মোট আয়তন (বর্গফুট / Sq. Ft.):' : 'Total Roof Area (Sq. Ft.):'}
         </Text>
-        <TextInput
-          value={totalRoofSqFtInput}
-          onChangeText={setTotalRoofSqFtInput}
-          keyboardType="numeric"
-          style={[
-            styles.input,
-            {
-              backgroundColor: theme.surfaceElevated,
-              color: theme.textPrimary,
-              borderColor: theme.border,
-            },
-          ]}
-          placeholder="600"
-          placeholderTextColor={theme.textSecondary}
-        />
+        <View style={[styles.inputContainer, { backgroundColor: theme.surfaceElevated, borderColor: theme.border }]}>
+          <TextInput
+            value={totalRoofSqFtInput}
+            onChangeText={setTotalRoofSqFtInput}
+            keyboardType="numeric"
+            style={[
+              styles.inputWithUnit,
+              {
+                color: theme.textPrimary,
+                fontFamily: fontFam,
+              },
+            ]}
+            placeholder="600"
+            placeholderTextColor={theme.textSecondary}
+          />
+          <View style={[styles.inputUnitBadge, { backgroundColor: theme.selectedSurface, borderColor: theme.border }]}>
+            <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12, fontFamily: fontFam }}>
+              {lang === 'bn' ? 'বর্গফুট' : 'Sq. Ft.'}
+            </Text>
+          </View>
+        </View>
 
         {/* Sunlight Exposure */}
-        <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
-          {lang === 'bn'
-            ? 'দৈনিক রোদের পরিমাণ (Sunlight):'
-            : 'Daily Sunlight Exposure:'}
+        <Text style={[styles.fieldLabel, { color: theme.textPrimary, fontFamily: fontFam }]}>
+          ☀️ {lang === 'bn' ? 'দৈনিক রোদের পরিমাণ (Sunlight):' : 'Daily Sunlight Exposure:'}
         </Text>
         <View style={styles.pillRow}>
           {(
@@ -310,6 +331,7 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
               <TouchableOpacity
                 key={item.id}
                 onPress={() => setSunlight(item.id)}
+                activeOpacity={0.8}
                 style={[
                   styles.pill,
                   {
@@ -323,8 +345,9 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
                 <Text
                   style={{
                     color: active ? '#FFFFFF' : theme.textPrimary,
-                    fontSize: 12,
-                    fontWeight: '700',
+                    fontSize: 12.5,
+                    fontWeight: active ? '800' : '600',
+                    fontFamily: fontFam,
                   }}
                 >
                   {lang === 'bn' ? item.bn : item.en}
@@ -335,14 +358,13 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
         </View>
 
         {/* Dust & Drought Toggles */}
-        <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
-          {lang === 'bn'
-            ? 'পরিবেশগত অবস্থা (Environmental Conditions):'
-            : 'Environmental Conditions:'}
+        <Text style={[styles.fieldLabel, { color: theme.textPrimary, fontFamily: fontFam }]}>
+          💨 {lang === 'bn' ? 'পরিবেশগত অবস্থা (Environmental Conditions):' : 'Environmental Conditions:'}
         </Text>
         <View style={styles.pillRow}>
           <TouchableOpacity
             onPress={() => setHasHighDust(!hasHighDust)}
+            activeOpacity={0.8}
             style={[
               styles.pill,
               {
@@ -356,8 +378,9 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
             <Text
               style={{
                 color: hasHighDust ? '#FFFFFF' : theme.textPrimary,
-                fontSize: 12,
-                fontWeight: '700',
+                fontSize: 12.5,
+                fontWeight: hasHighDust ? '800' : '600',
+                fontFamily: fontFam,
               }}
             >
               💨 {lang === 'bn' ? 'অতিরিক্ত ধুলোবালি আছে' : 'High Urban Dust'}
@@ -366,6 +389,7 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
 
           <TouchableOpacity
             onPress={() => setIsDroughtProne(!isDroughtProne)}
+            activeOpacity={0.8}
             style={[
               styles.pill,
               {
@@ -379,8 +403,9 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
             <Text
               style={{
                 color: isDroughtProne ? '#FFFFFF' : theme.textPrimary,
-                fontSize: 12,
-                fontWeight: '700',
+                fontSize: 12.5,
+                fontWeight: isDroughtProne ? '800' : '600',
+                fontFamily: fontFam,
               }}
             >
               🔥 {lang === 'bn' ? 'খরা বা পানির স্বল্পতা' : 'Drought / Low Water'}
@@ -389,10 +414,8 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
         </View>
 
         {/* Plant Category Preferences */}
-        <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
-          {lang === 'bn'
-            ? 'পছন্দের গাছের ধরন:'
-            : 'Preferred Plant Categories:'}
+        <Text style={[styles.fieldLabel, { color: theme.textPrimary, fontFamily: fontFam }]}>
+          🪴 {lang === 'bn' ? 'পছন্দের গাছের ধরন (Plant Categories):' : 'Preferred Plant Categories:'}
         </Text>
         <View style={styles.pillRow}>
           {(
@@ -408,6 +431,7 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
               <TouchableOpacity
                 key={cat.id}
                 onPress={() => toggleCategory(cat.id)}
+                activeOpacity={0.8}
                 style={[
                   styles.pill,
                   {
@@ -421,8 +445,9 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
                 <Text
                   style={{
                     color: active ? '#FFFFFF' : theme.textPrimary,
-                    fontSize: 12,
-                    fontWeight: '700',
+                    fontSize: 12.5,
+                    fontWeight: active ? '800' : '600',
+                    fontFamily: fontFam,
                   }}
                 >
                   {lang === 'bn' ? cat.bn : cat.en}
@@ -440,41 +465,58 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
           { backgroundColor: theme.cardBackground, borderColor: theme.primary },
         ]}
       >
-        <Text style={[styles.sectionTitle, { color: theme.primary }]}>
-          📐{' '}
-          {lang === 'bn'
-            ? 'আপনার ছাদের কাস্টম বাগান ব্লুপ্রিন্ট'
-            : 'Your Custom Rooftop Blueprint'}
-        </Text>
+        <View style={styles.cardHeaderRow}>
+          <View style={[styles.headerIconCircle, { backgroundColor: theme.selectedSurface }]}>
+            <Text style={{ fontSize: 20 }}>📐</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.sectionTitle, { color: theme.primary, fontFamily: fontFam }]}>
+              {lang === 'bn'
+                ? 'আপনার ছাদের কাস্টম বাগান ব্লুপ্রিন্ট'
+                : 'Your Custom Rooftop Blueprint'}
+            </Text>
+            <Text style={[styles.subText, { color: theme.textSecondary, fontFamily: fontFam }]}>
+              {lang === 'bn'
+                ? 'স্ট্রাকচারাল ইঞ্জিনিয়ারিং মান অনুযায়ী ছাদের জন্য নিখুঁত স্পেসিফিকেশন'
+                : 'Optimized specifications matched to structural load tolerance'}
+            </Text>
+          </View>
+        </View>
 
         <View style={styles.metricsRow}>
           <View
             style={[
-              styles.metricBox,
-              { backgroundColor: theme.surfaceElevated },
+              styles.metricCard,
+              { backgroundColor: theme.surfaceElevated, borderColor: theme.border },
             ]}
           >
-            <Text style={[styles.metricValue, { color: theme.primary }]}>
-              {planSummary.usableSqFt} sq.ft
-            </Text>
-            <Text style={[styles.metricLabel, { color: theme.textSecondary }]}>
-              {lang === 'bn' ? 'ব্যবহারযোগ্য বাগান এলাকা (৬৫%)' : 'Usable Garden Area (65%)'}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={{ fontSize: 16 }}>🪴</Text>
+              <Text style={[styles.metricLabel, { color: theme.textSecondary, fontFamily: fontFam }]}>
+                {lang === 'bn' ? 'ব্যবহারযোগ্য বাগান এলাকা (৬৫%)' : 'Usable Garden Area (65%)'}
+              </Text>
+            </View>
+            <Text style={[styles.metricValue, { color: theme.primary, fontFamily: fontFam }]}>
+              {planSummary.usableSqFt} <Text style={{ fontSize: 13, fontWeight: '600' }}>sq.ft</Text>
             </Text>
           </View>
 
           <View
             style={[
-              styles.metricBox,
-              { backgroundColor: theme.surfaceElevated },
+              styles.metricCard,
+              { backgroundColor: theme.surfaceElevated, borderColor: theme.border },
             ]}
           >
-            <Text style={[styles.metricValue, { color: theme.success }]}>
-              {planSummary.totalEstimatedWeightKg} kg
-            </Text>
-            <Text style={[styles.metricLabel, { color: theme.textSecondary }]}>
-              {lang === 'bn'
-                ? `স্ট্রাকচারাল সীমা: ${planSummary.maxSafeLoadKg} kg`
-                : `Safe Load Limit: ${planSummary.maxSafeLoadKg} kg`}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={{ fontSize: 16 }}>⚖️</Text>
+              <Text style={[styles.metricLabel, { color: theme.textSecondary, fontFamily: fontFam }]}>
+                {lang === 'bn'
+                  ? `নিরাপদ ভার সীমা: ${planSummary.maxSafeLoadKg} kg`
+                  : `Safe Load Limit: ${planSummary.maxSafeLoadKg} kg`}
+              </Text>
+            </View>
+            <Text style={[styles.metricValue, { color: theme.success, fontFamily: fontFam }]}>
+              {planSummary.totalEstimatedWeightKg} <Text style={{ fontSize: 13, fontWeight: '600' }}>kg</Text>
             </Text>
           </View>
         </View>
@@ -488,7 +530,7 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
         >
           <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
             <Text style={{ fontSize: 16, lineHeight: 22 }}>🗺️</Text>
-            <Text style={[styles.blueprintHeading, { color: theme.textPrimary, flex: 1, lineHeight: 22 }]}>
+            <Text style={[styles.blueprintHeading, { color: theme.textPrimary, flex: 1, lineHeight: 22, fontFamily: fontFam }]}>
               {lang === 'bn' ? 'ছাদের গ্রাফিক্যাল লেআউট প্রিভিউ (Rooftop Zones):' : 'Graphical Rooftop Zone Layout:'}
             </Text>
           </View>
@@ -497,20 +539,20 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
             {/* Zone 1: Full Sun & Structural Beam */}
             <View style={[styles.zoneRow, { backgroundColor: 'rgba(22, 122, 69, 0.08)', borderColor: theme.primary }]}>
               <View style={styles.zoneHeader}>
-                <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 6, flex: 1 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 6, flex: 1, minWidth: 160 }}>
                   <Text style={{ fontSize: 13, lineHeight: 18 }}>☀️</Text>
-                  <Text style={{ fontWeight: '700', fontSize: 12, lineHeight: 18, color: theme.primary, flex: 1 }}>
+                  <Text style={{ fontWeight: '700', fontSize: 12, lineHeight: 18, color: theme.primary, flex: 1, fontFamily: fontFam }}>
                     {lang === 'bn' ? 'জোন ১: দক্ষিণ ও পশ্চিম কিনারা (বিমের ওপর ভারী টব)' : 'Zone 1: South-West Beam (Heavy Bags)'}
                   </Text>
                 </View>
-                <Text style={{ fontSize: 11, color: theme.textSecondary }}>
+                <Text style={{ fontSize: 11, color: theme.textSecondary, fontFamily: fontFam }}>
                   {lang === 'bn' ? 'রোদ: ৬-৮ ঘণ্টা • ফলজ গাছ' : '6-8h Sun • Fruits'}
                 </Text>
               </View>
               <View style={styles.miniBagsRow}>
                 {['আম (১৬")', 'পেয়ারা (১৬")', 'লেবু (১২")', 'ডালিম (১৬")'].map((lbl, i) => (
                   <View key={i} style={[styles.miniBagChip, { backgroundColor: theme.surface, borderColor: theme.primary }]}>
-                    <Text style={{ fontSize: 11, color: theme.primary, fontWeight: '600' }}>🪴 {lbl}</Text>
+                    <Text style={{ fontSize: 11, color: theme.primary, fontWeight: '600', fontFamily: fontFam }}>🪴 {lbl}</Text>
                   </View>
                 ))}
               </View>
@@ -519,20 +561,20 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
             {/* Zone 2: Partial Sun & Vegetables */}
             <View style={[styles.zoneRow, { backgroundColor: 'rgba(2, 132, 199, 0.08)', borderColor: theme.info }]}>
               <View style={styles.zoneHeader}>
-                <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 6, flex: 1 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 6, flex: 1, minWidth: 160 }}>
                   <Text style={{ fontSize: 13, lineHeight: 18 }}>⛅</Text>
-                  <Text style={{ fontWeight: '700', fontSize: 12, lineHeight: 18, color: theme.info, flex: 1 }}>
+                  <Text style={{ fontWeight: '700', fontSize: 12, lineHeight: 18, color: theme.info, flex: 1, fontFamily: fontFam }}>
                     {lang === 'bn' ? 'জোন ২: পূর্ব ও উত্তর প্রান্ত (হালকা সবজি ও মসলা)' : 'Zone 2: East-North (Vegetables & Herbs)'}
                   </Text>
                 </View>
-                <Text style={{ fontSize: 11, color: theme.textSecondary }}>
+                <Text style={{ fontSize: 11, color: theme.textSecondary, fontFamily: fontFam }}>
                   {lang === 'bn' ? 'রোদ: ৩-৫ ঘণ্টা' : '3-5h Sun'}
                 </Text>
               </View>
               <View style={styles.miniBagsRow}>
                 {['টমেটো (১০")', 'মরিচ (১০")', 'বেগুন (১২")', 'পুদিনা (৮")'].map((lbl, i) => (
                   <View key={i} style={[styles.miniBagChip, { backgroundColor: theme.surface, borderColor: theme.info }]}>
-                    <Text style={{ fontSize: 11, color: theme.info, fontWeight: '600' }}>🌱 {lbl}</Text>
+                    <Text style={{ fontSize: 11, color: theme.info, fontWeight: '600', fontFamily: fontFam }}>🌱 {lbl}</Text>
                   </View>
                 ))}
               </View>
@@ -541,15 +583,15 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
             {/* Walkway & Drainage */}
             <View style={[styles.walkwayRow, { backgroundColor: theme.selectedSurface, borderColor: theme.border, flexDirection: 'row', alignItems: 'flex-start', gap: 6 }]}>
               <Text style={{ fontSize: 13, lineHeight: 17 }}>🚶</Text>
-              <Text style={{ fontSize: 11, color: theme.textSecondary, fontWeight: '600', lineHeight: 17, flex: 1 }}>
+              <Text style={{ fontSize: 11, color: theme.textSecondary, fontWeight: '600', lineHeight: 17, flex: 1, fontFamily: fontFam }}>
                 {lang === 'bn' ? '৩৫% হাঁটার পথ ও ড্রেনেজ নিষ্কাশন ব্যবস্থা (Waterproofing & Walkway Protected)' : '35% Walkway & Drainage Passage'}
               </Text>
             </View>
           </View>
         </View>
 
-        {/* Geo-Bag Allocation */}
-        <Text style={[styles.subHeading, { color: theme.textPrimary }]}>
+        {/* Geo-Bag Allocation (Fixed Title Overflow & Enhanced Layout) */}
+        <Text style={[styles.subHeading, { color: theme.textPrimary, fontFamily: fontFam }]}>
           🛍️{' '}
           {lang === 'bn'
             ? 'প্রস্তাবিত জিও ব্যাগ সাইজ ও বন্টন:'
@@ -568,22 +610,49 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
               ]}
             >
               <View style={styles.geoBagHeader}>
-                <View style={[styles.bagIconPill, { backgroundColor: theme.selectedSurface }]}>
-                  <Text style={{ fontSize: 16 }}>🛍️</Text>
-                  <Text style={{ fontWeight: '800', color: theme.primary, fontSize: 12.5 }}>
-                    {bag.bagSizeInches}
+                <View style={styles.geoBagTitleWrap}>
+                  <View style={[styles.bagIconPill, { backgroundColor: theme.selectedSurface }]}>
+                    <Text style={{ fontSize: 15 }}>🛍️</Text>
+                  </View>
+                  <Text
+                    style={[
+                      styles.geoBagTitle,
+                      {
+                        color: theme.primary,
+                        fontFamily: fontFam,
+                      },
+                    ]}
+                  >
+                    {lang === 'bn' ? bag.bagSizeInchesBn : bag.bagSizeInchesEn}
                   </Text>
                 </View>
-                <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 13 }}>
-                  {bag.recommendedCount} {lang === 'bn' ? 'টি ব্যাগ' : 'bags'}
-                </Text>
+
+                <View
+                  style={[
+                    styles.bagCountBadge,
+                    {
+                      backgroundColor: theme.selectedSurface,
+                      borderColor: theme.primary,
+                    },
+                  ]}
+                >
+                  <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12.5, fontFamily: fontFam }}>
+                    {bag.recommendedCount} {lang === 'bn' ? 'টি ব্যাগ' : 'bags'}
+                  </Text>
+                </View>
               </View>
-              <Text style={{ color: theme.textSecondary, fontSize: 12, lineHeight: 18 }}>
-                {lang === 'bn' ? bag.suitablePlantsBn : bag.suitablePlantsEn}
-              </Text>
-              <Text style={{ color: theme.textPrimary, fontWeight: '700', fontSize: 11.5, marginTop: 4 }}>
-                ~{bag.estimatedSoilWeightKg} kg {lang === 'bn' ? 'মাটি' : 'soil'}
-              </Text>
+
+              <View style={{ marginTop: 6, gap: 4 }}>
+                <Text style={{ color: theme.textSecondary, fontSize: 12.5, lineHeight: 18, fontFamily: fontFam }}>
+                  🌿 {lang === 'bn' ? bag.suitablePlantsBn : bag.suitablePlantsEn}
+                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                  <Text style={{ fontSize: 11, color: theme.textSecondary }}>⚖️</Text>
+                  <Text style={{ color: theme.textPrimary, fontWeight: '700', fontSize: 12, fontFamily: fontFam }}>
+                    ~{bag.estimatedSoilWeightKg} kg {lang === 'bn' ? 'মাটি ও উপাদানের ওজন' : 'soil & media weight'}
+                  </Text>
+                </View>
+              </View>
             </View>
           ))}
         </View>
@@ -598,7 +667,7 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
             },
           ]}
         >
-          <Text style={[styles.subHeading, { color: theme.textPrimary }]}>
+          <Text style={[styles.subHeading, { color: theme.textPrimary, fontFamily: fontFam }]}>
             🧪{' '}
             {lang === 'bn'
               ? 'আদর্শ জৈব মাটি ফর্মুলা ও শতাংশ অনুপাত (৪০:৩০:২০:১০):'
@@ -618,11 +687,11 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
             <View style={[styles.soilDetailChip, { backgroundColor: theme.surface, borderColor: theme.border }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: '#8C5A2B' }} />
-                <Text style={{ fontSize: 12, fontWeight: '700', color: theme.textPrimary }}>
+                <Text style={{ fontSize: 12, fontWeight: '700', color: theme.textPrimary, fontFamily: fontFam }}>
                   {lang === 'bn' ? 'দোআঁশ মাটি (৪০%)' : 'Loam (40%)'}
                 </Text>
               </View>
-              <Text style={{ fontSize: 13, fontWeight: '800', color: theme.primary }}>
+              <Text style={{ fontSize: 13, fontWeight: '800', color: theme.primary, fontFamily: fontFam }}>
                 {planSummary.loamKg} kg
               </Text>
             </View>
@@ -630,11 +699,11 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
             <View style={[styles.soilDetailChip, { backgroundColor: theme.surface, borderColor: theme.border }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: '#382513' }} />
-                <Text style={{ fontSize: 12, fontWeight: '700', color: theme.textPrimary }}>
+                <Text style={{ fontSize: 12, fontWeight: '700', color: theme.textPrimary, fontFamily: fontFam }}>
                   {lang === 'bn' ? 'ভার্মিকম্পোস্ট (৩০%)' : 'Compost (30%)'}
                 </Text>
               </View>
-              <Text style={{ fontSize: 13, fontWeight: '800', color: theme.primary }}>
+              <Text style={{ fontSize: 13, fontWeight: '800', color: theme.primary, fontFamily: fontFam }}>
                 {planSummary.compostKg} kg
               </Text>
             </View>
@@ -642,11 +711,11 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
             <View style={[styles.soilDetailChip, { backgroundColor: theme.surface, borderColor: theme.border }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: '#C87D32' }} />
-                <Text style={{ fontSize: 12, fontWeight: '700', color: theme.textPrimary }}>
+                <Text style={{ fontSize: 12, fontWeight: '700', color: theme.textPrimary, fontFamily: fontFam }}>
                   {lang === 'bn' ? 'কোকোপিট (২০%)' : 'Cocopeat (20%)'}
                 </Text>
               </View>
-              <Text style={{ fontSize: 13, fontWeight: '800', color: theme.primary }}>
+              <Text style={{ fontSize: 13, fontWeight: '800', color: theme.primary, fontFamily: fontFam }}>
                 {planSummary.cocopeatKg} kg
               </Text>
             </View>
@@ -654,11 +723,11 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
             <View style={[styles.soilDetailChip, { backgroundColor: theme.surface, borderColor: theme.border }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: theme.primary }} />
-                <Text style={{ fontSize: 12, fontWeight: '700', color: theme.textPrimary }}>
+                <Text style={{ fontSize: 12, fontWeight: '700', color: theme.textPrimary, fontFamily: fontFam }}>
                   {lang === 'bn' ? 'জৈব সার/খৈল (১০%)' : 'Bio-Amend (10%)'}
                 </Text>
               </View>
-              <Text style={{ fontSize: 13, fontWeight: '800', color: theme.primary }}>
+              <Text style={{ fontSize: 13, fontWeight: '800', color: theme.primary, fontFamily: fontFam }}>
                 {planSummary.bioAmendmentKg} kg
               </Text>
             </View>
@@ -666,20 +735,35 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
         </View>
 
         {/* Recommended Resilient Varieties */}
-        <Text style={[styles.subHeading, { color: theme.textPrimary }]}>
+        <Text style={[styles.subHeading, { color: theme.textPrimary, fontFamily: fontFam }]}>
           🌟{' '}
           {lang === 'bn'
             ? 'আপনার ছাদের আবহাওয়ায় সেরা গাছের জাত:'
             : 'Best Plant Varieties for Your Conditions:'}
         </Text>
-        {planSummary.recommendedVarieties.map((v, i) => (
-          <Text
-            key={i}
-            style={{ color: theme.textSecondary, fontSize: 13, lineHeight: 20 }}
-          >
-            {v}
-          </Text>
-        ))}
+        <View style={{ gap: 6 }}>
+          {planSummary.recommendedVarieties.map((v, i) => (
+            <View
+              key={i}
+              style={[
+                styles.varietyCard,
+                { backgroundColor: theme.surfaceElevated, borderColor: theme.border },
+              ]}
+            >
+              <Text
+                style={{
+                  color: theme.textPrimary,
+                  fontSize: 13,
+                  lineHeight: 20,
+                  fontFamily: fontFam,
+                  fontWeight: '600',
+                }}
+              >
+                {v}
+              </Text>
+            </View>
+          ))}
+        </View>
       </View>
 
       {/* 6-Stage End-to-End Practical Rooftop Gardening Lifecycle Guide */}
@@ -689,12 +773,23 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
           { backgroundColor: theme.cardBackground, borderColor: theme.border },
         ]}
       >
-        <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
-          📋{' '}
-          {lang === 'bn'
-            ? 'শুরু থেকে ফলন: ৬ ধাপের ছাদবাগান গাইডলাইন'
-            : '6-Stage End-to-End Rooftop Lifecycle Guide'}
-        </Text>
+        <View style={styles.cardHeaderRow}>
+          <View style={[styles.headerIconCircle, { backgroundColor: theme.selectedSurface }]}>
+            <Text style={{ fontSize: 20 }}>📋</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.sectionTitle, { color: theme.textPrimary, fontFamily: fontFam }]}>
+              {lang === 'bn'
+                ? 'শুরু থেকে ফলন: ৬ ধাপের ছাদবাগান গাইডলাইন'
+                : '6-Stage End-to-End Rooftop Lifecycle Guide'}
+            </Text>
+            <Text style={[styles.subText, { color: theme.textSecondary, fontFamily: fontFam }]}>
+              {lang === 'bn'
+                ? 'ধাপগুলো সম্পন্ন করে ছাদবাগানকে নিরাপদ ও সর্বোচ্চ ফলনশীল রাখুন'
+                : 'Follow each sequential stage for structural safety and bountiful yield'}
+            </Text>
+          </View>
+        </View>
 
         {ROOFTOP_LIFECYCLE_GUIDES.map((stage) => {
           const isDone = !!completedStages[stage.stageNumber];
@@ -707,6 +802,7 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
                   [stage.stageNumber]: !prev[stage.stageNumber],
                 }))
               }
+              activeOpacity={0.82}
               style={[
                 styles.stageItem,
                 {
@@ -716,50 +812,88 @@ export const PlannerScreen: React.FC<PlannerScreenProps> = ({
               ]}
             >
               <View style={styles.stageHeaderRow}>
-                <Text
-                  style={{
-                    color: isDone ? theme.success : theme.primary,
-                    fontWeight: '800',
-                    fontSize: 14,
-                    flex: 1,
-                  }}
+                <View style={styles.stageTitleWrap}>
+                  <View
+                    style={[
+                      styles.stageBadge,
+                      {
+                        backgroundColor: isDone ? theme.success : theme.selectedSurface,
+                        borderColor: isDone ? theme.success : theme.primary,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={{
+                        color: isDone ? '#FFFFFF' : theme.primary,
+                        fontSize: 12,
+                        fontWeight: '800',
+                      }}
+                    >
+                      {isDone ? '✓' : `0${stage.stageNumber}`}
+                    </Text>
+                  </View>
+                  <Text
+                    style={{
+                      color: isDone ? theme.success : theme.textPrimary,
+                      fontWeight: '800',
+                      fontSize: 14,
+                      flex: 1,
+                      fontFamily: fontFam,
+                    }}
+                  >
+                    {lang === 'bn' ? stage.titleBengali : stage.titleEnglish}
+                  </Text>
+                </View>
+
+                <View
+                  style={[
+                    styles.stageStatusPill,
+                    {
+                      backgroundColor: isDone ? 'rgba(34, 197, 94, 0.12)' : theme.surface,
+                      borderColor: isDone ? theme.success : theme.border,
+                    },
+                  ]}
                 >
-                  {isDone ? '✅' : `০${stage.stageNumber}.`}{' '}
-                  {lang === 'bn' ? stage.titleBengali : stage.titleEnglish}
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 11,
-                    color: isDone ? theme.success : theme.textSecondary,
-                    fontWeight: '700',
-                  }}
-                >
-                  {isDone
-                    ? lang === 'bn'
-                      ? 'সম্পন্ন'
-                      : 'Completed'
-                    : lang === 'bn'
-                    ? 'ট্যাপ করে সম্পন্ন করুন'
-                    : 'Tap to mark done'}
-                </Text>
+                  <Text
+                    style={{
+                      fontSize: 11,
+                      color: isDone ? theme.success : theme.textSecondary,
+                      fontWeight: '700',
+                      fontFamily: fontFam,
+                    }}
+                  >
+                    {isDone
+                      ? lang === 'bn'
+                        ? 'সম্পন্ন'
+                        : 'Completed'
+                      : lang === 'bn'
+                      ? 'ট্যাপ করে সম্পন্ন করুন'
+                      : 'Tap to complete'}
+                  </Text>
+                </View>
               </View>
 
-              {(lang === 'bn'
-                ? stage.checklistItemsBengali
-                : stage.checklistItemsEnglish
-              ).map((point, pIdx) => (
-                <Text
-                  key={pIdx}
-                  style={{
-                    color: theme.textSecondary,
-                    fontSize: 12,
-                    lineHeight: 19,
-                    marginLeft: 6,
-                  }}
-                >
-                  • {point}
-                </Text>
-              ))}
+              <View style={styles.stagePointsContainer}>
+                {(lang === 'bn'
+                  ? stage.checklistItemsBengali
+                  : stage.checklistItemsEnglish
+                ).map((point, pIdx) => (
+                  <View key={pIdx} style={styles.stagePointRow}>
+                    <Text style={{ color: theme.primary, fontSize: 13, lineHeight: 19 }}>•</Text>
+                    <Text
+                      style={{
+                        color: theme.textSecondary,
+                        fontSize: 12.5,
+                        lineHeight: 19,
+                        flex: 1,
+                        fontFamily: fontFam,
+                      }}
+                    >
+                      {point}
+                    </Text>
+                  </View>
+                ))}
+              </View>
             </TouchableOpacity>
           );
         })}
@@ -773,7 +907,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 1000,
     alignSelf: 'center',
-    padding: 20,
+    padding: 16,
     gap: 16,
     paddingBottom: 90,
   },
@@ -781,28 +915,55 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 16,
     borderWidth: 1,
+    gap: 14,
+  },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     gap: 12,
+  },
+  headerIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '800',
+    lineHeight: 22,
   },
   subText: {
-    fontSize: 13,
-    lineHeight: 19,
+    fontSize: 12.5,
+    lineHeight: 18,
+    marginTop: 2,
   },
   fieldLabel: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
-    marginTop: 4,
+    marginTop: 2,
   },
-  input: {
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  inputWithUnit: {
+    flex: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  inputUnitBadge: {
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 14,
-    fontWeight: '700',
+    borderLeftWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   pillRow: {
     flexDirection: 'row',
@@ -812,46 +973,32 @@ const styles = StyleSheet.create({
   pill: {
     paddingHorizontal: 12,
     paddingVertical: 9,
-    borderRadius: 20,
-    borderWidth: 1,
+    borderRadius: 10,
+    borderWidth: 1.2,
   },
   metricsRow: {
     flexDirection: 'row',
     gap: 10,
   },
-  metricBox: {
+  metricCard: {
     flex: 1,
     padding: 12,
     borderRadius: 12,
-    alignItems: 'center',
-    gap: 2,
+    borderWidth: 1,
+    gap: 6,
   },
   metricValue: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '800',
   },
   metricLabel: {
-    fontSize: 11,
+    fontSize: 11.5,
     fontWeight: '600',
   },
   subHeading: {
     fontSize: 14,
     fontWeight: '800',
     marginTop: 4,
-  },
-  bagRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-  },
-  soilBox: {
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    gap: 10,
   },
   blueprintPreviewCard: {
     padding: 14,
@@ -898,10 +1045,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   geoBagsGrid: {
-    gap: 8,
+    gap: 10,
   },
   geoBagCard: {
-    padding: 12,
+    padding: 14,
     borderRadius: 12,
     borderWidth: 1,
     gap: 4,
@@ -909,15 +1056,44 @@ const styles = StyleSheet.create({
   geoBagHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    gap: 8,
   },
-  bagIconPill: {
+  geoBagTitleWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    gap: 8,
+    flex: 1,
+    minWidth: 0,
+    marginRight: 6,
+  },
+  bagIconPill: {
+    width: 32,
+    height: 32,
     borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  geoBagTitle: {
+    fontWeight: '800',
+    fontSize: 13,
+    flex: 1,
+    minWidth: 0,
+    flexWrap: 'wrap',
+    lineHeight: 18,
+  },
+  bagCountBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignSelf: 'flex-start',
+  },
+  soilBox: {
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    gap: 10,
   },
   soilBarWrap: {
     width: '100%',
@@ -942,19 +1118,52 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: 4,
   },
-  soilText: {
-    fontSize: 12,
-    lineHeight: 19,
+  varietyCard: {
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 10,
+    borderWidth: 1,
   },
   stageItem: {
-    padding: 12,
-    borderRadius: 12,
+    padding: 14,
+    borderRadius: 14,
     borderWidth: 1,
-    gap: 6,
+    gap: 8,
   },
   stageHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 8,
+  },
+  stageTitleWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+    minWidth: 0,
+  },
+  stageBadge: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stageStatusPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  stagePointsContainer: {
+    gap: 4,
+    paddingLeft: 36,
+  },
+  stagePointRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
   },
 });

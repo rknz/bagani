@@ -13,6 +13,7 @@
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useState } from 'react';
 import {
+  Alert,
   Image,
   Modal,
   Platform,
@@ -287,7 +288,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
     if (res.success) {
       setPendingActivationAccount(null);
       setLoginIdentifier(account.email);
-      setLoginPassword(account.password);
+      setLoginPassword('');
       setAuthMode('signin');
       setAuthSuccessNotice(
         lang === 'bn'
@@ -326,14 +327,28 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
   };
 
   const handlePickProfilePhoto = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.7,
-    });
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      setPhotoUrl(result.assets[0].uri);
+    try {
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!perm.granted) {
+        Alert.alert(
+          lang === 'bn' ? 'পারমিশন প্রয়োজন' : 'Permission Required',
+          lang === 'bn'
+            ? 'প্রোফাইল ছবি পরিবর্তনের জন্য ডিভাইসের গ্যালারি ব্যবহারের অনুমতি দিন।'
+            : 'Please allow access to your photo library to choose a profile photo.'
+        );
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setPhotoUrl(result.assets[0].uri);
+      }
+    } catch (e) {
+      console.warn('Profile photo pick error', e);
     }
   };
 

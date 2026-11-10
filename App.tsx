@@ -3,6 +3,7 @@ import {
   Alert,
   BackHandler,
   Image,
+  Keyboard,
   Platform,
   SafeAreaView,
   StatusBar,
@@ -10,6 +11,7 @@ import {
   Text,
   TouchableOpacity,
   useColorScheme,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { FullScreenExitAdModal } from './lib/core/components/full_screen_exit_ad_modal';
@@ -83,6 +85,26 @@ export default function App() {
   const [globalQrModalOpen, setGlobalQrModalOpen] = useState(false);
   const [guideSubTab, setGuideSubTab] = useState<GuideSubTab>('planner');
   const [exitAdVisible, setExitAdVisible] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+  const { width: windowWidth } = useWindowDimensions();
+  const floatingBtnRight =
+    windowWidth > 460 ? Math.round((windowWidth - 440) / 2 + 10) : 18;
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => setIsKeyboardVisible(true)
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => setIsKeyboardVisible(false)
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   // Android Hardware Back button & App Exit Interstitial Ad Handler
   useEffect(() => {
@@ -109,6 +131,10 @@ export default function App() {
       }
       if (selectedPlant !== null) {
         setSelectedPlant(null);
+        return true;
+      }
+      if (activeRoute === 'qr_tracker') {
+        setActiveRoute('my_garden');
         return true;
       }
       if (activeRoute !== 'home') {
@@ -467,18 +493,18 @@ export default function App() {
               onPress={() => setNotificationsOpen(true)}
               accessibilityLabel={lang === 'bn' ? 'নোটিফিকেশন' : 'Notifications'}
             >
-              <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+              <Svg width={17} height={17} viewBox="0 0 24 24" fill="none">
                 <Path
                   d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21S18 15 18 8Z"
                   stroke={notificationsOpen ? theme.primary : theme.textPrimary}
-                  strokeWidth="2"
+                  strokeWidth="1.8"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
                 <Path
                   d="M10.3 21C10.6 21.6 11.2 22 12 22C12.8 22 13.4 21.6 13.7 21"
                   stroke={notificationsOpen ? theme.primary : theme.textPrimary}
-                  strokeWidth="2"
+                  strokeWidth="1.8"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
@@ -512,24 +538,24 @@ export default function App() {
                 lang === 'bn' ? 'ভাষা পরিবর্তন করুন (Switch Language)' : 'Switch Language'
               }
             >
-              <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+              <Svg width={17} height={17} viewBox="0 0 24 24" fill="none">
                 <Circle
                   cx="12"
                   cy="12"
                   r="9.5"
                   stroke={theme.textPrimary}
-                  strokeWidth="1.9"
+                  strokeWidth="1.8"
                 />
                 <Path
                   d="M2.5 12H21.5"
                   stroke={theme.textPrimary}
-                  strokeWidth="1.9"
+                  strokeWidth="1.8"
                   strokeLinecap="round"
                 />
                 <Path
                   d="M12 2.5C15 6 16.5 9 16.5 12C16.5 15 15 18 12 21.5C9 18 7.5 15 7.5 12C7.5 9 9 6 12 2.5Z"
                   stroke={theme.textPrimary}
-                  strokeWidth="1.9"
+                  strokeWidth="1.8"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
@@ -556,28 +582,28 @@ export default function App() {
               }
             >
               {activeMode === 'dark' ? (
-                <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+                <Svg width={17} height={17} viewBox="0 0 24 24" fill="none">
                   <Path
                     d="M21 12.79A9 9 0 1 1 11.21 3A7 7 0 0 0 21 12.79Z"
                     stroke={theme.textPrimary}
-                    strokeWidth="1.9"
+                    strokeWidth="1.8"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                 </Svg>
               ) : (
-                <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+                <Svg width={17} height={17} viewBox="0 0 24 24" fill="none">
                   <Circle
                     cx="12"
                     cy="12"
                     r="4.5"
                     stroke={theme.textPrimary}
-                    strokeWidth="1.9"
+                    strokeWidth="1.8"
                   />
                   <Path
                     d="M12 2V4M12 20V22M4.93 4.93L6.34 6.34M17.66 17.66L19.07 19.07M2 12H4M20 12H22M6.34 17.66L4.93 19.07M19.07 4.93L17.66 6.34"
                     stroke={theme.textPrimary}
-                    strokeWidth="1.9"
+                    strokeWidth="1.8"
                     strokeLinecap="round"
                   />
                 </Svg>
@@ -595,9 +621,10 @@ export default function App() {
               ? 'edit_profile'
               : activeRoute === 'plant_profile'
               ? `plant_${selectedPlant?.id || 'none'}`
+              : activeRoute === 'qr_tracker'
+              ? 'qr_tracker'
               : activeRoute === 'scan' ||
-                activeRoute === 'scanner' ||
-                activeRoute === 'qr_tracker'
+                activeRoute === 'scanner'
               ? `scan_${activeRoute}`
               : activeRoute === 'guide' ||
                 activeRoute === 'planner' ||
@@ -645,6 +672,7 @@ export default function App() {
             }}
             onAddNewPlant={handleAddNewPlant}
             onOpenQrTagDesigner={() => setActiveRoute('qr_tracker')}
+            onOpenQrScanner={() => setGlobalQrModalOpen(true)}
           />
         ) : activeRoute === 'scan' || activeRoute === 'scanner' ? (
           <ScannerScreen
@@ -664,6 +692,7 @@ export default function App() {
             lang={lang}
             plants={plants}
             ownerName={currentUser.displayName}
+            onBack={() => setActiveRoute('my_garden')}
             onSelectPlant={(plant) => {
               setSelectedPlant(plant);
               setActiveRoute('plant_profile');
@@ -756,53 +785,56 @@ export default function App() {
         </ScreenTransition>
       </View>
 
-      {/* Global Floating QR Tag Scanner Action Button (Top-Right near Profile/Menu) */}
-      <TouchableOpacity
-        activeOpacity={0.85}
-        onPress={() => setGlobalQrModalOpen(true)}
-        style={[
-          styles.globalFloatingQrBtn,
-          {
-            backgroundColor: theme.primary,
-            borderColor: theme.surface,
-          },
-        ]}
-        accessibilityLabel={
-          lang === 'bn' ? 'QR ট্যাগ স্ক্যান' : 'Scan Plant QR Tag'
-        }
-      >
-        <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
-          <Path
-            d="M3 3H9V9H3V3Z"
-            stroke="#FFFFFF"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <Path
-            d="M15 3H21V9H15V3Z"
-            stroke="#FFFFFF"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <Path
-            d="M3 15H9V21H3V15Z"
-            stroke="#FFFFFF"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <Path d="M15 15H18V18H15V15Z" fill="#FFFFFF" />
-          <Path d="M18 18H21V21H18V18Z" fill="#FFFFFF" />
-          <Path
-            d="M15 21H18"
-            stroke="#FFFFFF"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-        </Svg>
-      </TouchableOpacity>
+      {/* Global Floating QR Tag Scanner Action Button (Above Bottom Menu on the Right) */}
+      {!isKeyboardVisible && (
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={() => setGlobalQrModalOpen(true)}
+          style={[
+            styles.globalFloatingQrBtn,
+            {
+              right: floatingBtnRight,
+              backgroundColor: theme.primary,
+              borderColor: theme.mode === 'dark' ? '#2A3C30' : '#FFFFFF',
+            },
+          ]}
+          accessibilityLabel={
+            lang === 'bn' ? 'QR ট্যাগ স্ক্যান' : 'Scan Plant QR Tag'
+          }
+        >
+          <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
+            <Path
+              d="M3 3H9V9H3V3Z"
+              stroke="#FFFFFF"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <Path
+              d="M15 3H21V9H15V3Z"
+              stroke="#FFFFFF"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <Path
+              d="M3 15H9V21H3V15Z"
+              stroke="#FFFFFF"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <Path d="M15 15H18V18H15V15Z" fill="#FFFFFF" />
+            <Path d="M18 18H21V21H18V18Z" fill="#FFFFFF" />
+            <Path
+              d="M15 21H18"
+              stroke="#FFFFFF"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          </Svg>
+        </TouchableOpacity>
+      )}
 
       {/* Global Real-Time QR Camera Scanner Modal */}
       <QrCameraScannerModal
@@ -874,6 +906,8 @@ const styles = StyleSheet.create({
     width: '100%',
     borderBottomWidth: 1,
     alignItems: 'center',
+    elevation: 0,
+    shadowOpacity: 0,
   },
   topBarInner: {
     width: '100%',
@@ -882,59 +916,56 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: DESIGN_TOKENS.screenHorizontalPadding,
-    paddingVertical: 7,
-    gap: 12,
+    paddingVertical: 6,
+    gap: 10,
   },
   brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 9,
     flex: 1,
     minWidth: 0,
   },
   brandLogo: {
-    width: 38,
-    height: 38,
-    borderRadius: 9,
+    width: 36,
+    height: 36,
+    borderRadius: 8,
   },
   brandTextCol: {
     flex: 1,
     minWidth: 0,
     justifyContent: 'center',
-    gap: 1.5,
+    gap: 1,
   },
   brandTitle: {
-    fontSize: 16.5,
+    fontSize: 14,
     fontWeight: '800',
-    letterSpacing: 0.2,
-    lineHeight: 20,
+    letterSpacing: 0.1,
+    lineHeight: 18,
   },
   brandSub: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '500',
     letterSpacing: 0.1,
-    lineHeight: 14,
-    opacity: 0.88,
+    lineHeight: 13,
+    opacity: 0.85,
   },
   toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 7,
     flexShrink: 0,
   },
   iconBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: 34,
+    height: 34,
+    borderRadius: 8,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.03,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   notifCountBadge: {
     position: 'absolute',
@@ -977,19 +1008,18 @@ const styles = StyleSheet.create({
   },
   globalFloatingQrBtn: {
     position: 'absolute',
-    top: 66,
-    right: 16,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 2,
+    bottom: Platform.OS === 'ios' ? 88 : 76,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 2.5,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 9999,
-    elevation: 6,
+    elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.25,
-    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.28,
+    shadowRadius: 6,
   },
 });

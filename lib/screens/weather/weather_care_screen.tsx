@@ -436,6 +436,7 @@ export const WeatherCareScreen: React.FC<WeatherCareScreenProps> = ({
                   <TouchableOpacity
                     key={f.id}
                     onPress={() => setFilterMode(f.id)}
+                    activeOpacity={0.8}
                     style={[
                       styles.filterPill,
                       {
@@ -449,8 +450,8 @@ export const WeatherCareScreen: React.FC<WeatherCareScreenProps> = ({
                     <Text
                       style={{
                         color: active ? '#FFFFFF' : theme.textPrimary,
-                        fontSize: 12,
-                        fontWeight: '700',
+                        fontSize: 12.5,
+                        fontWeight: active ? '800' : '700',
                         fontFamily: fontFam,
                       }}
                     >
@@ -682,7 +683,7 @@ export const WeatherCareScreen: React.FC<WeatherCareScreenProps> = ({
                 ]}
               >
                 <View style={styles.cropRecHeader}>
-                  <View style={{ flex: 1 }}>
+                  <View style={styles.cropTitleWrap}>
                     <Text
                       style={[
                         styles.cropTitle,
@@ -717,9 +718,10 @@ export const WeatherCareScreen: React.FC<WeatherCareScreenProps> = ({
                     <Text
                       style={{
                         color: theme.primary,
-                        fontSize: 11.5,
+                        fontSize: 12,
                         fontWeight: '700',
                         fontFamily: fontFam,
+                        lineHeight: 17,
                       }}
                     >
                       ★ {lang === 'bn' ? crop.suitabilityBadgeBn : crop.suitabilityBadgeEn}
@@ -901,14 +903,19 @@ const styles = StyleSheet.create({
   metricBox: {
     flex: 1,
     minWidth: 130,
-    padding: 14,
-    borderRadius: DESIGN_TOKENS.smallCardRadius,
-    borderWidth: 1,
+    padding: 16,
+    borderRadius: 14,
+    borderWidth: 1.2,
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
   },
   metricEmoji: {
-    fontSize: 22,
+    fontSize: 24,
   },
   metricVal: {
     fontSize: 22,
@@ -921,38 +928,48 @@ const styles = StyleSheet.create({
   alertBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 10,
+    gap: 12,
     padding: 14,
-    borderRadius: DESIGN_TOKENS.smallCardRadius,
-    borderWidth: 1,
+    borderRadius: 14,
+    borderWidth: 1.5,
     marginTop: 4,
   },
   forecastStrip: {
-    gap: 8,
+    gap: 10,
     paddingVertical: 4,
   },
   dayChip: {
-    width: 82,
-    paddingVertical: 10,
-    paddingHorizontal: 6,
-    borderRadius: DESIGN_TOKENS.smallCardRadius,
-    borderWidth: 1,
+    width: 86,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    borderWidth: 1.2,
     alignItems: 'center',
-    gap: 4,
+    gap: 5,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
   },
   filterPillsRow: {
     flexDirection: 'row',
-    gap: 6,
+    gap: 8,
   },
   filterPill: {
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: DESIGN_TOKENS.smallCardRadius,
-    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1.2,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 1,
   },
   taskCard: {
-    borderRadius: DESIGN_TOKENS.smallCardRadius,
-    borderWidth: 1,
+    borderRadius: 14,
+    borderWidth: 1.2,
     overflow: 'hidden',
   },
   taskMainRow: {
@@ -991,31 +1008,38 @@ const styles = StyleSheet.create({
   },
   cropRecCard: {
     padding: 14,
-    borderRadius: DESIGN_TOKENS.smallCardRadius,
-    borderWidth: 1,
-    gap: 8,
+    borderRadius: 14,
+    borderWidth: 1.2,
+    gap: 10,
   },
   cropRecHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    flexWrap: 'wrap',
-    gap: 8,
+    width: '100%',
+    gap: 6,
     marginBottom: 4,
+  },
+  cropTitleWrap: {
+    width: '100%',
   },
   cropTitle: {
     fontSize: 16,
     fontWeight: '800',
+    lineHeight: 22,
+    width: '100%',
   },
   cropVariety: {
     fontSize: 12.5,
-    marginTop: 2,
+    lineHeight: 18,
+    marginTop: 3,
+    width: '100%',
   },
   suitBadge: {
+    alignSelf: 'flex-start',
+    maxWidth: '100%',
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: 5,
     borderRadius: 8,
-    borderWidth: 1,
+    borderWidth: 1.2,
+    marginTop: 2,
   },
   cropDetailBox: {
     padding: 10,

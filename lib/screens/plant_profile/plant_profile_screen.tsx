@@ -7,6 +7,7 @@
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useState } from 'react';
 import {
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -64,7 +65,8 @@ export const PlantProfileScreen: React.FC<PlantProfileScreenProps> = ({
     titleBn: string,
     titleEn: string,
     defaultNote: string,
-    waterLiters?: number
+    waterLiters?: number,
+    photoUri?: string
   ) => {
     const newLog: PlantTimelineLog = {
       id: 'log_' + Date.now().toString(36),
@@ -74,6 +76,7 @@ export const PlantProfileScreen: React.FC<PlantProfileScreenProps> = ({
       titleEnglish: titleEn,
       detailsNotes: noteInput.trim() || defaultNote,
       waterLitersApplied: waterLiters,
+      photoUri,
       completedViaCheckbox: true,
       timestampIso: new Date().toISOString(),
     };
@@ -84,25 +87,37 @@ export const PlantProfileScreen: React.FC<PlantProfileScreenProps> = ({
   };
 
   const handleAddPhotoLog = async () => {
-    const res = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      quality: 0.7,
-    });
-    const uri =
-      !res.canceled && res.assets && res.assets.length > 0
-        ? res.assets[0].uri
-        : undefined;
-    await handleQuickLog(
-      'photo_note',
-      '📸 নতুন গ্রোথ ছবি ও বর্তমান অবস্থার নোট যুক্ত হয়েছে',
-      '📸 Added Growth Photo & Status Note',
-      noteInput.trim() ||
-        (lang === 'bn'
-          ? 'গাছের পাতা ও বৃদ্ধির বর্তমান অবস্থার ছবি সংরক্ষিত।'
-          : 'Saved current plant growth photo & health observation.')
-    );
-    if (uri) {
-      // Photo logged in timeline
+    try {
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!perm.granted) {
+        Alert.alert(
+          lang === 'bn' ? 'পারমিশন প্রয়োজন' : 'Permission Required',
+          lang === 'bn'
+            ? 'টাইমলাইন ফটো যোগ করতে গ্যালারি ব্যবহারের অনুমতি দিন।'
+            : 'Please allow access to your photo library to attach a photo.'
+        );
+        return;
+      }
+      const res = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        quality: 0.7,
+      });
+      if (!res.canceled && res.assets && res.assets.length > 0) {
+        const uri = res.assets[0].uri;
+        await handleQuickLog(
+          'photo_note',
+          '📸 নতুন গ্রোথ ছবি ও বর্তমান অবস্থার নোট যুক্ত হয়েছে',
+          '📸 Added Growth Photo & Status Note',
+          noteInput.trim() ||
+            (lang === 'bn'
+              ? 'গাছের পাতা ও বৃদ্ধির বর্তমান অবস্থার ছবি সংরক্ষিত।'
+              : 'Saved current plant growth photo & health observation.'),
+          undefined,
+          uri
+        );
+      }
+    } catch (e) {
+      console.warn('Photo log picker error', e);
     }
   };
 
