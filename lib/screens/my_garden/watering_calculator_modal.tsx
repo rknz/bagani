@@ -184,7 +184,7 @@ export const WateringCalculatorModal: React.FC<WateringCalculatorModalProps> = (
 
             {/* 1. Container Type */}
             <Text style={[styles.sectionLabel, { color: theme.textPrimary, fontFamily: fontFam }]}>
-              ১. {lang === 'bn' ? 'টব বা পাত্রের ধরন নির্বাচন করুন' : '1. Select Container Material'}
+              {lang === 'bn' ? '১. টব বা পাত্রের ধরন নির্বাচন করুন' : '1. Select Container Material'}
             </Text>
             <View style={styles.chipsGrid}>
               {CONTAINER_OPTIONS.map((c) => {
@@ -222,7 +222,7 @@ export const WateringCalculatorModal: React.FC<WateringCalculatorModalProps> = (
             {/* 2. Container Diameter (Inches) */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
               <Text style={[styles.sectionLabel, { color: theme.textPrimary, fontFamily: fontFam, marginTop: 0 }]}>
-                ২. {lang === 'bn' ? 'টব বা ব্যাগের সাইজ (ব্যাস)' : '2. Container Diameter'}
+                {lang === 'bn' ? '২. টব বা ব্যাগের সাইজ (ব্যাস)' : '2. Container Diameter'}
               </Text>
               <Text style={{ fontSize: 14, fontWeight: '800', color: theme.primary }}>
                 {diameterInches}″ ({Math.round(diameterInches * 2.54)} cm)
@@ -259,7 +259,7 @@ export const WateringCalculatorModal: React.FC<WateringCalculatorModalProps> = (
 
             {/* 3. Soil Mixture */}
             <Text style={[styles.sectionLabel, { color: theme.textPrimary, fontFamily: fontFam }]}>
-              ৩. {lang === 'bn' ? 'মাটি ও মিডিয়ার ধরন' : '3. Soil & Growing Media'}
+              {lang === 'bn' ? '৩. মাটি ও মিডিয়ার ধরন' : '3. Soil & Growing Media'}
             </Text>
             <View style={styles.chipsGrid}>
               {SOIL_OPTIONS.map((s) => {
@@ -295,7 +295,7 @@ export const WateringCalculatorModal: React.FC<WateringCalculatorModalProps> = (
 
             {/* 4. Plant Stage */}
             <Text style={[styles.sectionLabel, { color: theme.textPrimary, fontFamily: fontFam }]}>
-              ৪. {lang === 'bn' ? 'গাছের বর্তমান পর্যায়' : '4. Current Growth Stage'}
+              {lang === 'bn' ? '৪. গাছের বর্তমান পর্যায়' : '4. Current Growth Stage'}
             </Text>
             <View style={styles.chipsGrid}>
               {STAGE_OPTIONS.map((st) => {
@@ -334,7 +334,7 @@ export const WateringCalculatorModal: React.FC<WateringCalculatorModalProps> = (
             {plants.length > 0 && (
               <View style={{ marginTop: 12 }}>
                 <Text style={[styles.sectionLabel, { color: theme.textPrimary, fontFamily: fontFam }]}>
-                  ৫. {lang === 'bn' ? 'গাছ নির্বাচন (রুটিন সংযুক্তির জন্য)' : '5. Select Target Plant'}
+                  {lang === 'bn' ? '৫. গাছ নির্বাচন (রুটিন সংযুক্তির জন্য)' : '5. Select Target Plant'}
                 </Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4 }}>
                   {plants.map((p) => {

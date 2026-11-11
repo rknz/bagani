@@ -253,8 +253,8 @@ export const QrTrackerScreen: React.FC<QrTrackerScreenProps> = ({
               ]}
             >
               {lang === 'bn'
-                ? 'স্মার্ট QR কোড স্ক্যানার ও প্রিন্টেবল ট্যাগ'
-                : 'Smart QR Scanner & Printable PDF Tag'}
+                ? 'QR স্ক্যানার ও প্রিন্ট'
+                : 'QR Scanner & Print'}
             </Text>
           </View>
           <Text
@@ -279,7 +279,7 @@ export const QrTrackerScreen: React.FC<QrTrackerScreenProps> = ({
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <Text style={[styles.sectionTitle, { color: theme.textPrimary, fontFamily: fontFam }]}>
-            ১. {lang === 'bn' ? 'গাছ নির্বাচন করুন (ড্রপডাউন)' : '1. Select Registered Plant'}
+            {lang === 'bn' ? '১. গাছ নির্বাচন করুন (ড্রপডাউন)' : '1. Select Registered Plant'}
           </Text>
           <Text style={{ fontSize: 12, color: theme.textSecondary }}>
             {lang === 'bn' ? `মোট ${plants.length}টি গাছ` : `${plants.length} plants`}
@@ -310,9 +310,8 @@ export const QrTrackerScreen: React.FC<QrTrackerScreenProps> = ({
             ]}
           >
             <Text style={[styles.sectionTitle, { color: theme.textPrimary, fontFamily: fontFam }]}>
-              ২.{' '}
               {lang === 'bn'
-                ? 'প্রিন্টেবল QR ট্যাগ কাস্টমাইজ করুন'
+                ? '২. প্রিন্টেবল QR ট্যাগ কাস্টমাইজ করুন'
                 : '2. Customize Printable QR Tag'}
             </Text>
 
@@ -397,19 +396,14 @@ export const QrTrackerScreen: React.FC<QrTrackerScreenProps> = ({
                   placeholderTextColor={theme.textSecondary}
                 />
 
-                {/* Date Input Field for Planting Date & Plant Age Indicator */}
-                <View style={{ marginTop: 6, gap: 6 }}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
-                      📅 {lang === 'bn' ? 'রোপণের তারিখ (Planting Date)' : 'Planting Date (YYYY-MM-DD)'}
-                    </Text>
-                    <View style={[styles.ageBadge, { backgroundColor: theme.primary + '18', borderColor: theme.primary }]}>
-                      <Text style={[styles.ageBadgeText, { color: theme.primary, fontFamily: fontFam }]}>
-                        🌱 {lang === 'bn' ? `বয়স: ${plantAge.textBn}` : `Age: ${plantAge.textEn}`} ({plantAge.totalDays} {lang === 'bn' ? 'দিন' : 'days'})
-                      </Text>
-                    </View>
-                  </View>
+                {/* Vertical Arrangement: Planting Date on Top, Date Displayed Below It, Followed by Planting Age */}
+                <View style={{ marginTop: 8, gap: 6 }}>
+                  {/* Planting Date Title at the Top */}
+                  <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
+                    📅 {lang === 'bn' ? 'রোপণের তারিখ (Planting Date)' : 'Planting Date (YYYY-MM-DD)'}
+                  </Text>
 
+                  {/* Date Input Field Displayed Below It */}
                   <TextInput
                     value={customPlantedDate}
                     onChangeText={setCustomPlantedDate}
@@ -465,6 +459,18 @@ export const QrTrackerScreen: React.FC<QrTrackerScreenProps> = ({
                       );
                     })}
                   </View>
+
+                  {/* Planting Age Section Arranged Vertically Below */}
+                  <View style={{ marginTop: 8, gap: 4 }}>
+                    <Text style={[styles.fieldLabel, { color: theme.textSecondary, marginBottom: 2 }]}>
+                      🌱 {lang === 'bn' ? 'গাছের বয়স (Planting Age)' : 'Planting Age'}
+                    </Text>
+                    <View style={[styles.ageBadgeVertical, { backgroundColor: theme.primary + '14', borderColor: theme.primary }]}>
+                      <Text style={[styles.ageBadgeText, { color: theme.primary, fontFamily: fontFam, fontSize: 13 }]}>
+                        🌱 {lang === 'bn' ? `বর্তমান বয়স: ${plantAge.textBn}` : `Current Age: ${plantAge.textEn}`} ({plantAge.totalDays} {lang === 'bn' ? 'দিন' : 'days'})
+                      </Text>
+                    </View>
+                  </View>
                 </View>
               </>
             )}
@@ -478,9 +484,8 @@ export const QrTrackerScreen: React.FC<QrTrackerScreenProps> = ({
             ]}
           >
             <Text style={[styles.sectionTitle, { color: theme.textPrimary, fontFamily: fontFam }]}>
-              ৩.{' '}
               {lang === 'bn'
-                ? 'প্রিন্টেবল পিডিএফ ট্যাগ প্রিভিউ'
+                ? '৩. প্রিন্টেবল পিডিএফ ট্যাগ প্রিভিউ'
                 : '3. Printable PDF Tag Live Preview'}
             </Text>
 
@@ -998,6 +1003,14 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 8,
     borderWidth: 1,
+  },
+  ageBadgeVertical: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignSelf: 'flex-start',
+    marginTop: 2,
   },
   ageBadgeText: {
     fontSize: 11.5,
