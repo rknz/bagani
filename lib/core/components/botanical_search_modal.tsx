@@ -15,6 +15,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Image,
+  KeyboardAvoidingView,
   Linking,
   Modal,
   Platform,
@@ -204,12 +205,16 @@ export const BotanicalSearchModal: React.FC<BotanicalSearchModalProps> = ({
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
-        <View
-          style={[
-            styles.modalContainer,
-            { backgroundColor: theme.surface, borderColor: theme.border },
-          ]}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.keyboardAvoidWrap}
         >
+          <View
+            style={[
+              styles.modalContainer,
+              { backgroundColor: theme.surface, borderColor: theme.border },
+            ]}
+          >
           {/* Modal Header */}
           <View
             style={[
@@ -320,18 +325,10 @@ export const BotanicalSearchModal: React.FC<BotanicalSearchModalProps> = ({
                 ]}
                 accessibilityLabel={lang === 'bn' ? 'অনুসন্ধান করুন' : 'Search'}
               >
-                <Svg width={15} height={15} viewBox="0 0 24 24" fill="none">
+                <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
                   <Circle cx="11" cy="11" r="7" stroke="#FFFFFF" strokeWidth="2.2" />
                   <Path d="M16.5 16.5L21 21" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" />
                 </Svg>
-                <Text
-                  style={[
-                    styles.searchGoBtnText,
-                    { fontFamily: fontFam },
-                  ]}
-                >
-                  {lang === 'bn' ? 'খুঁজুন' : 'Search'}
-                </Text>
               </TouchableOpacity>
             </View>
 
@@ -940,18 +937,27 @@ export const BotanicalSearchModal: React.FC<BotanicalSearchModalProps> = ({
             ) : null}
           </ScrollView>
         </View>
+        </KeyboardAvoidingView>
       </View>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
+  keyboardAvoidWrap: {
+    width: '100%',
+    maxWidth: 760,
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'flex-start',
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(16, 23, 19, 0.65)',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
-    padding: 14,
+    padding: 12,
+    paddingTop: Platform.OS === 'web' ? 24 : 14,
   },
   modalContainer: {
     width: '100%',
@@ -1029,12 +1035,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   searchGoBtn: {
-    flexDirection: 'row',
+    width: 42,
+    height: 42,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 5,
-    height: 42,
-    paddingHorizontal: 14,
     borderRadius: 10,
     flexShrink: 0,
   },

@@ -1293,12 +1293,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     gap: 9,
+    overflow: 'hidden',
   },
   searchIconLeft: {
     flexShrink: 0,
   },
   searchInputInner: {
     flex: 1,
+    minWidth: 0,
     height: '100%',
     fontSize: 13,
     paddingVertical: 0,
@@ -1307,6 +1309,7 @@ const styles = StyleSheet.create({
     padding: 4,
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
   },
   // Filter Chips Horizontal Strip
   filterStripWrap: {

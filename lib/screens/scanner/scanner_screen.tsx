@@ -17,7 +17,7 @@
 
 import * as ImagePicker from 'expo-image-picker';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Image,
@@ -75,6 +75,33 @@ const EXAMINED_PARTS: {
     { id: 'plant', icon: '🌱', nameBn: 'সমগ্র গাছ (Plant)', nameEn: 'Whole Plant' },
   ];
 
+const ALL_PLANT_SUGGESTIONS = [
+  { bn: 'গোলাপ', en: 'Rose', emoji: '🌹' },
+  { bn: 'গাঁদা', en: 'Marigold', emoji: '🌼' },
+  { bn: 'জবা', en: 'Hibiscus', emoji: '🌺' },
+  { bn: 'ড্রাগন ফল', en: 'Dragon Fruit', emoji: '🐉' },
+  { bn: 'স্ট্রবেরি', en: 'Strawberry', emoji: '🍓' },
+  { bn: 'আম', en: 'Mango', emoji: '🥭' },
+  { bn: 'মাল্টা', en: 'Malta', emoji: '🍊' },
+  { bn: 'লেবু ও কাগজি লেবু', en: 'Lemon & Lime', emoji: '🍋' },
+  { bn: 'পেয়ারা', en: 'Guava', emoji: '🍐' },
+  { bn: 'টমেটো', en: 'Tomato', emoji: '🍅' },
+  { bn: 'মরিচ ও নাগা মরিচ', en: 'Chili & Naga', emoji: '🌶️' },
+  { bn: 'লাউ ও শসা', en: 'Bottle Gourd & Cucumber', emoji: '🥒' },
+  { bn: 'মিষ্টি কুমড়া', en: 'Sweet Gourd', emoji: '🎃' },
+  { bn: 'বেগুন', en: 'Eggplant', emoji: '🍆' },
+  { bn: 'ক্যাকটাস ও সুকুলেন্ট', en: 'Cactus & Succulents', emoji: '🌵' },
+  { bn: 'তুলসী', en: 'Tulsi (Holy Basil)', emoji: '🌿' },
+  { bn: 'পুদিনা পাতা', en: 'Mint', emoji: '🍃' },
+  { bn: 'ধনেপাতা', en: 'Coriander', emoji: '🌱' },
+  { bn: 'অ্যালোভেরা', en: 'Aloe Vera', emoji: '🪴' },
+  { bn: 'অর্কিড', en: 'Orchid', emoji: '🌸' },
+  { bn: 'বেলি ও জুঁই', en: 'Jasmine', emoji: '🤍' },
+  { bn: 'পেঁপে', en: 'Papaya', emoji: '🍈' },
+  { bn: 'বট সাই / বনসাই', en: 'Bonsai', emoji: '🌳' },
+  { bn: 'কাগজ ফুল', en: 'Bougainvillea', emoji: '🌺' },
+];
+
 export const ScannerScreen: React.FC<ScannerScreenProps> = ({
   theme,
   lang,
@@ -89,6 +116,17 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
   const [plantQueryInput, setPlantQueryInput] = useState<string>('');
   const [targetPlantId, setTargetPlantId] = useState<string>(plants[0]?.id || '');
   const [capturedImageUri, setCapturedImageUri] = useState<string | null>(null);
+
+  const displayedSuggestions = useMemo(() => {
+    const q = plantQueryInput.trim().toLowerCase();
+    if (!q) return ALL_PLANT_SUGGESTIONS;
+    const matched = ALL_PLANT_SUGGESTIONS.filter(
+      (item) =>
+        item.bn.toLowerCase().includes(q) ||
+        item.en.toLowerCase().includes(q)
+    );
+    return matched.length > 0 ? matched : ALL_PLANT_SUGGESTIONS;
+  }, [plantQueryInput]);
 
   // Analysis Progress State
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
@@ -460,6 +498,7 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
       style={{ flex: 1, width: '100%' }}
       showsVerticalScrollIndicator={false}
       showsHorizontalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
       contentContainerStyle={styles.scrollOuter}
     >
       <View style={styles.container}>
@@ -554,6 +593,152 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
               </View>
             </TouchableOpacity>
           </View>
+        </View>
+
+        {/* Card 2: Global Botanical Plant Selector & Online Search Input (Positioned high so suggestions appear above keyboard) */}
+        <View style={[styles.mainCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, flex: 1 }}>
+              <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+                <Circle cx="12" cy="12" r="9" stroke={theme.primary} strokeWidth="2" />
+                <Path d="M3 12H21" stroke={theme.primary} strokeWidth="1.8" />
+                <Path d="M12 3C14.5 5.5 15.5 8.5 15.5 12C15.5 15.5 14.5 18.5 12 21C9.5 18.5 8.5 15.5 8.5 12C8.5 8.5 9.5 5.5 12 3Z" stroke={theme.primary} strokeWidth="1.8" />
+              </Svg>
+              <Text style={[styles.cardHeading, { color: theme.textPrimary, fontFamily: fontFam, marginBottom: 0 }]}>
+                {lang === 'bn' ? 'উদ্ভিদ বা প্রজাতি খুঁজুন' : 'Find Plant or Species'}
+              </Text>
+            </View>
+            {activePlantHint ? (
+              <View style={[styles.activeHintBadge, { backgroundColor: theme.selectedSurface, borderColor: theme.primary }]}>
+                <Text style={{ color: theme.primary, fontSize: 11.5, fontWeight: '700', fontFamily: fontFam }}>
+                  ✓ {activePlantHint}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+
+          {/* Plant Search / Input Box - Firmly Anchored Right Icon Button */}
+          <View style={[styles.plantHintInputRow, { backgroundColor: theme.surfaceElevated, borderColor: theme.border }]}>
+            <View style={styles.inputLeftIcon}>
+              <Svg width={17} height={17} viewBox="0 0 24 24" fill="none">
+                <Circle cx="11" cy="11" r="7" stroke={theme.textSecondary} strokeWidth="2" />
+                <Path d="M16.5 16.5L21 21" stroke={theme.textSecondary} strokeWidth="2.2" strokeLinecap="round" />
+              </Svg>
+            </View>
+            <TextInput
+              value={plantQueryInput}
+              onChangeText={setPlantQueryInput}
+              onSubmitEditing={() => handlePlantQuerySubmit(plantQueryInput)}
+              returnKeyType="search"
+              placeholder={
+                lang === 'bn'
+                  ? 'গাছের নাম লিখুন (যেমন: গোলাপ, জবা, আম, টমেটো, মরিচ)...'
+                  : 'Enter plant name (e.g. Rose, Mango, Tomato, Tulsi)...'
+              }
+              placeholderTextColor={theme.textSecondary}
+              style={[styles.plantHintInput, { color: theme.textPrimary, fontFamily: fontFam }]}
+            />
+            {plantQueryInput ? (
+              <TouchableOpacity
+                onPress={() => setPlantQueryInput('')}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                style={styles.clearBtnAnchored}
+                accessibilityLabel="Clear input"
+              >
+                <Text style={{ color: theme.textSecondary, fontSize: 13, fontWeight: '700' }}>✕</Text>
+              </TouchableOpacity>
+            ) : null}
+            <TouchableOpacity
+              onPress={() => handlePlantQuerySubmit(plantQueryInput)}
+              activeOpacity={0.82}
+              accessibilityLabel={lang === 'bn' ? 'অনুসন্ধান' : 'Search'}
+              style={[styles.plantHintSearchBtn, { backgroundColor: theme.primary }]}
+            >
+              <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+                <Circle cx="11" cy="11" r="7" stroke="#FFFFFF" strokeWidth="2.2" />
+                <Path d="M16.5 16.5L21 21" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" />
+              </Svg>
+            </TouchableOpacity>
+          </View>
+
+          {/* Quick & Live Search Suggestions (Always Visible Above Keyboard) */}
+          <Text style={[styles.fieldLabel, { color: theme.textSecondary, fontFamily: fontFam, marginTop: 8 }]}>
+            {plantQueryInput.trim()
+              ? (lang === 'bn' ? 'সংশ্লিষ্ট উদ্ভিদ সাজেশন (ট্যাপ করুন):' : 'Matching Plant Suggestions:')
+              : (lang === 'bn' ? 'জনপ্রিয় উদ্ভিদ সাজেশন (ট্যাপ করে দ্রুত নির্বাচন করুন):' : 'Popular Plant Suggestions:')}
+          </Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ gap: 8, paddingVertical: 4 }}
+          >
+            {displayedSuggestions.map((item) => {
+              const label = lang === 'bn' ? `${item.bn} (${item.en})` : `${item.en} (${item.bn})`;
+              const active =
+                activePlantHint.toLowerCase().includes(item.bn.toLowerCase()) ||
+                activePlantHint.toLowerCase().includes(item.en.toLowerCase());
+              return (
+                <TouchableOpacity
+                  key={item.en}
+                  onPress={() => {
+                    const sel = lang === 'bn' ? item.bn : item.en;
+                    setPlantQueryInput(sel);
+                    handleSelectSeedPlant(sel);
+                  }}
+                  activeOpacity={0.8}
+                  style={[
+                    styles.seedPill,
+                    {
+                      backgroundColor: active ? theme.selectedSurface : theme.surfaceElevated,
+                      borderColor: active ? theme.primary : theme.border,
+                    },
+                  ]}
+                >
+                  <Text style={{ color: active ? theme.primary : theme.textPrimary, fontSize: 12.5, fontWeight: '700', fontFamily: fontFam }}>
+                    {item.emoji} {label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+
+        {/* Card 3: Camera Capture, Photo Picker & Examined Part */}
+        <View style={[styles.mainCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          {/* Examined Part Selector (Leaf, Fruit, Flower, Soil, Whole Plant) */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, marginBottom: 8 }}>
+            <Svg width={17} height={17} viewBox="0 0 24 24" fill="none">
+              <Circle cx="11" cy="11" r="7" stroke={theme.primary} strokeWidth="2" />
+              <Path d="M16.5 16.5L21 21" stroke={theme.primary} strokeWidth="2.2" strokeLinecap="round" />
+            </Svg>
+            <Text style={[styles.cardHeading, { color: theme.textPrimary, fontFamily: fontFam, marginBottom: 0 }]}>
+              {lang === 'bn' ? 'গাছের কোন অংশে সমস্যা? (Examined Part)' : 'Examined Plant Part:'}
+            </Text>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 10 }}>
+            {EXAMINED_PARTS.map((p) => {
+              const active = examinedPart === p.id;
+              return (
+                <TouchableOpacity
+                  key={p.id}
+                  onPress={() => handleSwitchExaminedPart(p.id)}
+                  style={[
+                    styles.partPill,
+                    {
+                      backgroundColor: active ? theme.primary : theme.surfaceElevated,
+                      borderColor: active ? theme.primary : theme.border,
+                    },
+                  ]}
+                >
+                  <Text style={{ fontSize: 16 }}>{p.icon}</Text>
+                  <Text style={{ color: active ? '#FFFFFF' : theme.textPrimary, fontSize: 12.5, fontWeight: '700', fontFamily: fontFam }}>
+                    {lang === 'bn' ? p.nameBn : p.nameEn}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
 
           {/* Live Camera Viewfinder Stream */}
           {isLiveCameraOpen && (
@@ -844,133 +1029,6 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
               </View>
             </View>
           )}
-        </View>
-
-        {/* Global Botanical Plant Selector & Online Search Input */}
-        <View style={[styles.mainCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, marginBottom: 10 }}>
-            <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
-              <Circle cx="12" cy="12" r="9" stroke={theme.primary} strokeWidth="2" />
-              <Path d="M3 12H21" stroke={theme.primary} strokeWidth="1.8" />
-              <Path d="M12 3C14.5 5.5 15.5 8.5 15.5 12C15.5 15.5 14.5 18.5 12 21C9.5 18.5 8.5 15.5 8.5 12C8.5 8.5 9.5 5.5 12 3Z" stroke={theme.primary} strokeWidth="1.8" />
-            </Svg>
-            <Text style={[styles.cardHeading, { color: theme.textPrimary, fontFamily: fontFam, marginBottom: 0 }]}>
-              {lang === 'bn' ? 'উদ্ভিদ বা প্রজাতি খুঁজুন' : 'Find Plant or Species'}
-            </Text>
-          </View>
-
-          {/* Plant Search / Input Box */}
-          <View style={[styles.plantHintInputRow, { backgroundColor: theme.surfaceElevated, borderColor: theme.border }]}>
-            <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
-              <Circle cx="11" cy="11" r="7" stroke={theme.textSecondary} strokeWidth="2" />
-              <Path d="M16.5 16.5L21 21" stroke={theme.textSecondary} strokeWidth="2.2" strokeLinecap="round" />
-            </Svg>
-            <TextInput
-              value={plantQueryInput}
-              onChangeText={setPlantQueryInput}
-              onSubmitEditing={() => handlePlantQuerySubmit(plantQueryInput)}
-              placeholder={
-                lang === 'bn'
-                  ? 'গাছের নাম লিখুন (যেমন: গোলাপ, জবা, গাঁদা, স্ট্রবেরি, ড্রাগন ফল, ক্যাকটাস, তুলসী, মরিচ)...'
-                  : 'Enter any plant name (e.g. Rose, Hibiscus, Strawberry, Dragon fruit, Cactus, Tulsi)...'
-              }
-              placeholderTextColor={theme.textSecondary}
-              style={[styles.plantHintInput, { color: theme.textPrimary, fontFamily: fontFam }]}
-            />
-            {plantQueryInput ? (
-              <TouchableOpacity onPress={() => setPlantQueryInput('')} style={{ padding: 4 }}>
-                <Text style={{ color: theme.textSecondary, fontSize: 13 }}>✕</Text>
-              </TouchableOpacity>
-            ) : null}
-            <TouchableOpacity
-              onPress={() => handlePlantQuerySubmit(plantQueryInput)}
-              style={[styles.plantHintSearchBtn, { backgroundColor: theme.primary, flexDirection: 'row', alignItems: 'center', gap: 5 }]}
-            >
-              <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
-                <Circle cx="11" cy="11" r="7" stroke="#FFFFFF" strokeWidth="2.2" />
-                <Path d="M16.5 16.5L21 21" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" />
-              </Svg>
-              <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 12.5, fontFamily: fontFam }}>
-                {lang === 'bn' ? 'সার্চ' : 'Search'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Quick Plant Species Chips */}
-          <Text style={[styles.fieldLabel, { color: theme.textSecondary, fontFamily: fontFam, marginTop: 10 }]}>
-            {lang === 'bn' ? 'জনপ্রিয় উদ্ভিদ সাজেশন (ট্যাপ করে তাৎক্ষণিক রোগ বা জাত দেখুন):' : 'Popular Plant Suggestions:'}
-          </Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4 }}>
-            {[
-              'গোলাপ (Rose)',
-              'গাঁদা (Marigold)',
-              'জবা (Hibiscus)',
-              'ড্রাগন ফল',
-              'স্ট্রবেরি (Strawberry)',
-              'আম (Mango)',
-              'মাল্টা (Malta)',
-              'পেয়ারা (Guava)',
-              'টমেটো (Tomato)',
-              'লাউ ও শসা',
-              'ক্যাকটাস (Cactus)',
-              'তুলসী (Tulsi)',
-              'অর্কিড (Orchid)',
-            ].map((chip) => {
-              const term = chip.split(' ')[0].replace(/[()]/g, '');
-              const active = activePlantHint.toLowerCase().includes(term.toLowerCase());
-              return (
-                <TouchableOpacity
-                  key={chip}
-                  onPress={() => handleSelectSeedPlant(term)}
-                  style={[
-                    styles.seedPill,
-                    {
-                      backgroundColor: active ? theme.selectedSurface : theme.surfaceElevated,
-                      borderColor: active ? theme.primary : theme.border,
-                    },
-                  ]}
-                >
-                  <Text style={{ color: active ? theme.primary : theme.textPrimary, fontSize: 12.5, fontWeight: '700', fontFamily: fontFam }}>
-                    🌱 {chip}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-
-          {/* Examined Part Selector (Leaf, Fruit, Flower, Soil, Whole Plant) */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 14 }}>
-            <Svg width={17} height={17} viewBox="0 0 24 24" fill="none">
-              <Circle cx="11" cy="11" r="7" stroke={theme.primary} strokeWidth="2" />
-              <Path d="M16.5 16.5L21 21" stroke={theme.primary} strokeWidth="2.2" strokeLinecap="round" />
-            </Svg>
-            <Text style={[styles.cardHeading, { color: theme.textPrimary, fontFamily: fontFam, marginBottom: 0 }]}>
-              {lang === 'bn' ? 'গাছের কোন অংশে সমস্যা? (Examined Part)' : 'Examined Plant Part:'}
-            </Text>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4 }}>
-            {EXAMINED_PARTS.map((p) => {
-              const active = examinedPart === p.id;
-              return (
-                <TouchableOpacity
-                  key={p.id}
-                  onPress={() => handleSwitchExaminedPart(p.id)}
-                  style={[
-                    styles.partPill,
-                    {
-                      backgroundColor: active ? theme.primary : theme.surfaceElevated,
-                      borderColor: active ? theme.primary : theme.border,
-                    },
-                  ]}
-                >
-                  <Text style={{ fontSize: 16 }}>{p.icon}</Text>
-                  <Text style={{ color: active ? '#FFFFFF' : theme.textPrimary, fontSize: 12.5, fontWeight: '700', fontFamily: fontFam }}>
-                    {lang === 'bn' ? p.nameBn : p.nameEn}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
         </View>
 
         {/* AI & Online Diagnostic Result Box */}
@@ -1501,25 +1559,55 @@ const styles = StyleSheet.create({
     fontSize: 13.5,
     fontWeight: '700',
   },
+  activeHintBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
   plantHintInputRow: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1.5,
     borderRadius: 12,
-    paddingHorizontal: 12,
-    height: 42,
-    gap: 8,
+    paddingLeft: 12,
+    paddingRight: 4,
+    height: 46,
+    gap: 6,
     marginTop: 4,
+    width: '100%',
+    overflow: 'hidden',
+  },
+  inputLeftIcon: {
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
   },
   plantHintInput: {
     flex: 1,
-    fontSize: 12.5,
+    minWidth: 0,
     height: '100%',
+    fontSize: 13,
+    paddingVertical: 0,
+    margin: 0,
+  },
+  clearBtnAnchored: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
   },
   plantHintSearchBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 8,
+    width: 38,
+    height: 38,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
   },
   partPill: {
     flexDirection: 'row',

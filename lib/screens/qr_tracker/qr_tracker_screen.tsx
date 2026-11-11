@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Image,
@@ -24,6 +24,7 @@ interface QrTrackerScreenProps {
   lang: AppLanguage;
   plants: PlantModel[];
   ownerName: string;
+  initialPlantId?: string;
   onBack?: () => void;
   onSelectPlant: (plant: PlantModel) => void;
   onUpdatePlantQrSettings?: (
@@ -41,16 +42,25 @@ export const QrTrackerScreen: React.FC<QrTrackerScreenProps> = ({
   lang,
   plants,
   ownerName,
+  initialPlantId,
   onBack,
   onSelectPlant,
   onUpdatePlantQrSettings,
 }) => {
+  const initialPlant = useMemo(() => {
+    if (initialPlantId) {
+      const match = plants.find((p) => p.id === initialPlantId);
+      if (match) return match;
+    }
+    return plants[0] || null;
+  }, [initialPlantId, plants]);
+
   const [selectedPlantId, setSelectedPlantId] = useState<string>(
-    plants[0]?.id || ''
+    initialPlant?.id || ''
   );
   const selectedPlant = useMemo(
-    () => plants.find((p) => p.id === selectedPlantId) || plants[0] || null,
-    [plants, selectedPlantId]
+    () => plants.find((p) => p.id === selectedPlantId) || initialPlant || null,
+    [plants, selectedPlantId, initialPlant]
   );
 
   const [tagSize, setTagSize] = useState<QrTagSize>(
@@ -66,6 +76,24 @@ export const QrTrackerScreen: React.FC<QrTrackerScreenProps> = ({
     selectedPlant?.plantedDateIso?.slice(0, 10) ||
       new Date().toISOString().slice(0, 10)
   );
+
+  useEffect(() => {
+    if (initialPlantId) {
+      const match = plants.find((p) => p.id === initialPlantId);
+      if (match) {
+        setSelectedPlantId(match.id);
+        setTagSize(match.qrTagConfig?.tagSize || 'medium');
+        setCustomQuote(
+          match.qrTagConfig?.customQuoteBengali || 'গাছ লাগান, পরিবেশ বাঁচান'
+        );
+        setCustomOwner(match.qrTagConfig?.ownerName || ownerName);
+        setCustomPlantedDate(
+          match.plantedDateIso?.slice(0, 10) ||
+            new Date().toISOString().slice(0, 10)
+        );
+      }
+    }
+  }, [initialPlantId, plants, ownerName]);
   const [isPlantDropdownOpen, setIsPlantDropdownOpen] = useState(false);
   const [plantSearchQuery, setPlantSearchQuery] = useState('');
   const [manualQrInput, setManualQrInput] = useState('');

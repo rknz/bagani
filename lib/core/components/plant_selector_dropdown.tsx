@@ -466,6 +466,7 @@ const styles = StyleSheet.create({
   },
   dropdownSearchInput: {
     flex: 1,
+    minWidth: 0,
     fontSize: 12.5,
     paddingVertical: 2,
   },

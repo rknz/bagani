@@ -691,8 +691,15 @@ export default function App() {
             theme={theme}
             lang={lang}
             plants={plants}
+            initialPlantId={selectedPlant?.id}
             ownerName={currentUser.displayName}
-            onBack={() => setActiveRoute('my_garden')}
+            onBack={() => {
+              if (selectedPlant) {
+                setActiveRoute('plant_profile');
+              } else {
+                setActiveRoute('my_garden');
+              }
+            }}
             onSelectPlant={(plant) => {
               setSelectedPlant(plant);
               setActiveRoute('plant_profile');
