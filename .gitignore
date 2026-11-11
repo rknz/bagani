@@ -13,6 +13,7 @@ android/.gradle/
 android/local.properties
 android/build/
 *.apk
+!BAGANI_v2.5.0.apk
 *.aab
 build_apk.bat
 

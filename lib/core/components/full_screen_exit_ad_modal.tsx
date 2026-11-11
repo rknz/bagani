@@ -1,17 +1,16 @@
 /**
- * BAGANI — Full-Screen Exit Advertisement Modal (Phase 2)
+ * BAGANI — Full-Screen Exit Advertisement Modal & Exit Confirmation (v2.5.0)
  * Developer: ProFix - Web & Soft
  *
- * Compliance:
- * - Appears ONLY when the user is closing or exiting the application
- * - Replaces all persistent top and bottom banner ads
- * - Complies with Google AdMob & Play Store Interstitial/Exit Ad guidelines:
- *   1. Clearly marked as "Sponsored / বিজ্ঞাপন"
- *   2. Dismissible via top-right '✕' without forcing clicks
- *   3. Offers explicit "Exit App" or "Stay in BAGANI" options
+ * Professional Real-World AdMob / AdSense Flow:
+ * 1. User attempts to exit the application.
+ * 2. Full-page interstitial advertisement is displayed with a 5-second countdown timer.
+ * 3. After the advertisement countdown ends, user closes the ad.
+ * 4. A clean confirmation prompt asks: "Are you sure you want to close the application?"
+ * 5. If "Yes", the application closes. If "No", returns to the app.
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Linking,
   Modal,
@@ -23,9 +22,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { EXIT_SPONSOR_ADS, ExitAdSponsor } from '../../services/ad_service';
 import { AppLanguage } from '../l10n/translations';
 import { APP_TYPOGRAPHY, AppThemeColors } from '../theme/app_theme';
-import { EXIT_SPONSOR_ADS, ExitAdSponsor } from '../../services/ad_service';
 
 interface FullScreenExitAdModalProps {
   visible: boolean;
@@ -43,12 +42,35 @@ export const FullScreenExitAdModal: React.FC<FullScreenExitAdModalProps> = ({
   lang,
 }) => {
   const [activeAdIndex] = useState(0);
+  const [stage, setStage] = useState<'ad' | 'confirm'>('ad');
+  const [countdown, setCountdown] = useState(5);
+
   const ad: ExitAdSponsor = EXIT_SPONSOR_ADS[activeAdIndex] || EXIT_SPONSOR_ADS[0];
 
   const fontFam =
     lang === 'bn'
       ? APP_TYPOGRAPHY.fontFamilyBengali
       : APP_TYPOGRAPHY.fontFamilyEnglish;
+
+  // Reset timer whenever the modal becomes visible
+  useEffect(() => {
+    if (visible) {
+      setStage('ad');
+      setCountdown(5);
+    }
+  }, [visible]);
+
+  // 5-Second Countdown Timer
+  useEffect(() => {
+    if (!visible || stage !== 'ad') return;
+
+    if (countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [visible, stage, countdown]);
 
   const handleOpenCta = async () => {
     if (ad.ctaUrl) {
@@ -60,76 +82,108 @@ export const FullScreenExitAdModal: React.FC<FullScreenExitAdModalProps> = ({
     }
   };
 
+  const handleCloseAd = () => {
+    // Proceed to the confirmation prompt
+    setStage('confirm');
+  };
+
+  if (!visible) return null;
+
   return (
     <Modal
       visible={visible}
       animationType="fade"
-      transparent={false}
-      onRequestClose={onDismiss}
+      transparent={stage === 'confirm'}
+      onRequestClose={() => {
+        if (stage === 'confirm') onDismiss();
+        else handleCloseAd();
+      }}
     >
-      <SafeAreaView style={[styles.root, { backgroundColor: theme.background }]}>
-        {/* Top Header Bar */}
-        <View style={[styles.topBar, { borderBottomColor: theme.border, backgroundColor: theme.surface }]}>
-          <View style={styles.sponsorBadgeWrap}>
-            <View style={[styles.adTag, { backgroundColor: theme.primary }]}>
-              <Text style={styles.adTagText}>AD</Text>
-            </View>
-            <Text style={[styles.sponsorBadgeText, { color: theme.textSecondary, fontFamily: fontFam }]}>
-              {lang === 'bn' ? 'স্পন্সরড বার্তা • ProFix - Web & Soft' : 'Sponsored Partner • ProFix'}
-            </Text>
-          </View>
-
-          <TouchableOpacity
-            onPress={onDismiss}
-            activeOpacity={0.7}
-            style={[styles.closePill, { backgroundColor: theme.surfaceElevated, borderColor: theme.border }]}
-          >
-            <Text style={{ fontSize: 13, color: theme.textSecondary, fontWeight: '700', fontFamily: fontFam }}>
-              ✕ {lang === 'bn' ? 'ফিরে যান' : 'Close'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Scrollable Ad Content */}
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Main Sponsor Card */}
+      {stage === 'ad' ? (
+        <SafeAreaView style={[styles.root, { backgroundColor: theme.background }]}>
+          {/* Top Header Bar */}
           <View
             style={[
-              styles.sponsorCard,
-              {
-                backgroundColor: theme.surface,
-                borderColor: theme.border,
-                shadowColor: '#000000',
-              },
+              styles.topBar,
+              { borderBottomColor: theme.border, backgroundColor: theme.surface },
             ]}
           >
-            {/* Visual Header / Banner */}
-            <View style={[styles.cardVisualHeader, { backgroundColor: theme.selectedSurface }]}>
-              <View style={[styles.logoIconCircle, { backgroundColor: theme.primary }]}>
-                <Text style={{ fontSize: 32 }}>🌿</Text>
+            <View style={styles.sponsorBadgeWrap}>
+              <View style={[styles.adTag, { backgroundColor: theme.primary }]}>
+                <Text style={styles.adTagText}>AD</Text>
               </View>
-              <Text style={[styles.brandName, { color: theme.primary, fontFamily: fontFam }]}>
-                {ad.brandName}
-              </Text>
-              <Text style={[styles.tagline, { color: theme.textPrimary, fontFamily: fontFam }]}>
-                {lang === 'bn' ? ad.taglineBn : ad.taglineEn}
+              <Text style={[styles.sponsorBadgeText, { color: theme.textSecondary, fontFamily: fontFam }]}>
+                {lang === 'bn' ? 'স্পন্সরড বার্তা • Google AdSense' : 'Sponsored • Google AdSense'}
               </Text>
             </View>
 
-            {/* Description Body */}
-            <View style={styles.cardBody}>
-              <Text style={[styles.description, { color: theme.textSecondary, fontFamily: fontFam }]}>
-                {lang === 'bn' ? ad.descriptionBn : ad.descriptionEn}
-              </Text>
+            {/* Countdown / Dismiss Button */}
+            {countdown > 0 ? (
+              <View
+                style={[
+                  styles.countdownBadge,
+                  { backgroundColor: theme.surfaceElevated, borderColor: theme.border },
+                ]}
+              >
+                <Text style={[styles.countdownText, { color: theme.textSecondary, fontFamily: fontFam }]}>
+                  ⏱️ {countdown}s
+                </Text>
+              </View>
+            ) : (
+              <TouchableOpacity
+                onPress={handleCloseAd}
+                activeOpacity={0.7}
+                style={[
+                  styles.closePillActive,
+                  { backgroundColor: theme.primary },
+                ]}
+              >
+                <Text style={[styles.closePillActiveText, { fontFamily: fontFam }]}>
+                  ✕ {lang === 'bn' ? 'বিজ্ঞাপন বন্ধ করুন' : 'Close Ad'}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
 
-              {/* Bullet Highlights */}
-              <View style={styles.highlightsBox}>
-                {(lang === 'bn' ? ad.highlightsBn : ad.highlightsEn).map(
-                  (item, idx) => (
+          {/* Scrollable Ad Content */}
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Main Sponsor Card */}
+            <View
+              style={[
+                styles.sponsorCard,
+                {
+                  backgroundColor: theme.surface,
+                  borderColor: theme.border,
+                  shadowColor: '#000000',
+                },
+              ]}
+            >
+              {/* Visual Header / Banner */}
+              <View style={[styles.cardVisualHeader, { backgroundColor: theme.selectedSurface }]}>
+                <View style={[styles.logoIconCircle, { backgroundColor: theme.primary }]}>
+                  <Text style={{ fontSize: 32 }}>🌿</Text>
+                </View>
+                <Text style={[styles.brandName, { color: theme.primary, fontFamily: fontFam }]}>
+                  {ad.brandName}
+                </Text>
+                <Text style={[styles.tagline, { color: theme.textPrimary, fontFamily: fontFam }]}>
+                  {lang === 'bn' ? ad.taglineBn : ad.taglineEn}
+                </Text>
+              </View>
+
+              {/* Description Body */}
+              <View style={styles.cardBody}>
+                <Text style={[styles.description, { color: theme.textSecondary, fontFamily: fontFam }]}>
+                  {lang === 'bn' ? ad.descriptionBn : ad.descriptionEn}
+                </Text>
+
+                {/* Bullet Highlights */}
+                <View style={styles.highlightsBox}>
+                  {(lang === 'bn' ? ad.highlightsBn : ad.highlightsEn).map((item, idx) => (
                     <View key={idx} style={styles.highlightRow}>
                       <View style={[styles.bulletDot, { backgroundColor: theme.primary }]} />
                       <Text
@@ -141,84 +195,172 @@ export const FullScreenExitAdModal: React.FC<FullScreenExitAdModalProps> = ({
                         {item}
                       </Text>
                     </View>
-                  )
-                )}
-              </View>
+                  ))}
+                </View>
 
-              {/* Sponsor CTA Action */}
-              <TouchableOpacity
-                onPress={handleOpenCta}
-                activeOpacity={0.85}
-                style={[styles.ctaButton, { backgroundColor: theme.primary }]}
-              >
-                <Text style={[styles.ctaButtonText, { fontFamily: fontFam }]}>
-                  {lang === 'bn' ? ad.ctaTextBn : ad.ctaTextEn}
+                {/* Sponsor CTA Action */}
+                <TouchableOpacity
+                  onPress={handleOpenCta}
+                  activeOpacity={0.85}
+                  style={[styles.ctaButton, { backgroundColor: theme.primary }]}
+                >
+                  <Text style={[styles.ctaButtonText, { fontFamily: fontFam }]}>
+                    {lang === 'bn' ? ad.ctaTextBn : ad.ctaTextEn}
+                  </Text>
+                </TouchableOpacity>
+
+                <Text style={[styles.unitIdLabel, { color: theme.textMuted }]}>
+                  Google AdSense Interstitial Placement: {ad.unitId}
                 </Text>
-              </TouchableOpacity>
-
-              <Text style={[styles.unitIdLabel, { color: theme.textMuted }]}>
-                AdMob Interstitial Unit: {ad.unitId}
-              </Text>
+              </View>
             </View>
-          </View>
-        </ScrollView>
+          </ScrollView>
 
-        {/* Bottom Exit Confirmation Dock */}
-        <View style={[styles.exitDock, { backgroundColor: theme.surface, borderTopColor: theme.border }]}>
-          <View style={styles.exitDialogTextWrap}>
-            <Text style={[styles.exitQuestion, { color: theme.textPrimary, fontFamily: fontFam }]}>
-              {lang === 'bn' ? 'অ্যাপ থেকে বের হতে চান?' : 'Exit BAGANI App?'}
-            </Text>
-            <Text style={[styles.exitSub, { color: theme.textSecondary, fontFamily: fontFam }]}>
-              {lang === 'bn'
-                ? 'আপনার সকল গাছের তথ্য ও কেয়ার রিমাইন্ডার সংরক্ষিত রয়েছে।'
-                : 'All your plant logs and reminders are safely saved.'}
-            </Text>
-          </View>
-
-          <View style={styles.exitActionsRow}>
-            {/* Stay in App Button */}
+          {/* Bottom Banner Bar */}
+          <View
+            style={[
+              styles.bottomNoticeBar,
+              { backgroundColor: theme.surface, borderTopColor: theme.border },
+            ]}
+          >
             <TouchableOpacity
-              onPress={onDismiss}
-              activeOpacity={0.82}
+              onPress={countdown === 0 ? handleCloseAd : undefined}
+              activeOpacity={countdown === 0 ? 0.8 : 1}
               style={[
-                styles.actionBtn,
-                styles.stayBtn,
+                styles.bottomCloseBtn,
                 {
-                  backgroundColor: theme.primary,
-                },
-              ]}
-            >
-              <Text style={[styles.stayBtnText, { fontFamily: fontFam }]}>
-                🌿 {lang === 'bn' ? 'অ্যাপে থাকুন' : 'Stay in Bagani'}
-              </Text>
-            </TouchableOpacity>
-
-            {/* Exit App Button */}
-            <TouchableOpacity
-              onPress={onConfirmExit}
-              activeOpacity={0.82}
-              style={[
-                styles.actionBtn,
-                styles.exitBtn,
-                {
-                  backgroundColor: theme.surfaceElevated,
-                  borderColor: theme.border,
+                  backgroundColor:
+                    countdown === 0
+                      ? theme.primary
+                      : theme.mode === 'dark'
+                      ? '#334155'
+                      : '#E2E8F0',
                 },
               ]}
             >
               <Text
                 style={[
-                  styles.exitBtnText,
-                  { color: theme.danger, fontFamily: fontFam },
+                  styles.bottomCloseBtnText,
+                  {
+                    color: countdown === 0 ? '#FFFFFF' : theme.textSecondary,
+                    fontFamily: fontFam,
+                  },
                 ]}
               >
-                🚪 {lang === 'bn' ? 'অ্যাপ বন্ধ করুন' : 'Exit Now'}
+                {countdown > 0
+                  ? lang === 'bn'
+                    ? `বিজ্ঞাপন বন্ধ করতে অপেক্ষা করুন (${countdown} সেকেন্ড)`
+                    : `Please wait ${countdown}s to continue`
+                  : lang === 'bn'
+                  ? 'বিজ্ঞাপন সমাপ্ত • প্রস্থান করুন →'
+                  : 'Skip Ad & Exit App →'}
               </Text>
             </TouchableOpacity>
           </View>
+        </SafeAreaView>
+      ) : (
+        /* STAGE: CONFIRM EXIT PROMPT MODAL */
+        <View style={styles.confirmModalOverlay}>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.confirmModalBackdrop}
+            onPress={onDismiss}
+          />
+
+          <View
+            style={[
+              styles.confirmModalCard,
+              {
+                backgroundColor: theme.cardBackground,
+                borderColor: theme.border,
+              },
+            ]}
+          >
+            {/* Exit Icon Circle */}
+            <View
+              style={[
+                styles.confirmIconCircle,
+                {
+                  backgroundColor:
+                    theme.mode === 'dark' ? 'rgba(239, 68, 68, 0.15)' : '#FEE2E2',
+                },
+              ]}
+            >
+              <Text style={{ fontSize: 32 }}>🚪</Text>
+            </View>
+
+            {/* Prompt Title */}
+            <Text
+              style={[
+                styles.confirmTitle,
+                { color: theme.textPrimary, fontFamily: fontFam },
+              ]}
+            >
+              {lang === 'bn'
+                ? 'আপনি কি অ্যাপ্লিকেশনটি বন্ধ করতে চান?'
+                : 'Are you sure you want to close the application?'}
+            </Text>
+
+            {/* Subtext */}
+            <Text
+              style={[
+                styles.confirmSubtitle,
+                { color: theme.textSecondary, fontFamily: fontFam },
+              ]}
+            >
+              {lang === 'bn'
+                ? 'আপনার ছাদবাগানের সমস্ত গাছের হিস্ট্রি, কেয়ার শিডিউল ও তথ্য নিরাপদে সংরক্ষিত রয়েছে।'
+                : 'All your rooftop plant profiles, care records, and reminders remain safely saved.'}
+            </Text>
+
+            {/* Actions: Yes and No */}
+            <View style={styles.confirmActionsRow}>
+              {/* NO Option (Stay in App) */}
+              <TouchableOpacity
+                onPress={onDismiss}
+                activeOpacity={0.7}
+                style={[
+                  styles.confirmActionBtn,
+                  styles.confirmNoBtn,
+                  {
+                    backgroundColor: theme.surfaceElevated,
+                    borderColor: theme.border,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.confirmNoText,
+                    { color: theme.textPrimary, fontFamily: fontFam },
+                  ]}
+                >
+                  {lang === 'bn' ? 'না (অ্যাপে থাকুন)' : 'No (Stay)'}
+                </Text>
+              </TouchableOpacity>
+
+              {/* YES Option (Close App) */}
+              <TouchableOpacity
+                onPress={onConfirmExit}
+                activeOpacity={0.85}
+                style={[
+                  styles.confirmActionBtn,
+                  styles.confirmYesBtn,
+                  { backgroundColor: '#DC2626' },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.confirmYesText,
+                    { fontFamily: fontFam },
+                  ]}
+                >
+                  {lang === 'bn' ? 'হ্যাঁ (বন্ধ করুন)' : 'Yes (Close)'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
-      </SafeAreaView>
+      )}
     </Modal>
   );
 };
@@ -255,32 +397,51 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     fontWeight: '600',
   },
-  closePill: {
+  countdownBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
     borderWidth: 1,
   },
+  countdownText: {
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
+  closePillActive: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 18,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  closePillActiveText: {
+    color: '#FFFFFF',
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
   scrollContent: {
     padding: 16,
-    paddingBottom: 24,
     alignItems: 'center',
+    paddingBottom: 24,
   },
   sponsorCard: {
     width: '100%',
-    maxWidth: 480,
+    maxWidth: 580,
     borderRadius: 20,
     borderWidth: 1,
     overflow: 'hidden',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
+    shadowRadius: 10,
+    elevation: 4,
   },
   cardVisualHeader: {
     padding: 24,
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
   logoIconCircle: {
     width: 64,
@@ -291,30 +452,26 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   brandName: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '800',
-    letterSpacing: 0.3,
+    letterSpacing: 0.5,
   },
   tagline: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: 13.5,
+    fontWeight: '500',
     textAlign: 'center',
-    lineHeight: 22,
   },
   cardBody: {
     padding: 20,
-    gap: 16,
+    gap: 14,
   },
   description: {
     fontSize: 13.5,
-    lineHeight: 21,
-    textAlign: 'center',
+    lineHeight: 20,
   },
   highlightsBox: {
-    padding: 14,
-    borderRadius: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.02)',
-    gap: 10,
+    gap: 8,
+    paddingVertical: 4,
   },
   highlightRow: {
     flexDirection: 'row',
@@ -328,69 +485,121 @@ const styles = StyleSheet.create({
   },
   highlightText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '500',
     flex: 1,
   },
   ctaButton: {
     height: 48,
-    borderRadius: 24,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 4,
+    marginTop: 6,
+    shadowColor: '#167A45',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3,
   },
   ctaButtonText: {
     color: '#FFFFFF',
-    fontSize: 14.5,
+    fontSize: 15,
     fontWeight: '700',
   },
   unitIdLabel: {
-    fontSize: 10.5,
+    fontSize: 11,
     textAlign: 'center',
-    marginTop: -4,
+    marginTop: 4,
   },
-  exitDock: {
+  bottomNoticeBar: {
     paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingVertical: 12,
     borderTopWidth: 1,
-    gap: 12,
   },
-  exitDialogTextWrap: {
-    alignItems: 'center',
-    gap: 2,
-  },
-  exitQuestion: {
-    fontSize: 15.5,
-    fontWeight: '700',
-  },
-  exitSub: {
-    fontSize: 12.5,
-  },
-  exitActionsRow: {
-    flexDirection: 'row',
-    gap: 12,
-    width: '100%',
-    maxWidth: 480,
-    alignSelf: 'center',
-  },
-  actionBtn: {
-    flex: 1,
+  bottomCloseBtn: {
     height: 48,
-    borderRadius: 24,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    width: '100%',
+    maxWidth: 580,
+    alignSelf: 'center',
   },
-  stayBtn: {
-    // Primary green
-  },
-  stayBtnText: {
-    color: '#FFFFFF',
+  bottomCloseBtnText: {
     fontSize: 14,
     fontWeight: '700',
   },
-  exitBtn: {
+  confirmModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  confirmModalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  confirmModalCard: {
+    width: '100%',
+    maxWidth: 420,
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 22,
+    alignItems: 'center',
+    gap: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  confirmIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  confirmTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  confirmSubtitle: {
+    fontSize: 13,
+    lineHeight: 19,
+    textAlign: 'center',
+  },
+  confirmActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    width: '100%',
+    marginTop: 6,
+  },
+  confirmActionBtn: {
+    flex: 1,
+    height: 46,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  confirmNoBtn: {
     borderWidth: 1,
   },
-  exitBtnText: {
+  confirmNoText: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  confirmYesBtn: {
+    shadowColor: '#DC2626',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  confirmYesText: {
+    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '700',
   },

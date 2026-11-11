@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   Alert,
   BackHandler,
@@ -192,7 +193,10 @@ export default function App() {
   useEffect(() => {
     ensureWebFontsLoaded();
     (async () => {
-      const savedUser = await AuthService.getCurrentUser();
+      const [savedUser, hasSeenWizard] = await Promise.all([
+        AuthService.getCurrentUser(),
+        AsyncStorage.getItem('@bagani_welcome_wizard_seen_v25'),
+      ]);
       if (savedUser) {
         const nextTheme =
           savedUser.themePreference === 'dark' ? 'dark' : 'light';
@@ -211,6 +215,9 @@ export default function App() {
         setCurrentUser(null);
         setLang('en');
         setThemePref('light');
+        if (!hasSeenWizard) {
+          setOnboardingOpen(true);
+        }
       }
       const savedAds = await AdService.getAdConfig();
       setAdConfig(savedAds);
@@ -417,6 +424,18 @@ export default function App() {
             setIsEditingProfile(false);
             setActiveRoute('home');
           }}
+        />
+        <OnboardingModal
+          visible={onboardingOpen}
+          onClose={async () => {
+            setOnboardingOpen(false);
+            await AsyncStorage.setItem(
+              '@bagani_welcome_wizard_seen_v25',
+              'true'
+            );
+          }}
+          theme={theme}
+          lang={lang}
         />
       </SafeAreaView>
     );
@@ -887,10 +906,16 @@ export default function App() {
         onSaveTaskStatus={handleSaveTaskStatus}
       />
 
-      {/* Splash & Onboarding Walkthrough Modal */}
+      {/* Welcome Wizard & Feature Walkthrough Modal */}
       <OnboardingModal
         visible={onboardingOpen}
-        onClose={() => setOnboardingOpen(false)}
+        onClose={async () => {
+          setOnboardingOpen(false);
+          await AsyncStorage.setItem(
+            '@bagani_welcome_wizard_seen_v25',
+            'true'
+          );
+        }}
         theme={theme}
         lang={lang}
       />

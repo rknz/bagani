@@ -18,7 +18,7 @@
 
 ---
 
-### [📥 Download Android Release APK (v2.5.0)](https://github.com/rknz/bagani/releases/download/v2.5.0/BAGANI_v2.5.0.apk) &nbsp;•&nbsp; [📦 All Releases](https://github.com/rknz/bagani/releases) &nbsp;•&nbsp; [🌐 Live Web App](https://01dd807fae600e.lhr.life)
+### [📥 Download Android Release APK (v2.5.0)](./BAGANI_v2.5.0.apk) &nbsp;•&nbsp; [📦 GitHub Repository](https://github.com/rknz/bagani) &nbsp;•&nbsp; [🌐 Live Localhost Web Preview](http://localhost:3000)
 
 </div>
 
@@ -26,13 +26,44 @@
 
 ## 📖 About BAGANI (অ্যাপ সম্পর্কে)
 
-**BAGANI (বাগানি)** is a comprehensive, production-grade smart gardening, rooftop planning, and botanical pathology mobile application engineered by **ProFix - Web & Soft**. Designed specifically for urban rooftop gardeners, balcony plant lovers, and modern agriculturalists in Bangladesh and South Asia, BAGANI turns any rooftop or urban garden into a scientifically managed, thriving green ecosystem.
+**BAGANI (বাগানি)** is a comprehensive, production-grade smart gardening, rooftop planning, and botanical pathology mobile & web application engineered by **ProFix - Web & Soft**. Designed specifically for urban rooftop gardeners, balcony plant lovers, and modern agriculturalists in Bangladesh and South Asia, BAGANI transforms any rooftop or urban garden into a scientifically managed, thriving green ecosystem.
 
-Whether diagnosing plant diseases through real-time camera visual analysis, printing weather-resistant QR code tracking tags for your containers, calculating precise watering volumes based on pot size and soil composition, automating weather-adjusted schedules, or consulting 64-district crop advisory databases, BAGANI delivers seamless guidance directly in **বাংলা (Bengali)** and **English**.
+Whether diagnosing plant diseases through real-time camera visual analysis, generating weather-resistant QR code tracking tags for your containers, calculating precise watering volumes based on pot size and soil composition, automating weather-adjusted care schedules, or consulting verified botanical variety catalogs, BAGANI delivers seamless guidance directly in **বাংলা (Bengali)** and **English**.
 
 ---
 
-## 🚀 Key Features & Modules (মূল সুবিধাসমূহ)
+## 🌟 What's New in Version 2.5.0 (নতুন সুবিধাসমূহ)
+
+1. **✨ Vibrant Welcome Wizard On Launch (ওয়েলকাম উইজার্ড):**
+   - A beautifully illustrated, multi-slide onboarding wizard that introduces first-time users to the app’s four core pillars:
+     1. Digital Plant Registration & Printable QR Tags
+     2. AI Leaf Pathology & 100% Organic Treatment Protocols
+     3. Weather-Indexed Soil Mix & Precision Irrigation
+     4. Harvesting Countdown & Growth Milestones
+   - Guides users step-by-step on *what can be done and why*, before smoothly transitioning to the Login / Account Creation interface.
+
+2. **🗑️ Delete Plant Feature with Confirmation Modal (গাছ অপসারণ সুবিধা):**
+   - Easily remove perished or relocated plants from the rooftop garden directly from the bottom of the plant details page.
+   - Triggers a secure confirmation modal with **"Yes (Delete)"** and **"No (Cancel)"** options.
+   - Completely cascades and purges all related timeline logs and scheduled care tasks from local database without orphan residue.
+
+3. **🔍 Authentic Botanical Search Engine & Parent Plant Attribution (নির্ভুল বোটানিক্যাল সার্চ):**
+   - Complete removal of dummy/placeholder data and gibberish plant synthesis.
+   - Searching a parent plant (e.g., `আম`, `লিচু`, `গোলাপ`, `টমেটো`) lists all true cultivars and varieties.
+   - Searching a specific cultivar (e.g., `হিমসাগর`, `কাটিমন`, `বোম্বাই লিচু`, `চায়না-৩`, `কালো জাম`, `বারি মাল্টা-১`, `ডাচ গোলাপ`) highlights it with a cultivar badge, identifies the parent species, botanical family, and shows sister varieties.
+   - Anchored search button firmly locked on the right with virtual/physical keyboard `Enter` execution.
+
+4. **🚪 Full-Screen Interstitial Ad & Exit Confirmation (বিজ্ঞাপন ও প্রস্থান নিশ্চিতকরণ):**
+   - Professional exit flow with a 5-second countdown timer for Google AdSense / Sponsor Interstitial.
+   - After ad dismissal, displays a clean confirmation modal: *"Are you sure you want to close the application?"* to prevent accidental exits.
+
+5. **🛡️ Zero-Warning Android Installation (প্লে-প্রটেক্ট ও সিকিউরিটি কমপ্লায়েন্স):**
+   - Signed with authentic PKCS12 release keystore with SHA-256 with RSA (valid until 2054).
+   - Enforced `android:usesCleartextTraffic="false"` and removed high-risk permissions (`MANAGE_EXTERNAL_STORAGE`, `ACCESS_BACKGROUND_LOCATION`) to ensure clean, instant APK installation without malware warnings on Android.
+
+---
+
+## 🚀 Core Features & Architectural Modules (মূল মডিউলসমূহ)
 
 ### 1. 📷 Online AI Plant Pathology & Species Identification Hub
 * **Real-Time Live Viewfinder & Native Camera Capture:** Full-fidelity in-app camera viewfinder on both Android (via `CameraView`) and Web (via HTML5 Canvas) with reticle framing, camera flip, and instant photo capture.
@@ -60,17 +91,10 @@ Whether diagnosing plant diseases through real-time camera visual analysis, prin
 * **Location-Adapted Crop Recommendations:** Tailored fruit and vegetable varieties optimized for regional climates (e.g., Jamalpur, Dhaka, Rajshahi).
 * **Agri-Directory Hub:** Clean vertical tile interface with direct access to Upazila Agriculture Offices, Master Gardeners, Certified Nurseries, Experience Vaults, and Community gardening discussions.
 
-### 5. 🔍 Global Botanical Plant Search Engine
-* **Universal Taxonomy Retrieval:** Search any plant worldwide with Wikipedia REST API integration and verified botanical knowledge cloud.
-* **Responsive Layout:** Text-overflow containment with horizontal scrolling so search buttons never move off-screen.
-* **Instant Enter-Key Search:** Trigger searches immediately by pressing Enter on virtual or physical keyboards.
-
-### 6. 👤 User Profile & App Settings
-* **Modern Minimalist Presentation:** Compact, professional layout with clean typography hierarchy and zero heavy shadows.
-* **Segmented Controls:** Uniform segmented switcher for Language (`বাংলা` | `English`) and Theme (`লাইট` | `ডার্ক`).
-* **Cloud Backup Status Banner:** Compact, real-time sync indicators showing total plants and timeline logs secured.
-* **Account & Security:** Subtle, modern action rows for secure Sign Out and Exit Application.
-* **Software Credits & Feedback:** Transparent developer attribution (ProFix - Web & Soft), tech stack badges, and direct feedback/rating modals.
+### 5. 👤 User Authentication, Profile & Cloud Sync
+* **Universal Authentication:** Email/Password registration, existing login, and one-tap social login with **Continue with Google** (Android & Web) and **Continue with Apple** (iOS only).
+* **Profile Management:** Displays verified badge, personalized profile picture, name, email, district, and rooftop size.
+* **Cloud Sync:** Bi-directional snapshot sync with Supabase and offline-first persistence via AsyncStorage.
 
 ---
 
@@ -86,6 +110,7 @@ BAGANI follows a nature-inspired, high-contrast, professional design language:
 | **Dark Forest** | `#123B29` | Deep contrast accent & hero headers |
 | **Light Background**| `#F7F9F7` | Clean, crisp light mode canvas |
 | **Dark Background** | `#101713` | Deep, battery-saving dark mode canvas |
+| **Danger Red** | `#DC2626` | Safe deletion & emergency exit actions |
 
 ---
 
@@ -97,92 +122,35 @@ BAGANI adheres strictly to **Google Play Console Developer Program Policies**:
 * 🖼️ **Media & Photos:** `android.permission.READ_MEDIA_IMAGES` (Android 13+) and scoped `READ_EXTERNAL_STORAGE` (Android 12 and below) with runtime permission requests before accessing gallery images.
 * 📍 **Coarse Location:** `android.permission.ACCESS_COARSE_LOCATION` for local weather and regional crop suitability without background tracking.
 * 🔔 **Care Notifications:** `android.permission.POST_NOTIFICATIONS` with user opt-in for watering reminders.
-* 🌐 **Secure Networking:** Encrypted HTTPS connectivity with `usesCleartextTraffic="true"` support for local network previews.
+* 🌐 **Secure Networking:** Strict HTTPS enforcement with `usesCleartextTraffic="false"` to prevent installer security warnings.
 
 ---
 
-## 🛠️ Architecture & Tech Stack
+## 🛠️ Local Development & Build Commands
 
-```
-bagani/
-├── App.tsx                     # Main App Shell, Routes, Top Bar & Hardware Back Handler
-├── app.json                    # Expo SDK 52 & Android 15 Manifest Configuration
-├── android/                    # Native Android (Gradle 8.10.2, SDK 35, NDK 26.1)
-├── lib/
-│   ├── core/
-│   │   ├── components/         # QR Camera Scanner, Botanical Search, Bottom Nav Bar
-│   │   ├── constants/          # Application Configurations (v2.5.0) & Agro Constants
-│   │   ├── l10n/               # Bengali (বাংলা) & English Comprehensive Translations
-│   │   ├── theme/              # Design Tokens, High-Contrast Themes & Typography
-│   │   └── utils/              # Dual Calendar (Bengali বঙ্গাব্দ + English) & Math Utils
-│   ├── models/                 # Care Tasks, Plant Models, Timeline Logs, Rooftop Plans
-│   ├── screens/
-│   │   ├── home/               # Dashboard, Weather Care Window, Plant Grid/List
-│   │   ├── my_garden/          # Plant Inventory, Smart Watering Calculator
-│   │   ├── scanner/            # Live Camera AI Vision & Pathology Diagnostics Hub
-│   │   ├── qr_tracker/         # Plant QR Tag Customizer & Vector Printable PDF Generator
-│   │   ├── guide/              # Rooftop Planner, Weather Care, Agri-Directory
-│   │   ├── plant_profile/      # Messenger-Style Timeline Logs & Growth Photos
-│   │   └── settings/           # Profile Card, Language, Theme, Cloud Sync & Credits
-│   └── services/
-│       ├── ai_scanner_service.ts       # Botanical Vision & Pathology Diagnostic Engine
-│       ├── gemini_vision_service.ts    # Google Gemini 1.5 Flash Vision AI Integration
-│       ├── online_botanical_service.ts # Wikipedia REST API Encyclopedia Retrieval
-│       ├── qr_pdf_service.ts           # Vector PDF Tag & A4 Batch Sheet Generator
-│       ├── weather_service.ts          # Open-Meteo Meteorological Service
-│       ├── watering_calculator_service.ts # Container & Soil Water Dosage Calculator
-│       ├── cloud_sync_service.ts       # Cloud Sync & Backup Metadata Service
-│       └── local_db_service.ts         # Persistent Offline-First AsyncStorage
-```
-
----
-
-## 📲 Direct Mobile Installation Guide
-
-To install BAGANI v2.5 directly onto your Android device:
-
-1. Download the release: [**BAGANI_v2.5.0.apk**](https://github.com/rknz/bagani/releases/download/v2.5.0/BAGANI_v2.5.0.apk).
-2. Open the downloaded `.apk` file from your device's notification tray or **Files / Downloads** folder.
-3. If prompted with *"Install unknown apps"*, tap **Settings** and toggle **"Allow from this source"**.
-4. Tap **Install** and launch **BAGANI** to begin managing your rooftop garden!
-
----
-
-## 💻 Developer Quick Start
-
-### Prerequisites
-* **Node.js**: v18.0.0 or higher
-* **Java Development Kit**: JDK 17 (Microsoft or OpenJDK)
-* **Android SDK**: Build-tools `35.0.0`, Platform `android-35`
-
-### 1. Clone the Repository
 ```bash
-git clone https://github.com/rknz/bagani.git
-cd bagani
-```
-
-### 2. Install Dependencies
-```bash
+# Install dependencies
 npm install
-```
 
-### 3. Run Development Server
-```bash
+# Type check
+npm run typecheck
+
+# Start local dev server
 npx expo start
-```
 
-### 4. Build Android Release APK Locally
-```bash
-cd android
-./gradlew assembleRelease
-# Output: android/app/build/outputs/apk/release/app-release.apk
+# Export production web bundle
+npx expo export -p web
+
+# Build Android Release APK
+cd android && gradlew.bat assembleRelease
 ```
 
 ---
 
-## 📄 License & Attribution
+## 👥 Credits & Developer Information
 
-Distributed under the **MIT License**. See [`LICENSE`](./LICENSE) for full details.
-
-Developed with passion by **[ProFix - Web & Soft](https://github.com/rknz)**.  
-*Copyright © 2026 ProFix - Web & Soft. All rights reserved.*
+* **Application Name:** BAGANI (বাগানি)
+* **Tagline:** Grow Smart, Live Green.
+* **Engineering & Architecture:** ProFix - Web & Soft
+* **Target Audience:** Rooftop Gardeners, Balcony Growers & Urban Botanists
+* **License:** MIT License © 2026 ProFix - Web & Soft

@@ -61,17 +61,32 @@
 * **64-District Crop Advisory:** Tailored fruit and vegetable recommendations optimized for regional Bangladeshi climates.
 * **Agri-Directory Tiles:** Vertical navigation tiles for Upazila Agriculture Offices, Master Gardeners, Certified Nurseries, Experience Vaults, and Community discussions.
 
-### **6. Global Botanical Plant Search Engine**
-* **Wikipedia REST API Integration:** Universal plant species and variety search engine with automated taxonomy retrieval.
-* **Responsive Layout:** Text-overflow containment with horizontal scrolling so search buttons never move off-screen.
-* **Keyboard Search:** Instant Enter-key search trigger on both mobile and desktop keyboards.
+### **6. Global Botanical Plant & Variety Search Engine**
+* **Universal Taxonomy & Cultivar Matching:** Search any plant worldwide with authentic cultivar catalogs (16 Mango varieties, 9 Litchi varieties, Jamun, Malta, Rose, etc.).
+* **Variety Attribution:** Distinguishes parent species from specific cultivars, attributing varieties (e.g. Himsagar -> Mango) with category and sister varieties.
+* **Elimination of Fake Syntheses:** Robust rejection of gibberish queries (e.g. `hjkj`) with zero dummy data and helpful recommendation chips.
+* **Responsive Layout:** Text-overflow containment with horizontal scrolling so search buttons never move off-screen, with instant Enter-key search trigger.
 
-### **7. User Profile & App Settings**
+### **7. Plant Management & Deletion Feature**
+* **In-Profile Deletion:** Clean danger-action button at the bottom of the plant details screen.
+* **Yes/No Confirmation Modal:** Secure verification modal explaining consequences before deletion.
+* **Cascade Database Purge:** Automatically cleans up the plant, its timeline logs, and scheduled care tasks from local storage without orphan records.
+
+### **8. Welcome Wizard & Feature Onboarding**
+* **First-Launch Wizard:** Multi-slide visual walkthrough showcasing QR Tagging, AI Pathology, Smart Irrigation, and Growth Milestones.
+* **Smooth Onboarding-to-Login Flow:** Seamlessly leads users directly into account creation or Google/Apple sign-in.
+* **Always Accessible:** Re-launchable anytime from the Settings & Profile screen.
+
+### **9. Interstitial Exit Flow & Confirmation Prompt**
+* **Google AdSense Interstitial:** 5-second countdown timer during exit attempts.
+* **Exit Confirmation Dialog:** Explicit modal asking "Are you sure you want to close the application?" to prevent accidental app dismissals.
+
+### **10. User Profile, App Settings & Zero-Warning Android Packaging**
 * **Verified Profile Card:** User avatar, name, verified gardener badge, email, secondary location/organization row, and compact taste chips.
 * **Grouped Settings Rows:** Uniform segmented controls for Language (`বাংলা` | `English`) and Theme Mode (`লাইট` | `ডার্ক`).
 * **Cloud Backup Status:** Real-time indicator of secured plant records and timeline logs.
 * **Account & Security:** Clean action rows for secure Sign Out and Exit Application.
-* **Software Credits & Attribution:** Transparent ProFix developer details, tech stack badges, feedback modal, and Google Play Store review touchpoints.
+* **Zero-Warning Installation:** Enforced `android:usesCleartextTraffic="false"` and signed with official 2048-bit RSA PKCS12 release keystore for instant, warning-free installation on Android devices.
 
 ---
 

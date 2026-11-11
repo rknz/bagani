@@ -1,11 +1,21 @@
 /**
- * BAGANI — Minimalist Splash & 3-Step Onboarding Walkthrough (Screens 1 & 2 of DESIGN_SYSTEM.md)
+ * BAGANI — Modern Welcome Wizard & Feature Walkthrough (v2.5.0)
+ * Developer: ProFix - Web & Soft
+ *
+ * Professional onboarding wizard guiding users through:
+ * 1. Digital Plant Registration & Printable QR Tags
+ * 2. AI Botanical Pathology & 100% Organic Remedies
+ * 3. Weather-Indexed Soil Mix & Smart Irrigation Calculator
+ * 4. Growth Milestones, Pruning Timeline & Harvesting Countdown
  */
 
 import React, { useState } from 'react';
 import {
+  Dimensions,
   Image,
   Modal,
+  SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -13,11 +23,7 @@ import {
 } from 'react-native';
 import { APP_CONFIG } from '../../core/constants/app_constants';
 import { AppLanguage } from '../../core/l10n/translations';
-import {
-  APP_TYPOGRAPHY,
-  AppThemeColors,
-  DESIGN_TOKENS,
-} from '../../core/theme/app_theme';
+import { APP_TYPOGRAPHY, AppThemeColors } from '../../core/theme/app_theme';
 
 interface OnboardingModalProps {
   visible: boolean;
@@ -26,33 +32,88 @@ interface OnboardingModalProps {
   lang: AppLanguage;
 }
 
-const SLIDES = [
+interface WizardSlide {
+  badge: { bn: string; en: string };
+  icon: string;
+  gradientColors: [string, string];
+  titleBn: string;
+  titleEn: string;
+  subtitleBn: string;
+  subtitleEn: string;
+  whatYouCanDoBn: string;
+  whatYouCanDoEn: string;
+  whyItMattersBn: string;
+  whyItMattersEn: string;
+}
+
+const WIZARD_SLIDES: WizardSlide[] = [
   {
-    icon: '📷',
-    titleBn: 'ডিজিটাল প্ল্যান্ট রেজিস্ট্রেশন ও QR ট্যাগ',
-    titleEn: 'Digital Plant Registration & QR Tags',
-    descBn:
-      'আপনার ছাদবাগানের প্রতিটি গাছকে ইউনিক QR কোড ট্যাগ দিয়ে চিহ্নিত করুন এবং এক স্ক্যানেই গাছের সম্পূর্ণ প্রোফাইল দেখুন।',
-    descEn:
-      'Register every rooftop pot with a printable QR tag and scan anytime to view its digital profile and care history.',
+    badge: { bn: 'ফিচার ০১ • ডিজিটাল ট্যাগিং', en: 'FEATURE 01 • DIGITAL TAGGING' },
+    icon: '🏷️',
+    gradientColors: ['#0F5132', '#198754'],
+    titleBn: 'ডিজিটাল প্ল্যান্ট রেজিস্ট্রেশন ও QR কোড ট্যাগ',
+    titleEn: 'Digital Plant Registration & Printable QR Tags',
+    subtitleBn: 'প্রতিটি টব ও জিও ব্যাগের জন্য স্মার্ট ট্র্যাকিং',
+    subtitleEn: 'Unique QR identity for every rooftop container',
+    whatYouCanDoBn:
+      'আপনার ছাদবাগানের প্রতিটি গাছের জন্য ইউনিক QR কোড জেনারেট করে সরাসরি প্রিন্ট বা PDF হিসেবে সংরক্ষণ করতে পারবেন।',
+    whatYouCanDoEn:
+      'Generate unique QR code tags for each rooftop pot and export printable PDF tags to affix directly on your containers.',
+    whyItMattersBn:
+      'গাছ বড় হওয়ার সাথে সাথে জাত ভুলে যাওয়ার ঝুঁকি থাকে না। যেকোনো সময় ট্যাগ স্ক্যান করলেই গাছের বয়স ও মাটির রেশিও দেখা যায়।',
+    whyItMattersEn:
+      'Eliminates confusion over plant varieties and age as your garden expands. A single camera scan instantly reveals its care log.',
   },
   {
+    badge: { bn: 'ফিচার ০২ • এআই উদ্ভিদবিদ্যা', en: 'FEATURE 02 • AI BOTANICAL SCAN' },
     icon: '🔬',
-    titleBn: 'এআই রোগ নির্ণয় ও ভবিষ্যৎ পূর্বাভাস',
-    titleEn: 'AI Disease Diagnosis & Growth Forecast',
-    descBn:
-      'পাতার ছবি ও লক্ষণ বিশ্লেষণ করে রোগ নির্ণয় করুন এবং গাছের বর্তমান বয়স ও ফল ধরার সম্ভাব্য সময় (Harvesting Countdown) ট্র্যাক করুন।',
-    descEn:
-      'Detect leaf diseases with organic treatment steps and track real-time plant status and harvesting countdowns.',
+    gradientColors: ['#064E3B', '#0D9488'],
+    titleBn: 'এআই রোগ নির্ণয় ও অর্গানিক সমাধান',
+    titleEn: 'AI Disease Diagnosis & Organic Remedies',
+    subtitleBn: 'ক্যামেরায় পাতার ছবি তুলে তাত্ক্ষণিক পরামর্শ',
+    subtitleEn: 'Instant leaf symptom analysis with natural cures',
+    whatYouCanDoBn:
+      'হলুদ পাতা, অ্যানথ্রাকনোজ কিংবা পোকামাকড়ের আক্রমণের ছবি তুললেই এআই তাৎক্ষণিকভাবে সমস্যা ও জৈব চিকিৎসা প্রদর্শন করবে।',
+    whatYouCanDoEn:
+      'Snap a photo of discolored leaves or pest damage to get real-time pathology diagnosis and organic treatment protocols.',
+    whyItMattersBn:
+      'ছাদবাগানে ক্ষতিকর কীটনাশক ব্যবহারের প্রয়োজন পড়ে না; নিমতেল ও ঘরোয়া প্রাকৃতিক উপায়ে গাছ দ্রুত রোগমুক্ত হয়।',
+    whyItMattersEn:
+      'Protects your family and roof ecosystem from toxic synthetic chemicals by prioritizing safe, 100% organic remedies.',
   },
   {
-    icon: '🌦️',
-    titleBn: 'আবহাওয়া ভিত্তিক সুনির্দিষ্ট পরিচর্যা',
-    titleEn: 'Weather-Indexed Smart Care',
-    descBn:
-      'আপনার জেলার লাইভ আবহাওয়া ও বৃষ্টির পূর্বাভাস অনুযায়ী প্রতিদিন কোন গাছে কত লিটার পানি ও সার প্রয়োজন তার স্বয়ংক্রিয় নির্দেশনা পান।',
-    descEn:
-      'Receive daily watering and organic fertilizer recommendations tailored to your local temperature and rain forecast.',
+    badge: { bn: 'ফিচার ০৩ • স্মার্ট সেচ ব্যবস্থা', en: 'FEATURE 03 • SMART IRRIGATION' },
+    icon: '💧',
+    gradientColors: ['#0369A1', '#0284C7'],
+    titleBn: 'আবহাওয়া ও পাত্র অনুযায়ী পানি ক্যালকুলেটর',
+    titleEn: 'Weather-Indexed Irrigation & Soil Mix',
+    subtitleBn: 'স্থানীয় তাপমাত্রা ও বৃষ্টিপাতের সাথে সমন্বিত',
+    subtitleEn: 'Calibrated to local humidity, heat and container size',
+    whatYouCanDoBn:
+      'টবের ব্যাসার্ধ (১০–২৪ ইঞ্চি), ড্রেন হোল ও জেলা আবহাওয়া অনুযায়ী দৈনিক কত লিটার পানি দেওয়া উচিত তা নির্ভুলভাবে বের করুন।',
+    whatYouCanDoEn:
+      'Calculate exact daily water volume (in Liters) based on pot diameter, soil mix, and your district’s live forecast.',
+    whyItMattersBn:
+      'ছাদবাগানের ৮০% গাছ নষ্ট হয় অতিরিক্ত বা অপরিমিত পানির কারণে। সঠিক সেচ গাছের শিকড় পচা ও পাতা ঝরা পুরোপুরি রোধ করে।',
+    whyItMattersEn:
+      'Over-watering is the #1 cause of rooftop plant death. Precision moisture control prevents root rot and leaf yellowing.',
+  },
+  {
+    badge: { bn: 'ফিচার ০৪ • বৃদ্ধির পূর্বাভাস', en: 'FEATURE 04 • HARVEST COUNTDOWN' },
+    icon: '⏳',
+    gradientColors: ['#78350F', '#D97706'],
+    titleBn: 'গ্রোথ পূর্বাভাস ও ফল সংগ্রহের দিনগণনা',
+    titleEn: 'Growth Forecasting & Harvest Countdown',
+    subtitleBn: 'চারা রোপণ থেকে পাকা ফল সংগ্রহের সময়সীমা',
+    subtitleEn: 'Track vegetative growth, flowering and harvest milestones',
+    whatYouCanDoBn:
+      'চারা লাগানোর তারিখ থেকে বর্তমান বয়স এবং জাতভিত্তিক ফল পরিপক্ব হওয়ার দিনগণনা (Countdown) ট্র্যাক করতে পারবেন।',
+    whatYouCanDoEn:
+      'Monitor your plant’s active age in days and watch the countdown to peak fruit maturity and harvesting season.',
+    whyItMattersBn:
+      'সঠিক সময়ে ৩-শাখা ক্যানোপি প্রুনিং ও সার প্রয়োগ নিশ্চিত করা যায়, যার ফলে টবের ফলন সাধারণের চেয়ে দ্বিগুণ বৃদ্ধি পায়।',
+    whyItMattersEn:
+      'Enables timely canopy pruning and potassium feeding right before bloom, effectively doubling rooftop harvest yields.',
   },
 ];
 
@@ -62,7 +123,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   theme,
   lang,
 }) => {
-  const [step, setStep] = useState<'splash' | number>('splash');
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const fontFam =
     lang === 'bn'
       ? APP_TYPOGRAPHY.fontFamilyBengali
@@ -70,227 +131,406 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
   if (!visible) return null;
 
+  const activeSlide = WIZARD_SLIDES[currentSlideIndex];
+  const isLastSlide = currentSlideIndex === WIZARD_SLIDES.length - 1;
+
+  const handleNext = () => {
+    if (isLastSlide) {
+      setCurrentSlideIndex(0);
+      onClose();
+    } else {
+      setCurrentSlideIndex((prev) => prev + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentSlideIndex > 0) {
+      setCurrentSlideIndex((prev) => prev - 1);
+    }
+  };
+
   return (
-    <Modal visible={visible} animationType="fade" transparent>
-      <View
+    <Modal visible={visible} animationType="fade" transparent={false}>
+      <SafeAreaView
         style={[
-          styles.fullScreen,
+          styles.safeArea,
           { backgroundColor: theme.background },
         ]}
       >
-        {step === 'splash' ? (
-          <View
-            style={[
-              styles.card,
-              { backgroundColor: theme.surface, borderColor: theme.border },
-            ]}
-          >
+        {/* Top Header Bar */}
+        <View
+          style={[
+            styles.topHeader,
+            { borderBottomColor: theme.border, backgroundColor: theme.surface },
+          ]}
+        >
+          {/* Logo & App Brand */}
+          <View style={styles.brandRow}>
             <Image
               source={require('../../../assets/images/logo.png')}
               style={styles.logo}
               resizeMode="contain"
             />
-            <Text
-              style={[
-                styles.mainHeading,
-                { color: theme.primary, fontFamily: fontFam },
-              ]}
-            >
-              {APP_CONFIG.appName}
-            </Text>
-            <Text
-              style={[
-                styles.sectionSub,
-                { color: theme.textPrimary, fontFamily: fontFam },
-              ]}
-            >
-              {APP_CONFIG.subtitle}
-            </Text>
-            <Text
-              style={[
-                styles.caption,
-                { color: theme.textSecondary, fontFamily: fontFam },
-              ]}
-            >
-              {APP_CONFIG.tagline} • {APP_CONFIG.developerName}
-            </Text>
-
-            <TouchableOpacity
-              onPress={() => setStep(0)}
-              style={[styles.primaryBtn, { backgroundColor: theme.primary }]}
-            >
-              <Text style={[styles.btnText, { fontFamily: fontFam }]}>
-                {lang === 'bn'
-                  ? 'অনবোর্ডিং ট্যুর শুরু করুন →'
-                  : 'Explore Onboarding →'}
+            <View>
+              <Text style={[styles.brandTitle, { color: theme.primary, fontFamily: fontFam }]}>
+                {APP_CONFIG.appName}
               </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={onClose} style={styles.skipBtn}>
-              <Text
-                style={{
-                  color: theme.textSecondary,
-                  fontWeight: '600',
-                  fontFamily: fontFam,
-                }}
-              >
-                {lang === 'bn' ? 'ড্যাশবোর্ডে ফিরে যান' : 'Return to App'}
+              <Text style={[styles.brandSub, { color: theme.textSecondary, fontFamily: fontFam }]}>
+                {lang === 'bn' ? 'ওয়েলকাম উইজার্ড ও ফিচার পরিচিতি' : 'Welcome Wizard & Guide'}
               </Text>
-            </TouchableOpacity>
+            </View>
           </View>
-        ) : (
+
+          {/* Skip Button */}
+          <TouchableOpacity
+            onPress={onClose}
+            activeOpacity={0.7}
+            style={[styles.skipBtn, { backgroundColor: theme.surfaceElevated, borderColor: theme.border }]}
+          >
+            <Text style={[styles.skipBtnText, { color: theme.textSecondary, fontFamily: fontFam }]}>
+              {lang === 'bn' ? 'এড়িয়ে যান →' : 'Skip →'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Scrollable Wizard Card */}
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
           <View
             style={[
-              styles.card,
-              { backgroundColor: theme.surface, borderColor: theme.border },
+              styles.wizardCard,
+              {
+                backgroundColor: theme.cardBackground,
+                borderColor: theme.border,
+              },
             ]}
           >
+            {/* Vibrant Banner Box with Decorative Icons */}
             <View
               style={[
-                styles.iconCircle,
-                { backgroundColor: theme.selectedSurface },
+                styles.vibrantBanner,
+                { backgroundColor: activeSlide.gradientColors[0] },
               ]}
             >
-              <Text style={{ fontSize: 28 }}>{SLIDES[step].icon}</Text>
+              <View style={styles.bannerBadgePill}>
+                <Text style={styles.bannerBadgeText}>
+                  {lang === 'bn' ? activeSlide.badge.bn : activeSlide.badge.en}
+                </Text>
+              </View>
+
+              <View style={styles.largeIconCircle}>
+                <Text style={{ fontSize: 44 }}>{activeSlide.icon}</Text>
+              </View>
+
+              <Text style={[styles.bannerTitle, { fontFamily: fontFam }]}>
+                {lang === 'bn' ? activeSlide.titleBn : activeSlide.titleEn}
+              </Text>
+              <Text style={[styles.bannerSubtitle, { fontFamily: fontFam }]}>
+                {lang === 'bn' ? activeSlide.subtitleBn : activeSlide.subtitleEn}
+              </Text>
             </View>
 
-            <Text
-              style={[
-                styles.slideTitle,
-                { color: theme.textPrimary, fontFamily: fontFam },
-              ]}
-            >
-              {lang === 'bn' ? SLIDES[step].titleBn : SLIDES[step].titleEn}
-            </Text>
+            {/* Structured Explanation Sections: What You Can Do & Why It Matters */}
+            <View style={styles.cardBody}>
+              {/* Box 1: What can be done */}
+              <View
+                style={[
+                  styles.explanationBox,
+                  {
+                    backgroundColor: theme.surfaceElevated,
+                    borderColor: theme.border,
+                    borderLeftColor: theme.primary,
+                  },
+                ]}
+              >
+                <View style={styles.boxTitleRow}>
+                  <Text style={{ fontSize: 16 }}>🎯</Text>
+                  <Text style={[styles.boxTitle, { color: theme.textPrimary, fontFamily: fontFam }]}>
+                    {lang === 'bn' ? 'কী করা যাবে (What Can Be Done):' : 'What You Can Do:'}
+                  </Text>
+                </View>
+                <Text style={[styles.boxDescription, { color: theme.textSecondary, fontFamily: fontFam }]}>
+                  {lang === 'bn' ? activeSlide.whatYouCanDoBn : activeSlide.whatYouCanDoEn}
+                </Text>
+              </View>
 
-            <Text
-              style={[
-                styles.slideDesc,
-                { color: theme.textSecondary, fontFamily: fontFam },
-              ]}
-            >
-              {lang === 'bn' ? SLIDES[step].descBn : SLIDES[step].descEn}
-            </Text>
-
-            <View style={styles.dotsRow}>
-              {SLIDES.map((_, idx) => (
-                <View
-                  key={idx}
-                  style={[
-                    styles.dot,
-                    {
-                      backgroundColor:
-                        idx === step ? theme.primary : theme.border,
-                      width: idx === step ? 24 : 8,
-                    },
-                  ]}
-                />
-              ))}
+              {/* Box 2: Why it matters */}
+              <View
+                style={[
+                  styles.explanationBox,
+                  {
+                    backgroundColor: theme.surfaceElevated,
+                    borderColor: theme.border,
+                    borderLeftColor: '#D97706',
+                  },
+                ]}
+              >
+                <View style={styles.boxTitleRow}>
+                  <Text style={{ fontSize: 16 }}>💡</Text>
+                  <Text style={[styles.boxTitle, { color: theme.textPrimary, fontFamily: fontFam }]}>
+                    {lang === 'bn' ? 'কেন এটি গুরুত্বপূর্ণ (Why It Matters):' : 'Why It Matters:'}
+                  </Text>
+                </View>
+                <Text style={[styles.boxDescription, { color: theme.textSecondary, fontFamily: fontFam }]}>
+                  {lang === 'bn' ? activeSlide.whyItMattersBn : activeSlide.whyItMattersEn}
+                </Text>
+              </View>
             </View>
+          </View>
+        </ScrollView>
 
+        {/* Bottom Interactive Navigation Dock */}
+        <View
+          style={[
+            styles.bottomDock,
+            { backgroundColor: theme.surface, borderTopColor: theme.border },
+          ]}
+        >
+          {/* Progress Stepper Indicators */}
+          <View style={styles.dotsRow}>
+            {WIZARD_SLIDES.map((_, idx) => (
+              <View
+                key={idx}
+                style={[
+                  styles.stepDot,
+                  {
+                    backgroundColor:
+                      idx === currentSlideIndex
+                        ? theme.primary
+                        : theme.mode === 'dark'
+                        ? '#334155'
+                        : '#E2E8F0',
+                    width: idx === currentSlideIndex ? 28 : 8,
+                  },
+                ]}
+              />
+            ))}
+          </View>
+
+          {/* Action Navigation Buttons */}
+          <View style={styles.actionsRow}>
+            {/* Previous Button (Hidden on first slide) */}
+            {currentSlideIndex > 0 ? (
+              <TouchableOpacity
+                onPress={handlePrev}
+                activeOpacity={0.7}
+                style={[
+                  styles.navBtn,
+                  styles.prevBtn,
+                  {
+                    backgroundColor: theme.surfaceElevated,
+                    borderColor: theme.border,
+                  },
+                ]}
+              >
+                <Text style={[styles.prevBtnText, { color: theme.textPrimary, fontFamily: fontFam }]}>
+                  ← {lang === 'bn' ? 'পূর্ববর্তী' : 'Previous'}
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={{ flex: 0.6 }} />
+            )}
+
+            {/* Next / Finish Button */}
             <TouchableOpacity
-              onPress={() => {
-                if (step < SLIDES.length - 1) {
-                  setStep(step + 1);
-                } else {
-                  setStep('splash');
-                  onClose();
-                }
-              }}
-              style={[styles.primaryBtn, { backgroundColor: theme.primary }]}
+              onPress={handleNext}
+              activeOpacity={0.85}
+              style={[
+                styles.navBtn,
+                styles.nextBtn,
+                { backgroundColor: theme.primary },
+              ]}
             >
-              <Text style={[styles.btnText, { fontFamily: fontFam }]}>
-                {step < SLIDES.length - 1
+              <Text style={[styles.nextBtnText, { fontFamily: fontFam }]}>
+                {isLastSlide
                   ? lang === 'bn'
-                    ? 'পরবর্তী ধাপ →'
-                    : 'Next →'
+                    ? 'শুরু করুন ও লগইন পেজে যান →'
+                    : 'Get Started & Login →'
                   : lang === 'bn'
-                  ? 'শুরু করুন →'
-                  : 'Get Started →'}
+                  ? 'পরবর্তী ধাপ →'
+                  : 'Next Feature →'}
               </Text>
             </TouchableOpacity>
           </View>
-        )}
-      </View>
+        </View>
+      </SafeAreaView>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  fullScreen: {
+  safeArea: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: DESIGN_TOKENS.screenHorizontalPadding,
-  },
-  card: {
     width: '100%',
-    maxWidth: 460,
-    padding: DESIGN_TOKENS.spacing.xl,
-    borderRadius: DESIGN_TOKENS.mainCardRadius,
-    borderWidth: 1,
+    height: '100%',
+  },
+  topHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: DESIGN_TOKENS.spacing.md,
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   logo: {
-    width: 140,
-    height: 110,
+    width: 36,
+    height: 36,
+    borderRadius: 8,
   },
-  mainHeading: {
-    fontSize: 28,
-    fontWeight: '800',
-  },
-  sectionSub: {
+  brandTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
-  caption: {
-    fontSize: 13,
-    textAlign: 'center',
-  },
-  iconCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  slideTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  slideDesc: {
-    fontSize: 14,
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  dotsRow: {
-    flexDirection: 'row',
-    gap: 6,
-    marginVertical: 4,
-  },
-  dot: {
-    height: 8,
-    borderRadius: 4,
-  },
-  primaryBtn: {
-    width: '100%',
-    minHeight: DESIGN_TOKENS.buttonHeight,
-    borderRadius: DESIGN_TOKENS.buttonRadius,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    marginTop: 8,
-  },
-  btnText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '700',
+  brandSub: {
+    fontSize: 11,
+    fontWeight: '500',
   },
   skipBtn: {
     paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  skipBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  scrollContent: {
+    padding: 16,
+    alignItems: 'center',
+  },
+  wizardCard: {
+    width: '100%',
+    maxWidth: 620,
+    borderRadius: 20,
+    borderWidth: 1,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  vibrantBanner: {
+    paddingVertical: 26,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    gap: 10,
+  },
+  bannerBadgePill: {
+    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+  },
+  bannerBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+  },
+  largeIconCircle: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 4,
+  },
+  bannerTitle: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  bannerSubtitle: {
+    color: 'rgba(255, 255, 255, 0.88)',
+    fontSize: 13,
+    textAlign: 'center',
+  },
+  cardBody: {
+    padding: 18,
+    gap: 14,
+  },
+  explanationBox: {
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderLeftWidth: 4,
+    gap: 6,
+  },
+  boxTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  boxTitle: {
+    fontSize: 13.5,
+    fontWeight: '700',
+  },
+  boxDescription: {
+    fontSize: 13,
+    lineHeight: 20,
+  },
+  bottomDock: {
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    borderTopWidth: 1,
+    gap: 12,
+  },
+  dotsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  stepDot: {
+    height: 6,
+    borderRadius: 3,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    width: '100%',
+    maxWidth: 620,
+    alignSelf: 'center',
+  },
+  navBtn: {
+    paddingVertical: 13,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  prevBtn: {
+    flex: 0.8,
+    borderWidth: 1,
+  },
+  prevBtnText: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  nextBtn: {
+    flex: 1.4,
+    shadowColor: '#167A45',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  nextBtnText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
   },
 });
