@@ -652,13 +652,18 @@ export default function App() {
             lang={lang}
             onBack={() => {
               setSelectedPlant(null);
-              setActiveRoute('home');
+              setActiveRoute('my_garden');
             }}
             onOpenQrDesigner={(plant) => {
               setSelectedPlant(plant);
               setActiveRoute('qr_tracker');
             }}
             onPlantUpdated={refreshGardenData}
+            onPlantDeleted={async () => {
+              await refreshGardenData();
+              setSelectedPlant(null);
+              setActiveRoute('my_garden');
+            }}
           />
         ) : activeRoute === 'my_garden' ? (
           <MyGardenScreen

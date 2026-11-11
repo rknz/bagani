@@ -480,6 +480,48 @@ export class LocalDbService {
     return updated;
   }
 
+  /**
+   * Delete a registered plant by its unique ID.
+   * Also cleans up all related timeline logs and scheduled care tasks for this plant.
+   */
+  static async deletePlant(plantId: string): Promise<PlantModel[]> {
+    const current = await this.getPlants();
+    const updated = current.filter((p) => p.id !== plantId);
+    await AsyncStorage.setItem(PLANTS_STORAGE_KEY, JSON.stringify(updated));
+
+    // Also clean up any timeline logs associated with this plant
+    try {
+      const rawLogs = await AsyncStorage.getItem(LOGS_STORAGE_KEY);
+      if (rawLogs) {
+        const allLogs: PlantTimelineLog[] = JSON.parse(rawLogs);
+        const filteredLogs = allLogs.filter((l) => l.plantId !== plantId);
+        await AsyncStorage.setItem(
+          LOGS_STORAGE_KEY,
+          JSON.stringify(filteredLogs)
+        );
+      }
+    } catch (e) {
+      console.warn('Failed to clean up logs for deleted plant:', e);
+    }
+
+    // Also clean up any care tasks associated with this plant
+    try {
+      const rawTasks = await AsyncStorage.getItem(TASKS_STORAGE_KEY);
+      if (rawTasks) {
+        const allTasks: GranularCareTask[] = JSON.parse(rawTasks);
+        const filteredTasks = allTasks.filter((t) => t.plantId !== plantId);
+        await AsyncStorage.setItem(
+          TASKS_STORAGE_KEY,
+          JSON.stringify(filteredTasks)
+        );
+      }
+    } catch (e) {
+      console.warn('Failed to clean up tasks for deleted plant:', e);
+    }
+
+    return updated;
+  }
+
   static async getTimelineLogs(plantId?: string): Promise<PlantTimelineLog[]> {
     try {
       const raw = await AsyncStorage.getItem(LOGS_STORAGE_KEY);

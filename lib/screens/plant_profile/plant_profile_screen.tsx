@@ -7,7 +7,9 @@
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -30,6 +32,7 @@ interface PlantProfileScreenProps {
   onBack: () => void;
   onOpenQrDesigner: (plant: PlantModel) => void;
   onPlantUpdated: () => void;
+  onPlantDeleted?: (deletedPlantId: string) => void;
 }
 
 export const PlantProfileScreen: React.FC<PlantProfileScreenProps> = ({
@@ -39,10 +42,13 @@ export const PlantProfileScreen: React.FC<PlantProfileScreenProps> = ({
   onBack,
   onOpenQrDesigner,
   onPlantUpdated,
+  onPlantDeleted,
 }) => {
   const [activeTab, setActiveTab] = useState<'current' | 'future'>('current');
   const [logs, setLogs] = useState<PlantTimelineLog[]>([]);
   const [noteInput, setNoteInput] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const forecast = LocalDbService.getPlantForecast(plant);
   const knowledgeProfile = OnlineBotanicalService.getKnowledgeProfileForPlant(plant);
@@ -118,6 +124,30 @@ export const PlantProfileScreen: React.FC<PlantProfileScreenProps> = ({
       }
     } catch (e) {
       console.warn('Photo log picker error', e);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      setIsDeleting(true);
+      await LocalDbService.deletePlant(plant.id);
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+
+      if (onPlantDeleted) {
+        onPlantDeleted(plant.id);
+      } else {
+        onPlantUpdated();
+        onBack();
+      }
+    } catch (err) {
+      setIsDeleting(false);
+      Alert.alert(
+        lang === 'bn' ? 'মুছে ফেলতে ত্রুটি' : 'Error Deleting Plant',
+        lang === 'bn'
+          ? 'গাছটি মুছতে গিয়ে অপ্রত্যাশিত ত্রুটি হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।'
+          : 'Failed to delete plant. Please try again.'
+      );
     }
   };
 
@@ -1149,6 +1179,209 @@ export const PlantProfileScreen: React.FC<PlantProfileScreenProps> = ({
           </View>
         </>
       )}
+
+      {/* 3. Delete Plant Section at the very bottom */}
+      <View
+        style={[
+          styles.deleteSectionCard,
+          {
+            backgroundColor: theme.cardBackground,
+            borderColor: theme.border,
+          },
+        ]}
+      >
+        <View style={styles.deleteSectionHeader}>
+          <Text
+            style={[
+              styles.deleteSectionTitle,
+              { color: theme.textPrimary, fontFamily: fontFam },
+            ]}
+          >
+            {lang === 'bn'
+              ? 'গাছ অপসারণ ও প্রোফাইল ব্যবস্থাপনা'
+              : 'Plant Removal & Management'}
+          </Text>
+          <Text
+            style={[
+              styles.deleteSectionDesc,
+              { color: theme.textSecondary, fontFamily: fontFam },
+            ]}
+          >
+            {lang === 'bn'
+              ? 'যদি এই গাছটি মারা যায় বা আপনার ছাদবাগান থেকে সরানো হয়ে থাকে, তবে নিচের বোতামটি চেপে গাছটি আপনার বাগান থেকে স্থায়ীভাবে মুছে ফেলতে পারেন।'
+              : 'If this plant has perished, been relocated, or is no longer in your garden, you can permanently delete it from your active rooftop registry.'}
+          </Text>
+        </View>
+
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => setShowDeleteModal(true)}
+          style={[
+            styles.deletePlantBtn,
+            {
+              backgroundColor: theme.mode === 'dark' ? 'rgba(239, 68, 68, 0.12)' : '#FEF2F2',
+              borderColor: theme.mode === 'dark' ? '#EF4444' : '#FCA5A5',
+            },
+          ]}
+        >
+          <Text style={{ fontSize: 16 }}>🗑️</Text>
+          <Text
+            style={[
+              styles.deleteBtnText,
+              {
+                color: theme.mode === 'dark' ? '#FCA5A5' : '#DC2626',
+                fontFamily: fontFam,
+              },
+            ]}
+          >
+            {lang === 'bn' ? 'এই গাছটি মুছে ফেলুন (Delete this plant)' : 'Delete this plant'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Plant Deletion Confirmation Modal */}
+      <Modal
+        visible={showDeleteModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          if (!isDeleting) setShowDeleteModal(false);
+        }}
+      >
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.modalBackdrop}
+            onPress={() => {
+              if (!isDeleting) setShowDeleteModal(false);
+            }}
+          />
+
+          <View
+            style={[
+              styles.deleteModalBox,
+              {
+                backgroundColor: theme.cardBackground,
+                borderColor: theme.border,
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.deleteIconBadge,
+                {
+                  backgroundColor: theme.mode === 'dark'
+                    ? 'rgba(239, 68, 68, 0.2)'
+                    : '#FEE2E2',
+                },
+              ]}
+            >
+              <Text style={{ fontSize: 30 }}>🗑️</Text>
+            </View>
+
+            <Text
+              style={[
+                styles.deleteModalTitle,
+                { color: theme.textPrimary, fontFamily: fontFam },
+              ]}
+            >
+              {lang === 'bn'
+                ? 'গাছটি কি মুছে ফেলতে চান?'
+                : 'Delete This Plant?'}
+            </Text>
+
+            <View
+              style={[
+                styles.deletePlantInfoCard,
+                {
+                  backgroundColor: theme.surfaceElevated,
+                  borderColor: theme.border,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.deletePlantName,
+                  { color: theme.textPrimary, fontFamily: fontFam },
+                ]}
+              >
+                🌿 {lang === 'bn' ? plant.nameBengali : plant.nameEnglish}
+              </Text>
+              <Text
+                style={[
+                  styles.deletePlantSubtext,
+                  { color: theme.textSecondary, fontFamily: fontFam },
+                ]}
+              >
+                {plant.variety} • QR: {plant.qrCodeId}
+              </Text>
+            </View>
+
+            <Text
+              style={[
+                styles.deleteModalWarningText,
+                { color: theme.textSecondary, fontFamily: fontFam },
+              ]}
+            >
+              {lang === 'bn'
+                ? 'আপনি কি নিশ্চিত যে আপনি এই গাছটি আপনার বাগান থেকে মুছে ফেলতে চান? মুছে ফেললে এই গাছের সমস্ত টাইমলাইন লগ, যত্নের কাজ ও ডেটা স্থায়ীভাবে মুছে যাবে। এটি আর পুনরুদ্ধার করা যাবে না।'
+                : 'Are you sure you want to delete this plant from your garden? All timeline logs, care tasks, and growth records for this plant will be permanently removed. This action cannot be undone.'}
+            </Text>
+
+            <View style={styles.deleteModalActionsRow}>
+              {/* NO Option (Cancel) */}
+              <TouchableOpacity
+                activeOpacity={0.7}
+                disabled={isDeleting}
+                onPress={() => setShowDeleteModal(false)}
+                style={[
+                  styles.modalCancelBtn,
+                  {
+                    backgroundColor: theme.surfaceElevated,
+                    borderColor: theme.border,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.modalCancelBtnText,
+                    { color: theme.textPrimary, fontFamily: fontFam },
+                  ]}
+                >
+                  {lang === 'bn' ? 'না (বাতিল)' : 'No (Cancel)'}
+                </Text>
+              </TouchableOpacity>
+
+              {/* YES Option (Proceed Deletion) */}
+              <TouchableOpacity
+                activeOpacity={0.8}
+                disabled={isDeleting}
+                onPress={handleConfirmDelete}
+                style={[
+                  styles.modalConfirmDeleteBtn,
+                  { backgroundColor: '#DC2626' },
+                ]}
+              >
+                {isDeleting ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <>
+                    <Text style={{ color: '#FFFFFF', fontSize: 14 }}>🗑️</Text>
+                    <Text
+                      style={[
+                        styles.modalConfirmDeleteBtnText,
+                        { fontFamily: fontFam },
+                      ]}
+                    >
+                      {lang === 'bn' ? 'হ্যাঁ, মুছে ফেলুন' : 'Yes, Delete'}
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -1415,6 +1648,128 @@ const styles = StyleSheet.create({
   },
   graphNote: {
     fontSize: 12,
+  },
+  deleteSectionCard: {
+    marginTop: 20,
+    padding: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+    gap: 12,
+  },
+  deleteSectionHeader: {
+    gap: 4,
+  },
+  deleteSectionTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  deleteSectionDesc: {
+    fontSize: 12.5,
+    lineHeight: 18,
+  },
+  deletePlantBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    borderWidth: 1,
+    gap: 8,
+  },
+  deleteBtnText: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 18,
+  },
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  deleteModalBox: {
+    width: '100%',
+    maxWidth: 420,
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 20,
+    alignItems: 'center',
+    gap: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 18,
+    elevation: 8,
+    zIndex: 10,
+  },
+  deleteIconBadge: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteModalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  deletePlantInfoCard: {
+    width: '100%',
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: 'center',
+    gap: 4,
+  },
+  deletePlantName: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  deletePlantSubtext: {
+    fontSize: 12,
+  },
+  deleteModalWarningText: {
+    fontSize: 13,
+    lineHeight: 19,
+    textAlign: 'center',
+  },
+  deleteModalActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    width: '100%',
+    marginTop: 6,
+  },
+  modalCancelBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalCancelBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  modalConfirmDeleteBtn: {
+    flex: 1.2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 10,
+    gap: 6,
+  },
+  modalConfirmDeleteBtnText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
   },
 });
 
