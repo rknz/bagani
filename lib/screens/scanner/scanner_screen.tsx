@@ -76,16 +76,20 @@ const EXAMINED_PARTS: {
   ];
 
 const ALL_PLANT_SUGGESTIONS = [
-  { bn: 'গোলাপ', en: 'Rose', emoji: '🌹' },
+  { bn: 'আম (হিমসাগর ও আম্রপালি)', en: 'Mango (Himsagar & Amrapali)', emoji: '🥭' },
+  { bn: 'লিচু (বোম্বাই ও চায়না-৩)', en: 'Litchi (Bombay & China-3)', emoji: '🍒' },
+  { bn: 'কালো জাম', en: 'Black Plum (Jamun)', emoji: '🫐' },
+  { bn: 'মাল্টা (বারি মাল্টা-১)', en: 'Malta (BARI Malta-1)', emoji: '🍊' },
+  { bn: 'কুল ও আপেল কুল', en: 'Jujube (Apple Kul)', emoji: '🍏' },
+  { bn: 'গোলাপ (ডাচ ও কাশ্মীরি)', en: 'Rose (Dutch & Kashmiri)', emoji: '🌹' },
+  { bn: 'কাটিমন আম', en: 'Katimon Mango', emoji: '🥭' },
   { bn: 'গাঁদা', en: 'Marigold', emoji: '🌼' },
   { bn: 'জবা', en: 'Hibiscus', emoji: '🌺' },
   { bn: 'ড্রাগন ফল', en: 'Dragon Fruit', emoji: '🐉' },
   { bn: 'স্ট্রবেরি', en: 'Strawberry', emoji: '🍓' },
-  { bn: 'আম', en: 'Mango', emoji: '🥭' },
-  { bn: 'মাল্টা', en: 'Malta', emoji: '🍊' },
   { bn: 'লেবু ও কাগজি লেবু', en: 'Lemon & Lime', emoji: '🍋' },
-  { bn: 'পেয়ারা', en: 'Guava', emoji: '🍐' },
-  { bn: 'টমেটো', en: 'Tomato', emoji: '🍅' },
+  { bn: 'পেয়ারা (থাই-৭)', en: 'Guava (Thai-7)', emoji: '🍐' },
+  { bn: 'টমেটো (বারি-১৪)', en: 'Tomato', emoji: '🍅' },
   { bn: 'মরিচ ও নাগা মরিচ', en: 'Chili & Naga', emoji: '🌶️' },
   { bn: 'লাউ ও শসা', en: 'Bottle Gourd & Cucumber', emoji: '🥒' },
   { bn: 'মিষ্টি কুমড়া', en: 'Sweet Gourd', emoji: '🎃' },
@@ -97,9 +101,8 @@ const ALL_PLANT_SUGGESTIONS = [
   { bn: 'অ্যালোভেরা', en: 'Aloe Vera', emoji: '🪴' },
   { bn: 'অর্কিড', en: 'Orchid', emoji: '🌸' },
   { bn: 'বেলি ও জুঁই', en: 'Jasmine', emoji: '🤍' },
-  { bn: 'পেঁপে', en: 'Papaya', emoji: '🍈' },
-  { bn: 'বট সাই / বনসাই', en: 'Bonsai', emoji: '🌳' },
-  { bn: 'কাগজ ফুল', en: 'Bougainvillea', emoji: '🌺' },
+  { bn: 'পেঁপে (রেড লেডি)', en: 'Papaya (Red Lady)', emoji: '🍈' },
+  { bn: 'কাগজ ফুল (বাগানবিলাস)', en: 'Bougainvillea', emoji: '🌺' },
 ];
 
 export const ScannerScreen: React.FC<ScannerScreenProps> = ({
@@ -1105,6 +1108,46 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
               </View>
             </View>
 
+            {/* Variety & Parent Plant Identity Origin Banner */}
+            {scanResult.isVarietyMatch && (
+              <View
+                style={[
+                  styles.scannerVarietyBanner,
+                  {
+                    backgroundColor: theme.selectedSurface,
+                    borderColor: theme.primary,
+                  },
+                ]}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                  <Text style={{ fontSize: 15 }}>🌟</Text>
+                  <Text
+                    style={[
+                      styles.scannerVarietyTitle,
+                      { color: theme.primary, fontFamily: fontFam },
+                    ]}
+                  >
+                    {lang === 'bn' ? 'জাত পরিচিতি ও মূল প্রজাতি' : 'Cultivar & Parent Botanical Species'}
+                  </Text>
+                  <View style={[styles.scannerVarietyChip, { backgroundColor: theme.primary }]}>
+                    <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '800' }}>
+                      {lang === 'bn' ? 'অনুমোদিত জাত' : 'Verified Cultivar'}
+                    </Text>
+                  </View>
+                </View>
+                <Text
+                  style={[
+                    styles.scannerVarietyDesc,
+                    { color: theme.textPrimary, fontFamily: fontFam },
+                  ]}
+                >
+                  {lang === 'bn'
+                    ? `💡 "${scanResult.varietyNameBn}" হলো ${scanResult.plantNameBn} (${scanResult.scientificName}) উদ্ভিদের একটি সুপরিচিত জাত।`
+                    : `💡 "${scanResult.varietyNameEn}" is an authentic variety of ${scanResult.plantNameEn} (${scanResult.scientificName}).`}
+                </Text>
+              </View>
+            )}
+
             {/* Disease / Condition Title */}
             <View
               style={[
@@ -1247,6 +1290,44 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
                 </View>
               </View>
             </View>
+
+            {/* Sister Varieties of Parent Plant */}
+            {scanResult.availableVarietiesBn && scanResult.availableVarietiesBn.length > 0 && (
+              <View style={styles.sectionBlock}>
+                <Text style={[styles.sectionSubHeading, { color: theme.textPrimary, fontFamily: fontFam }]}>
+                  🏷️ {lang === 'bn' ? `${scanResult.plantNameBn}-এর সকল অনুমোদিত জাতসমূহ (${scanResult.availableVarietiesBn.length}টি জাত):` : `All Recognized Cultivars of ${scanResult.plantNameEn} (${scanResult.availableVarietiesBn.length}):`}
+                </Text>
+                <View style={styles.scannerVarietiesWrap}>
+                  {(lang === 'bn' ? scanResult.availableVarietiesBn : scanResult.availableVarietiesEn || scanResult.availableVarietiesBn).map((vName, vIdx) => {
+                    const isCurrent = (lang === 'bn' ? scanResult.varietyNameBn : scanResult.varietyNameEn) === vName || scanResult.varietyNameBn.includes(vName) || vName.includes(scanResult.varietyNameBn);
+                    return (
+                      <View
+                        key={vIdx}
+                        style={[
+                          styles.scannerVarietyPill,
+                          {
+                            backgroundColor: isCurrent ? theme.selectedSurface : theme.surfaceElevated,
+                            borderColor: isCurrent ? theme.primary : theme.border,
+                          },
+                        ]}
+                      >
+                        <Text
+                          style={{
+                            color: isCurrent ? theme.primary : theme.textPrimary,
+                            fontWeight: isCurrent ? '700' : '500',
+                            fontSize: 12,
+                            fontFamily: fontFam,
+                          }}
+                        >
+                          {isCurrent ? '✓ ' : ''}
+                          {vName}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+            )}
 
             {/* Live Online Sourced Knowledge Card (Wikipedia REST API) */}
             <View style={[styles.onlineSourceCard, { backgroundColor: theme.surfaceElevated, borderColor: theme.border }]}>
@@ -1815,5 +1896,37 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '800',
+  },
+  scannerVarietyBanner: {
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    gap: 4,
+    marginBottom: 8,
+  },
+  scannerVarietyTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  scannerVarietyChip: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  scannerVarietyDesc: {
+    fontSize: 12.5,
+    lineHeight: 18,
+    fontWeight: '600',
+  },
+  scannerVarietiesWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  scannerVarietyPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    borderWidth: 1,
   },
 });

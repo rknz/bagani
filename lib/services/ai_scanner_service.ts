@@ -64,6 +64,13 @@ export interface ComprehensiveScanResult {
   };
   isAiVisualInference?: boolean;
   uncertaintyWarning?: string;
+  availableVarietiesBn?: string[];
+  availableVarietiesEn?: string[];
+  isVarietyMatch?: boolean;
+  matchedVarietyNameBn?: string;
+  matchedVarietyNameEn?: string;
+  parentPlantBn?: string;
+  parentPlantEn?: string;
   expertConsultContact?: {
     hotline: string;
     serviceNameBn: string;
@@ -898,9 +905,24 @@ export class AiScannerService {
       }
     }
 
-    // Check if matching in local seed database
+    // Intelligent Multi-Tier Botanical Encyclopedia & Variety Resolution
     let matchedSeed: BotanicalSeedEntry | null = null;
-    if (plantHintId) {
+    let matchedEncyclopediaEntry: any = null;
+
+    if (plantHintId && plantHintId.trim().length > 1) {
+      try {
+        const foundEntries = await OnlineBotanicalService.searchEncyclopediaOnline(plantHintId.trim());
+        if (foundEntries.length > 0) {
+          matchedEncyclopediaEntry = foundEntries[0];
+          matchedSeed = this.convertOnlineEntryToSeed(foundEntries[0]);
+        }
+      } catch (err) {
+        console.warn('AiScannerService online botanical search error', err);
+      }
+    }
+
+    // Secondary check in static seeds if still not resolved
+    if (!matchedSeed && plantHintId) {
       const found = BOTANICAL_CLOUD_DATABASE.find(
         (b) =>
           b.slugWiki.toLowerCase() === plantHintId.toLowerCase() ||
@@ -910,31 +932,71 @@ export class AiScannerService {
       if (found) matchedSeed = found;
     }
 
-    // If not in static seeds, query Wikipedia & global online repositories dynamically!
-    let dynamicThumbUrl: string | undefined = undefined;
-    let dynamicWikiPageUrl: string | undefined = undefined;
-    let dynamicSummaryExtractBn: string | undefined = undefined;
-    let dynamicSummaryExtractEn: string | undefined = undefined;
-
-    if (!matchedSeed && plantHintId && plantHintId.trim().length > 1) {
-      try {
-        const onlineEntries = await OnlineBotanicalService.fetchGlobalOnlinePlantResults(plantHintId.trim());
-        if (onlineEntries.length > 0) {
-          const top = onlineEntries[0];
-          matchedSeed = this.convertOnlineEntryToSeed(top);
-          dynamicThumbUrl = top.thumbnailUrl;
-          dynamicWikiPageUrl = top.sourceUrl;
-          dynamicSummaryExtractBn = top.summaryExtractBn;
-          dynamicSummaryExtractEn = top.summaryExtractEn;
-        }
-      } catch {
-        // continue to fallback
-      }
+    // If user explicitly searched for a text plant/variety with no photo, and no botanical match was found
+    if (!matchedSeed && !base64Image && plantHintId && plantHintId.trim().length >= 2) {
+      return {
+        id: 'scan_unrec_' + Date.now().toString(36),
+        mode,
+        examinedPart,
+        plantNameBn: 'অজ্ঞাত উদ্ভিদ বা জাত',
+        plantNameEn: 'Unrecognized Plant / Variety',
+        scientificName: 'Non-Botanical / Unknown Query',
+        botanicalFamily: 'অনির্ধারিত (Unspecified)',
+        varietyNameBn: 'শনাক্ত করা যায়নি',
+        varietyNameEn: 'Unrecognized',
+        confidence: 0,
+        healthState: 'needs_attention',
+        category: 'fruit',
+        issueTitleBn: 'উদ্ভিদ বা জাত শনাক্ত করা যায়নি',
+        issueTitleEn: 'Plant or Variety Not Recognized',
+        pathogenOrCauseBn: 'অনুসন্ধানকৃত শব্দের সাথে কোনো বাস্তব উদ্ভিদ বা অনুমোদিত জাতের মিল পাওয়া যায়নি।',
+        pathogenOrCauseEn: 'No authentic botanical species or recognized cultivar matched this search.',
+        symptomsBn: 'দয়া করে সঠিক উদ্ভিদের নাম লিখুন (যেমন: আম, হিমসাগর, লিচু, চায়না-৩, মাল্টা, গোলাপ, টমেটো) অথবা ক্যামেরা দিয়ে গাছের পাতার স্পষ্ট ছবি তুলুন।',
+        symptomsEn: 'Please enter a valid plant name or variety (e.g. Mango, Himsagar, Litchi, Rose, Tomato) or capture a clear photo of the leaf.',
+        organicTreatmentsBn: [
+          'গাছের নাম বা জাতের সঠিক বানান পরীক্ষা করুন।',
+          'নিচের জনপ্রিয় উদ্ভিদ সাজেশন থেকে নির্বাচন করুন।',
+          'ক্যামেরা দিয়ে গাছের পাতা বা ফলের স্পষ্ট ছবি তুলুন।',
+        ],
+        organicTreatmentsEn: [
+          'Check the spelling of the plant or variety name.',
+          'Select from the popular plant suggestion chips below.',
+          'Capture or upload a clear photo of the plant leaf or fruit.',
+        ],
+        careMaintenanceBn: {
+          watering: 'গাছের সঠিক পরিচর্যার জন্য সঠিক উদ্ভিদ নির্বাচন করুন।',
+          sunlight: 'গাছের সঠিক পরিচর্যার জন্য সঠিক উদ্ভিদ নির্বাচন করুন।',
+          soilAndContainer: 'গাছের সঠিক পরিচর্যার জন্য সঠিক উদ্ভিদ নির্বাচন করুন।',
+          pruning: 'গাছের সঠিক পরিচর্যার জন্য সঠিক উদ্ভিদ নির্বাচন করুন।',
+        },
+        careMaintenanceEn: {
+          watering: 'Select an authentic plant for calibrated care.',
+          sunlight: 'Select an authentic plant for calibrated care.',
+          soilAndContainer: 'Select an authentic plant for calibrated care.',
+          pruning: 'Select an authentic plant for calibrated care.',
+        },
+        onlineSource: {
+          sourceName: 'BAGANI Botanical Verification Hub',
+          articleTitle: 'Unrecognized Query',
+          url: '',
+          summaryBn: 'কোনো উদ্ভিদ শনাক্ত করা যায়নি। অনুগ্রহ করে সঠিক উদ্ভিদের নাম বা জাত লিখুন।',
+          summaryEn: 'No botanical match found. Please search for a verified plant or variety.',
+        },
+        uncertaintyWarning: 'কোনো স্বীকৃত উদ্ভিদ বা জাত শনাক্ত করা যায়নি।',
+        availableVarietiesBn: [],
+        availableVarietiesEn: [],
+        isVarietyMatch: false,
+      };
     }
 
     if (!matchedSeed) {
       matchedSeed = BOTANICAL_CLOUD_DATABASE[0];
     }
+
+    const dynamicThumbUrl = matchedEncyclopediaEntry?.thumbnailUrl;
+    const dynamicWikiPageUrl = matchedEncyclopediaEntry?.sourceUrl;
+    const dynamicSummaryExtractBn = matchedEncyclopediaEntry?.summaryExtractBn;
+    const dynamicSummaryExtractEn = matchedEncyclopediaEntry?.summaryExtractEn;
 
     // Match pathology or healthy state based on examined part
     const diseaseMatch =
@@ -961,6 +1023,13 @@ export class AiScannerService {
       wikiEn?.content_urls?.desktop?.page ||
       `https://en.wikipedia.org/wiki/${matchedSeed.slugWiki}`;
 
+    const resolvedVarietyBn = matchedEncyclopediaEntry?.isVarietyMatch
+      ? (matchedEncyclopediaEntry.matchedVarietyNameBn || matchedSeed.defaultVarietyBn)
+      : matchedSeed.defaultVarietyBn;
+    const resolvedVarietyEn = matchedEncyclopediaEntry?.isVarietyMatch
+      ? (matchedEncyclopediaEntry.matchedVarietyNameEn || matchedSeed.defaultVarietyEn)
+      : matchedSeed.defaultVarietyEn;
+
     if (mode === 'identify') {
       return {
         id: 'scan_id_' + Date.now().toString(36),
@@ -970,8 +1039,8 @@ export class AiScannerService {
         plantNameEn: matchedSeed.nameEn,
         scientificName: matchedSeed.scientificName,
         botanicalFamily: matchedSeed.family,
-        varietyNameBn: matchedSeed.defaultVarietyBn,
-        varietyNameEn: matchedSeed.defaultVarietyEn,
+        varietyNameBn: resolvedVarietyBn,
+        varietyNameEn: resolvedVarietyEn,
         confidence: 97,
         healthState: 'healthy',
         category: matchedSeed.category,
@@ -1015,6 +1084,13 @@ export class AiScannerService {
           summaryEn: liveSummaryEn,
           thumbnailUrl: liveThumb,
         },
+        availableVarietiesBn: matchedEncyclopediaEntry?.varietiesBn,
+        availableVarietiesEn: matchedEncyclopediaEntry?.varietiesEn,
+        isVarietyMatch: matchedEncyclopediaEntry?.isVarietyMatch,
+        matchedVarietyNameBn: matchedEncyclopediaEntry?.matchedVarietyNameBn,
+        matchedVarietyNameEn: matchedEncyclopediaEntry?.matchedVarietyNameEn,
+        parentPlantBn: matchedEncyclopediaEntry?.parentPlantBn || matchedSeed.nameBn,
+        parentPlantEn: matchedEncyclopediaEntry?.parentPlantEn || matchedSeed.nameEn,
       };
     }
 
@@ -1027,8 +1103,8 @@ export class AiScannerService {
       plantNameEn: matchedSeed.nameEn,
       scientificName: matchedSeed.scientificName,
       botanicalFamily: matchedSeed.family,
-      varietyNameBn: matchedSeed.defaultVarietyBn,
-      varietyNameEn: matchedSeed.defaultVarietyEn,
+      varietyNameBn: resolvedVarietyBn,
+      varietyNameEn: resolvedVarietyEn,
       confidence: 95,
       healthState: diseaseMatch.healthState,
       category: matchedSeed.category,
@@ -1060,6 +1136,13 @@ export class AiScannerService {
         summaryEn: liveSummaryEn,
         thumbnailUrl: liveThumb,
       },
+      availableVarietiesBn: matchedEncyclopediaEntry?.varietiesBn,
+      availableVarietiesEn: matchedEncyclopediaEntry?.varietiesEn,
+      isVarietyMatch: matchedEncyclopediaEntry?.isVarietyMatch,
+      matchedVarietyNameBn: matchedEncyclopediaEntry?.matchedVarietyNameBn,
+      matchedVarietyNameEn: matchedEncyclopediaEntry?.matchedVarietyNameEn,
+      parentPlantBn: matchedEncyclopediaEntry?.parentPlantBn || matchedSeed.nameBn,
+      parentPlantEn: matchedEncyclopediaEntry?.parentPlantEn || matchedSeed.nameEn,
       isAiVisualInference: false,
       expertConsultContact: {
         hotline: '16123',

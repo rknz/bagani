@@ -38,6 +38,11 @@ export interface BotanicalEncyclopediaEntry {
   summaryExtractBn?: string;
   summaryExtractEn?: string;
   isOnlineFetched?: boolean;
+  isVarietyMatch?: boolean;
+  matchedVarietyNameBn?: string;
+  matchedVarietyNameEn?: string;
+  parentPlantBn?: string;
+  parentPlantEn?: string;
 }
 
 export interface PlantVerificationResult {
@@ -148,42 +153,91 @@ export const BOTANICAL_ENCYCLOPEDIA: BotanicalEncyclopediaEntry[] = [
     canonicalNameBn: 'আম',
     canonicalNameEn: 'Mango',
     scientificName: 'Mangifera indica',
+    family: 'Anacardiaceae',
     category: 'fruit',
     isAllSeasonDefault: true,
     aliases: [
       'mango',
       'am',
       'aam',
+      'himsagar',
+      'khirsapat',
+      'amrapali',
+      'amropali',
       'katimon',
       'katimoon',
       'catimon',
-      'banana mango',
-      'miyazaki',
-      'baromashi am',
-      'bari 11',
+      'langra',
+      'gopalbhog',
+      'fazli',
+      'fazlee',
       'haribhanga',
-      'amrapali',
+      'harivanga',
+      'bari 4',
+      'bari 11',
+      'miyazaki',
+      'surjodim',
+      'banana mango',
+      'gourmoti',
+      'mallika',
+      'chausa',
+      'brunei king',
+      'ashwina',
+      'baromashi am',
       'আম',
       'কাটিমন',
       'কাটিমন আম',
-      'ব্যানানা ম্যাঙ্গো',
+      'হিমসাগর',
+      'ক্ষীরশাপাত',
       'আম্রপালি',
+      'ল্যাংড়া',
+      'গোপালভোগ',
+      'ফজলি',
+      'হাঁড়িভাঙা',
+      'বারি আম-৪',
+      'বারি আম-১১',
+      'মিয়াজাকি',
+      'ব্যানানা ম্যাঙ্গো',
+      'গৌড়মতি',
+      'মল্লিকা',
+      'চৌসা',
+      'ব্রুনাই কিং',
     ],
     varietiesBn: [
-      'কাটিমন-১২ (বারোমাসি কলম)',
-      'ব্যানানা ম্যাঙ্গো',
+      'হিমসাগর (ক্ষীরশাপাত)',
+      'আম্রপালি (হাইব্রিড কলম)',
+      'কাটিমন (বারোমাসি থাই কলম)',
+      'ল্যাংড়া (ঐতিহ্যবাহী মিষ্টি)',
+      'গোপালভোগ',
+      'ফজলি',
+      'হাঁড়িভাঙা',
+      'বারি আম-৪ (হাইব্রিড)',
       'বারি আম-১১ (বারোমাসি)',
-      'আম্রপালি',
       'মিয়াজাকি (সূর্যডিম)',
-      'গৌড়মতি',
+      'ব্যানানা ম্যাঙ্গো',
+      'গৌড়মতি (নাবিজাত)',
+      'মল্লিকা',
+      'চৌসা',
+      'ব্রুনাই কিং',
+      'আশ্বিনা',
     ],
     varietiesEn: [
-      'Katimon-12 (All-Season Grafted)',
-      'Banana Mango',
+      'Himsagar (Khirsapat Sweet)',
+      'Amrapali (Dwarf Hybrid)',
+      'Katimon (Thai All-Season)',
+      'Langra (Aromatic Classic)',
+      'Gopalbhog',
+      'Fazli Giant',
+      'Haribhanga',
+      'BARI Mango-4',
       'BARI Mango-11 (All-Season)',
-      'Amrapali Dwarf Mango',
-      'Miyazaki Sun-Egg Mango',
-      'Gourmoti Late Mango',
+      'Miyazaki (Sun Egg)',
+      'Banana Mango',
+      'Gourmoti Late Season',
+      'Mallika Hybrid',
+      'Chausa Honey Sweet',
+      'Brunei King Giant',
+      'Ashwina Late',
     ],
     recommendedContainerInches: 24,
     soilSelectionAndMixBn:
@@ -210,6 +264,293 @@ export const BOTANICAL_ENCYCLOPEDIA: BotanicalEncyclopediaEntry[] = [
       'আমের বোঁটার কাছে হলুদাভ রং ও মিষ্টি ঘ্রাণ বের হলে ১ ইঞ্চি বোঁটাসহ আম সংগ্রহ করুন যাতে কষ ফলের গায়ে না লাগে। সংগ্রহের পর ডাল ছেঁটে ৪০০ গ্রাম জৈব সার প্রয়োগ করুন।',
     harvestAndPostHarvestEn:
       'Harvest with a 1-inch stem attached to prevent sap burn on the skin. After harvest, perform light terminal pruning and top-dress with 400g organic compost + bone meal.',
+  },
+  {
+    id: 'litchi',
+    canonicalNameBn: 'লিচু',
+    canonicalNameEn: 'Litchi (Lychee)',
+    scientificName: 'Litchi chinensis',
+    family: 'Sapindaceae',
+    category: 'fruit',
+    isAllSeasonDefault: false,
+    aliases: [
+      'lichu',
+      'litchi',
+      'lychee',
+      'licu',
+      'bombay lichu',
+      'china 3',
+      'china-3',
+      'bedana',
+      'bedana lichu',
+      'muzaffarpur',
+      'mangalbari',
+      'bari lichu',
+      'elachi lichu',
+      'লিচু',
+      'বোম্বাই লিচু',
+      'চায়না ৩',
+      'চায়না-৩',
+      'বেদানা লিচু',
+      'মোজাফফরপুর লিচু',
+      'মঙ্গলবাড়ি',
+      'বারি লিচু',
+      'বারি লিচু-১',
+      'বারি লিচু-৩',
+      'বারি লিচু-৪',
+      'এলাচি লিচু',
+    ],
+    varietiesBn: [
+      'বোম্বাই লিচু (ঐতিহ্যবাহী রসালো)',
+      'চায়না-৩ (ছোট আঁটি ও মিষ্টি)',
+      'বেদানা লিচু (ছোট বিচি)',
+      'মোজাফফরপুর লিচু',
+      'মঙ্গলবাড়ি লিচু',
+      'বারি লিচু-১',
+      'বারি লিচু-৩',
+      'বারি লিচু-৪ (বারোমাসি)',
+      'এলাচি লিচু',
+    ],
+    varietiesEn: [
+      'Bombay Litchi (Juicy Classic)',
+      'China-3 Sweet Litchi',
+      'Bedana Seedless Litchi',
+      'Muzaffarpur Litchi',
+      'Mangalbari Litchi',
+      'BARI Litchi-1',
+      'BARI Litchi-3',
+      'BARI Litchi-4 (All-Season)',
+      'Elachi Fragrant Litchi',
+    ],
+    recommendedContainerInches: 24,
+    soilSelectionAndMixBn:
+      'উর্বর দোআঁশ ও বেলে-দোআঁশ মাটি ৫০% + পুরাতন পচা গোবর বা ভার্মিকম্পোস্ট ৩৫% + কোকোপিট ১০% + হাড়ের গুঁড়ো ২৫০ গ্রাম + নিম খৈল ১০০ গ্রাম ও ১ চামচ ট্রাইকোডার্মা। ড্রেনেজ ব্যবস্থা খুব ভালো হতে হবে।',
+    soilSelectionAndMixEn:
+      '50% fertile loam/sandy-loam + 35% aged manure/vermicompost + 10% coco peat + 250g bone meal + 100g neem cake + 1 tsp Trichoderma. Superb drainage required.',
+    plantingMethodBn:
+      'কমপক্ষে ২০–২৪ ইঞ্চি জিও ব্যাগ বা ১০০ লিটার হাফ ড্রামে রোপণ করুন। ফুল আসার জন্য শীতকালে রোদ ও মৃদু ঠান্ডার প্রয়োজন হয়।',
+    plantingMethodEn:
+      'Plant in a 20–24 inch Geo-Bag or 100L half-drum in full sunlight with adequate winter chilling for blossom induction.',
+    ongoingCareAndFertilizerBn:
+      'ফুল আসার আগে (শীতকালে) সেচ সীমিত রাখুন। ফুল ফোটা শেষ হয়ে গুটি বাঁধলে নিয়মিত পানি দিন যাতে লিচু ফেটে না যায়। প্রতি ২০ দিনে সরিষার খৈল পচা তরল সার দিন।',
+    ongoingCareAndFertilizerEn:
+      'Withhold water slightly before winter flowering; water consistently once fruitlets form to prevent skin cracking. Feed fermented organic compost tea every 20 days.',
+    pruningTechniqueBn:
+      'ফল সংগ্রহের সময় ফলের থোকার সাথে ৮–১০ ইঞ্চি ডাল ভেঙে কাটুন (Harvest Pruning)—এতে নতুন ডাল বের হবে এবং পরের বছর প্রচুর লিচু ধরবে। এছাড়া গাছের ভেতরের অপ্রয়োজনীয় ঘন ডাল ছেঁটে আলো প্রবেশ নিশ্চিত করুন।',
+    pruningTechniqueEn:
+      'Harvest Pruning: Cut fruit clusters with 8–10 inches of supporting branch intact to stimulate 2–3 new vigorous shoots for next season. Open center canopy for sunlight.',
+    diseaseAndRemediesBn:
+      'ফল ছিদ্রকারী পোকা ও বাদুর রোধে লিচুতে ফ্রুট নেট ব্যবহার করুন। ফল ফেটে যাওয়া ও দাগ রোধে বোরন ও চিলেটেড জিংক ২ গ্রাম/লিটার পানিতে স্প্রে করুন।',
+    diseaseAndRemediesEn:
+      'Enclose tree canopy in fine mesh net against fruit bats. Spray soluble Boron + Zinc (2g/L) during pea-stage to prevent pericarp cracking and browning.',
+    harvestAndPostHarvestBn:
+      'লিচুর ত্বক উজ্জ্বল লালচে-গোলাপি রঙ ধারণ করলে এবং মিষ্টি সুবাস বের হলে বোঁটাসহ থোকা কেটে সংগ্রহ করুন।',
+    harvestAndPostHarvestEn:
+      'Harvest when pericarp reaches characteristic crimson-pink blush with high sugar brix; clip in bunches.',
+  },
+  {
+    id: 'black_plum_jamun',
+    canonicalNameBn: 'কালোজাম ও জাম',
+    canonicalNameEn: 'Black Plum (Jamun)',
+    scientificName: 'Syzygium cumini',
+    family: 'Myrtaceae',
+    category: 'fruit',
+    isAllSeasonDefault: false,
+    aliases: [
+      'jam',
+      'jaam',
+      'black plum',
+      'jamun',
+      'kalo jam',
+      'kalojam',
+      'kala jam',
+      'sada jam',
+      'thai giant jam',
+      'bari jam',
+      'কাঠ জাম',
+      'জাম',
+      'কালো জাম',
+      'কালোজাম',
+      'সাদা জাম',
+      'থাই জাম',
+      'বারি জাম',
+      'কাঠজাম',
+    ],
+    varietiesBn: [
+      'বড় মিষ্টি কালো জাম (দেশি কলম)',
+      'থাই জায়ান্ট জাম (বারোমাসি কলম)',
+      'সাদা জাম (White Wax Jamun)',
+      'কাঠ জাম (ক্ষুদ্র মিষ্টি জাম)',
+      'বারি জাম-১',
+    ],
+    varietiesEn: [
+      'Giant Sweet Black Jamun (Desi Graft)',
+      'Thai Giant Jamun (All-Season)',
+      'White Jamun',
+      'Kath Jamun (Wild Sweet)',
+      'BARI Jamun-1',
+    ],
+    recommendedContainerInches: 24,
+    soilSelectionAndMixBn:
+      'দোআঁশ মাটি ৫০% + ভার্মিকম্পোস্ট ৩৫% + নদীর বালু ১০% + হাড়ের গুঁড়ো ২০০ গ্রাম + কাঠের ছাই ৫০ গ্রাম।',
+    soilSelectionAndMixEn:
+      '50% loam + 35% vermicompost + 10% river sand + 200g bone meal + 50g wood ash for high potassium.',
+    plantingMethodBn:
+      '২০–২৪ ইঞ্চি ড্রামে কলমের চারা রোপণ করুন। জাম গাছ প্রচুর রোদ ভালোবাসে (কমপক্ষে ৬ ঘণ্টা রোদ দরকার)।',
+    plantingMethodEn:
+      'Plant grafted sapling in a 20–24 inch container in full direct sunlight (minimum 6 hours daily).',
+    ongoingCareAndFertilizerBn:
+      'মাটিতে নিয়মিত আর্দ্রতা বজায় রাখুন। ফুল এলে পানি কিছুটা পরিমিত দিন এবং গুটি বাঁধলে পটাসিয়াম সমৃদ্ধ জৈব সার দিন।',
+    ongoingCareAndFertilizerEn:
+      'Maintain steady root moisture; reduce watering slightly during blooming. Feed bio-potash during fruit enlargement.',
+    pruningTechniqueBn:
+      'বর্ষার পর উপরের লম্বা ডাল হালকা প্রুনিং করে গাছের উচ্চতা ৫–৬ ফুটের মধ্যে রাখুন যাতে টবে সহজেই পরিচর্যা ও ফল সংগ্রহ করা যায়।',
+    pruningTechniqueEn:
+      'Top vertical leader shoots post-monsoon to cap tree canopy at 5–6 feet for manageable rooftop container harvesting.',
+    diseaseAndRemediesBn:
+      'পাতা খেকো পোকা ও সাদা মাছি রোধে নিম তেল ৫ মি.লি./লিটার স্প্রে করুন। শিকড় সুস্থ রাখতে ট্রাইকোডার্মা প্রয়োগ করুন।',
+    diseaseAndRemediesEn:
+      'Spray organic neem oil emulsion (5ml/L) against leaf-eating caterpillars; incorporate Trichoderma into soil quarterly.',
+    harvestAndPostHarvestBn:
+      'ফল গাঢ় কালচে-বেগুনি ও চকচকে রসালো হলে সাবধানে হাত দিয়ে সংগ্রহ করুন।',
+    harvestAndPostHarvestEn:
+      'Harvest when berries turn glossy deep-purple and yield gently to finger pressure.',
+  },
+  {
+    id: 'jujube_kul',
+    canonicalNameBn: 'কুল ও বরই',
+    canonicalNameEn: 'Jujube / Plum (Kul)',
+    scientificName: 'Ziziphus mauritiana',
+    family: 'Rhamnaceae',
+    category: 'fruit',
+    isAllSeasonDefault: false,
+    aliases: [
+      'kul',
+      'kool',
+      'boroi',
+      'baroi',
+      'jujube',
+      'plum',
+      'apple kul',
+      'bau kul',
+      'ball sundari',
+      'bharat sundari',
+      'kashmiri kul',
+      'thai kul',
+      'narkeli boroi',
+      'কুল',
+      'বরই',
+      'আপেল কুল',
+      'বাউ কুল',
+      'বল সুন্দরী',
+      'ভারত সুন্দরী',
+      'কাশ্মীরি আপেল কুল',
+      'থাই কুল',
+      'নারকেলি বরই',
+    ],
+    varietiesBn: [
+      'আপেল কুল (রসালো ও মিষ্টি)',
+      'বাউ কুল (BAU Kul - উচ্চফলনশীল)',
+      'বল সুন্দরী কুল',
+      'ভারত সুন্দরী কুল (লালচে মিষ্টি)',
+      'কাশ্মীরি লাল আপেল কুল',
+      'থাই মিষ্টি কুল (বারোমাসি)',
+      'নারকেলি দেশি বরই',
+    ],
+    varietiesEn: [
+      'Apple Kul (Crisp & Sweet)',
+      'BAU Kul (High-Yield Graft)',
+      'Ball Sundari Jujube',
+      'Bharat Sundari Jujube',
+      'Kashmiri Red Apple Kul',
+      'Thai Sweet Jujube (All-Season)',
+      'Narkeli Desi Plum',
+    ],
+    recommendedContainerInches: 20,
+    soilSelectionAndMixBn:
+      'বেলে-দোআঁশ মাটি ৫০% + ভার্মিকম্পোস্ট ৩৫% + কোকোপিট ১০% + হাড়ের গুঁড়ো ২০০ গ্রাম + ডলোমাইট চুন ৫০ গ্রাম। কুল গাছ ক্ষারীয় ও লবণাক্ততা কিছুটা সহ্য করতে পারে।',
+    soilSelectionAndMixEn:
+      '50% sandy-loam + 35% vermicompost + 10% coco peat + 200g bone meal + 50g agricultural lime.',
+    plantingMethodBn:
+      '১৮–২০ ইঞ্চি জিও ব্যাগে রোপণ করুন। বরই গাছ খুব দ্রুত বাড়ে এবং প্রচুর রোদ পছন্দ করে।',
+    plantingMethodEn:
+      'Plant in an 18–20 inch Geo-Bag in full sun; jujube thrives in high solar radiation.',
+    ongoingCareAndFertilizerBn:
+      'ফুল আসার সময়ে অতিরিক্ত সেচ দিলে ফুল ঝরে যায়, তাই ফুল ফোটার সময় পানি কমিয়ে দিন। ফল বাঁধলে নিয়মিত সেচ ও পটাশ সার দিন।',
+    ongoingCareAndFertilizerEn:
+      'Restrain irrigation during blossoming to avoid flower drop; provide regular hydration and potassium once fruit sets.',
+    pruningTechniqueBn:
+      'হার্ড প্রুনিং (Severe Annual Pruning): প্রতি বছর ফেব্রুয়ারি-মার্চে ফল সংগ্রহের পর গাছের সব ডালপালা মূল কাণ্ড থেকে মাত্র ১–২ ফুট রেখে শক্তভাবে ছেঁটে দিন (Hard Pruning)। কাটা স্থানে ছত্রাকনাশক পেস্ট লাগান। নতুন গজানো ডালেই পরের শীতে কোটি কোটি কুল ধরবে!',
+    pruningTechniqueEn:
+      'Severe Annual Heading: Cut back all secondary branches leaving only 1–2 ft stubs immediately post-harvest (Feb–March). Seal cuts with Copper fungicide. Vigorous new spring flushes will produce abundant fruit clusters.',
+    diseaseAndRemediesBn:
+      'পাউডারি মিলডিউ ও ফলের মাছি পোকা দমনে সালফার জাতীয় ওষুধ এবং ফেরোমোন ফাঁদ ব্যবহার করুন।',
+    diseaseAndRemediesEn:
+      'Control powdery mildew with wettable sulfur (2g/L); hang pheromone lures to suppress fruit flies.',
+    harvestAndPostHarvestBn:
+      'কুলের ত্বক হলুদাভ-সবুজ বা লালচে রঙ ধারণ করলে সংগ্রহ করুন।',
+    harvestAndPostHarvestEn:
+      'Harvest when fruit turns greenish-yellow or characteristic crimson-red blush with sweet crisp crunch.',
+  },
+  {
+    id: 'strawberry',
+    canonicalNameBn: 'স্ট্রবেরি',
+    canonicalNameEn: 'Strawberry',
+    scientificName: 'Fragaria × ananassa',
+    family: 'Rosaceae',
+    category: 'fruit',
+    isAllSeasonDefault: false,
+    aliases: [
+      'strawberry',
+      'stroberi',
+      'sweet charlie',
+      'bari strawberry',
+      'camarosa',
+      'winter dawn',
+      'স্ট্রবেরি',
+      'সুইট চার্লি',
+      'বারি স্ট্রবেরি',
+      'ক্যামারোসা',
+    ],
+    varietiesBn: [
+      'সুইট চার্লি স্ট্রবেরি',
+      'বারি স্ট্রবেরি-১',
+      'বারি স্ট্রবেরি-২',
+      'ক্যামারোসা স্ট্রবেরি',
+      'উইন্টার ডন স্ট্রবেরি',
+    ],
+    varietiesEn: [
+      'Sweet Charlie Strawberry',
+      'BARI Strawberry-1',
+      'BARI Strawberry-2',
+      'Camarosa Strawberry',
+      'Winter Dawn Strawberry',
+    ],
+    recommendedContainerInches: 10,
+    soilSelectionAndMixBn:
+      'দোআঁশ মাটি ৪০% + ভার্মিকম্পোস্ট ৪০% + কোকোপিট ২০% + সামান্য কাঠের ছাই ও হাড়ের গুঁড়ো। পিএইচ ৫.৫–৬.৫ আদর্শ।',
+    soilSelectionAndMixEn:
+      '40% loam + 40% vermicompost + 20% coco peat + small amount of wood ash & bone meal. Ideal pH 5.5–6.5.',
+    plantingMethodBn:
+      '৮–১০ ইঞ্চি টব, ঝুলন্ত টব বা পলিব্যাগে রোপণ করুন। মাটির উপর খড় বা কালো পলিথিন দিয়ে মালচিং (Mulching) করে দিন যাতে ফল মাটির সংস্পর্শে এসে পচে না যায়।',
+    plantingMethodEn:
+      'Plant in 8–10 inch pots or hanging baskets. Apply straw or black plastic mulch so ripening berries never touch wet soil.',
+    ongoingCareAndFertilizerBn:
+      'গাছের ক্রাউন (গোড়া) যেন মাটির নিচে না ডোবে। সকালের দিকে পানি দিন এবং ফুল-ফল এলে প্রতি ১০ দিনে সরিষার খৈল পচা তরল দিন।',
+    ongoingCareAndFertilizerEn:
+      'Ensure crown is level with soil surface (not buried). Irrigate soil in early morning without wetting leaves or fruit.',
+    pruningTechniqueBn:
+      'রানার কাটিং (Runner Pruning): ফল ধরার মৌসুমে গাছ থেকে বের হওয়া লম্বা লতা বা রানার কেটে দিন, যাতে গাছের সমস্ত শক্তি বড় ও মিষ্টি ফল উৎপাদনে ব্যবহৃত হয়।',
+    pruningTechniqueEn:
+      'Runner Pruning: Cut off vegetative stolons (runners) during fruiting season to channel nutrients into berry sizing.',
+    diseaseAndRemediesBn:
+      'ধূসর ছত্রাক (Gray Mold) ও লাল মাকড় রোধে পাতলা ছাই ও নিম তেল স্প্রে করুন।',
+    diseaseAndRemediesEn:
+      'Protect from Botrytis gray mold by avoiding wet leaves; mist with organic neem soap against spider mites.',
+    harvestAndPostHarvestBn:
+      'স্ট্রবেরি সম্পূর্ণ লাল টকটকে হলে বোঁটাসহ কাঁচি দিয়ে কেটে তুলুন।',
+    harvestAndPostHarvestEn:
+      'Clip berries with a short stem once they turn 100% glossy vibrant red.',
   },
   {
     id: 'malta_orange',
@@ -714,58 +1055,246 @@ export const BOTANICAL_ENCYCLOPEDIA: BotanicalEncyclopediaEntry[] = [
       'Harvest while skin is tender and covered in fine soft hairs.',
   },
   {
+    id: 'bottle_gourd',
+    canonicalNameBn: 'লাউ',
+    canonicalNameEn: 'Bottle Gourd',
+    scientificName: 'Lagenaria siceraria',
+    family: 'Cucurbitaceae',
+    category: 'vegetable',
+    isAllSeasonDefault: true,
+    aliases: ['lau', 'lao', 'kaddu', 'kodu', 'bottle gourd', 'calabash', 'লাউ', 'কদু', 'বারি লাউ', 'হায়তি লাউ'],
+    varietiesBn: ['বারি লাউ-৪ (বারোমাসি হাইব্রিড)', 'হায়তি এফ১ হাইব্রিড লাউ', 'ডায়না লম্বা লাউ', 'দেশি গোলাকার কদু'],
+    varietiesEn: ['BARI Bottle Gourd-4 (All-Season)', 'Hayati F1 Hybrid Gourd', 'Diana Long Hybrid', 'Desi Round Bottle Gourd'],
+    recommendedContainerInches: 24,
+    soilSelectionAndMixBn: 'উর্বর দোআঁশ মাটি ৫০% + ভার্মিকম্পোস্ট ৪০% + কোকোপিট ১০% + হাড়ের গুঁড়ো ৩০০ গ্রাম।',
+    soilSelectionAndMixEn: '50% fertile loam + 40% aged compost + 10% coco peat + 300g bone meal.',
+    plantingMethodBn: '১৮–২৪ ইঞ্চি জিও ব্যাগে রোপণ করে মজবুত মাচা (Trellis) তৈরি করে দিন।',
+    plantingMethodEn: 'Plant in 18–24" Geo-Bag with a sturdy overhead climbing trellis.',
+    ongoingCareAndFertilizerBn: 'প্রচুর পানি প্রয়োজন; প্রতিদিন ২–৩ লিটার সেচ দিন এবং প্রতি ১০ দিনে তরল জৈব সার দিন।',
+    ongoingCareAndFertilizerEn: 'Requires heavy hydration; water 2–3L daily and feed liquid compost tea every 10 days.',
+    pruningTechniqueBn: '৩জি কাটিং (3G Technique): প্রধান লতা ৮–১০ ফুট হলে আগা কেটে দিন (1G Cut); বের হওয়া পার্শ্বশাখা ৩ ফুট হলে আবার আগা কাটুন (2G Cut)। ৩জি ডালে প্রচুর স্ত্রী ফুল এসে লাউ ধরবে।',
+    pruningTechniqueEn: 'Apical 3G Pruning: Top main vine at 8–10 ft to stimulate 2G shoots; pinch 2G at 3 ft to force tertiary 3G branches yielding up to 90% female flower clusters.',
+    diseaseAndRemediesBn: 'মাছি পোকা রোধে সেক্স ফেরোমন ফাঁদ দিন এবং ফল কচি অবস্থায় ফ্রুট ব্যাগ দিয়ে ঢেকে রাখুন।',
+    diseaseAndRemediesEn: 'Hang cue-lure pheromone traps against melon fruit flies; sleeve young gourds in protective bags.',
+    harvestAndPostHarvestBn: 'নরম ও নখ বসানো যায় এমন কচি অবস্থায় বোঁটাসহ কেটে সংগ্রহ করুন।',
+    harvestAndPostHarvestEn: 'Harvest while skin is tender, smooth, and easily pierced by thumbnail.'
+  },
+  {
+    id: 'bitter_gourd',
+    canonicalNameBn: 'করলা ও উচ্ছে',
+    canonicalNameEn: 'Bitter Gourd',
+    scientificName: 'Momordica charantia',
+    family: 'Cucurbitaceae',
+    category: 'vegetable',
+    isAllSeasonDefault: true,
+    aliases: ['korola', 'karala', 'ucche', 'uche', 'bitter gourd', 'bitter melon', 'করলা', 'উচ্ছে', 'টিয়া করলা', 'গজ করলা'],
+    varietiesBn: ['টিয়া এফ১ হাইব্রিড করলা', 'গজ করলা (লম্বা জাত)', 'দেশি ছোট উচ্ছে', 'সাদা হাইব্রিড করলা'],
+    varietiesEn: ['Tiya F1 Hybrid Bitter Gourd', 'Goj Long Bitter Gourd', 'Desi Small Ucche', 'White Hybrid Bitter Gourd'],
+    recommendedContainerInches: 16,
+    soilSelectionAndMixBn: 'দোআঁশ মাটি ৫০% + ভার্মিকম্পোস্ট ৩৫% + কোকোপিট ১৫% + হাড়ের গুঁড়ো ১৫০ গ্রাম।',
+    soilSelectionAndMixEn: '50% loam + 35% vermicompost + 15% coco peat + 150g bone meal.',
+    plantingMethodBn: '১২–১৬ ইঞ্চি গ্রো ব্যাগে মাচার নিচে রোপণ করুন।',
+    plantingMethodEn: 'Plant in 12–16" container under vertical netting or trellis.',
+    ongoingCareAndFertilizerBn: 'মাটি আর্দ্র রাখুন। ফুল এলে পটাশ সমৃদ্ধ সার ও কলার খোসার তরল সার দিন।',
+    ongoingCareAndFertilizerEn: 'Keep roots moist; feed potassium-rich banana peel liquid during flowering.',
+    pruningTechniqueBn: 'লতা ৪ ফুট হলে আগা পিঞ্চিং করুন যাতে পার্শ্বশাখা বের হয়ে বেশি ফল ধরে।',
+    pruningTechniqueEn: 'Pinch main vine at 4 ft to multiply lateral fruiting branches.',
+    diseaseAndRemediesBn: 'মাছি পোকা রোধে ফেরোমন ফাঁদ ব্যবহার করুন।',
+    diseaseAndRemediesEn: 'Deploy cue-lure pheromone lures to protect against fruit borer flies.',
+    harvestAndPostHarvestBn: 'করলা গাঢ় সবুজ ও পুষ্ট হলে পাকার আগেই সংগ্রহ করুন।',
+    harvestAndPostHarvestEn: 'Harvest when pods reach full green maturity before turning yellow-orange.'
+  },
+  {
     id: 'rose',
     canonicalNameBn: 'গোলাপ ফুল',
     canonicalNameEn: 'Rose',
     scientificName: 'Rosa hybrida',
+    family: 'Rosaceae',
     category: 'flower',
     isAllSeasonDefault: true,
     aliases: [
       'golap',
       'rose',
+      'dutch rose',
+      'kashmiri golap',
+      'peace rose',
+      'black baccara',
+      'button golap',
+      'desi golap',
       'mirandi',
       'tajmahal rose',
       'গোলাপ',
+      'ডাচ গোলাপ',
+      'কাশ্মীরি গোলাপ',
       'হাইব্রিড গোলাপ',
       'হাজারি গোলাপ',
+      'মেরুন গোলাপ',
+      'বাটন গোলাপ',
     ],
     varietiesBn: [
+      'ডাচ লাল গোলাপ (Hybrid Tea)',
+      'কাশ্মীরি সুবাসিত গোলাপ',
+      'মেরুন কিং ভেলভেট গোলাপ',
+      'পিস রোজ (Peace Rose - হলুদ ও গোলাপি)',
+      'ব্ল্যাক বাক্কারা (Black Baccara)',
+      'মিনিয়েচার বাটন গোলাপ',
+      'দেশি সুবাসিত গোলাপ (Damask Fragrant)',
       'তাজমহল রেড রোজ',
-      'মিরান্ডি সুগন্ধি গোলাপ',
-      'হাজারি গোলাপ',
-      'ডাচ মিনিয়েচার গোলাপ',
     ],
     varietiesEn: [
+      'Dutch Red Rose (Hybrid Tea)',
+      'Kashmiri Fragrant Rose',
+      'Maroon King Velvet Rose',
+      'Peace Rose (Bicolor Yellow-Pink)',
+      'Black Baccara Deep Velvet Rose',
+      'Miniature Button Rose',
+      'Desi Damask Fragrant Rose',
       'Tajmahal Velvet Red Rose',
-      'Mirandi Fragrant Rose',
-      'Hajari Multi-Petal Rose',
-      'Dutch Miniature Rose',
     ],
     recommendedContainerInches: 12,
     soilSelectionAndMixBn:
-      'দোআঁশ মাটি ৫০% + ভার্মিকম্পোস্ট ৩০% + ঘেঁষা ইটের গুঁড়ো বা সিন্ডার ১০% + হাড়ের গুঁড়ো ১০০ গ্রাম ও চাপাতা পচা সার।',
+      'দোআঁশ মাটি ৫০% + ভার্মিকম্পোস্ট ৩০% + ঘেঁষা ইটের গুঁড়ো বা সিন্ডার ১০% + হাড়ের গুঁড়ো ১০০ গ্রাম ও চাপাতা পচা সার। পিএইচ ৬.০–৬.৮ আদর্শ।',
     soilSelectionAndMixEn:
-      '50% loam + 30% vermicompost + 10% crushed brick/cinder + 100g bone meal + composted tea leaves.',
+      '50% loam + 30% vermicompost + 10% crushed brick/cinder + 100g bone meal + composted tea leaves. Ideal pH 6.0–6.8.',
     plantingMethodBn:
-      '১২–১৪ ইঞ্চি মাটির টবে পূর্ণ রোদে রোপণ করুন।',
+      '১২–১৪ ইঞ্চি মাটির টবে পূর্ণ রোদে রোপণ করুন। ড্রেনেজ ছিদ্র খোলা রাখুন।',
     plantingMethodEn:
-      'Plant in a breathable 12–14 inch clay pot in 6+ hours of sunlight.',
+      'Plant in a breathable 12–14 inch clay pot in 6+ hours of full rooftop sunlight.',
     ongoingCareAndFertilizerBn:
-      'গোলাপের জন্য সরিষার খৈল, হাড়ের গুঁড়ো ও ব্যবহৃত চাপাতা ধুয়ে শুকিয়ে মাটিতে দিন।',
+      'গোলাপের জন্য সরিষার খৈল, হাড়ের গুঁড়ো ও ব্যবহৃত চাপাতা ধুয়ে শুকিয়ে মাটিতে দিন। প্রতি ১৫ দিনে পাতলা তরল জৈব সার স্প্রে করুন।',
     ongoingCareAndFertilizerEn:
-      'Feed rose-food mix (bone meal, mustard cake, and rinsed dried tea leaves) every 15 days.',
+      'Feed rose-food mix (bone meal, fermented mustard cake, and dried tea leaves) every 15 days.',
     pruningTechniqueBn:
       'ফুল শুকিয়ে গেলে ফুলের নিচে ৩টি ৫-পাতার গাঁট (Node) রেখে ৪৫ ডিগ্রি কোণে ছেঁটে দিন (Deadheading)। এছাড়া অক্টোবর-নভেম্বর মাসে হার্ড প্রুনিং (Hard Pruning) করলে শীতে বড় আকারের প্রচুর গোলাপ ফোটে।',
     pruningTechniqueEn:
       'Deadhead spent blooms by cutting at a 45° angle just above an outward-facing 5-leaflet node. Perform annual Hard Pruning in mid-October for massive winter blooms.',
     diseaseAndRemediesBn:
-      'কালো দাগ (Black Spot) ও ডাইব্যাক রোধে কাটা স্থানে ছত্রাকনাশক লাগান এবং নিম তেল স্প্রে করুন।',
+      'কালো দাগ (Black Spot) ও ডাইব্যাক রোধে কাটা স্থানে ছত্রাকনাশক পেস্ট লাগান এবং মাসে দুইবার নিম তেল বা কপার অক্সিক্লোরাইড স্প্রে করুন।',
     diseaseAndRemediesEn:
-      'Seal all pruning cuts with fungicide paste to prevent Rose Dieback, and spray Mancozeb against Black Spot.',
+      'Seal all pruning cuts with fungicide paste to prevent Rose Dieback, and spray Mancozeb or Neem oil against Black Spot.',
     harvestAndPostHarvestBn:
       'সকালবেলা কুঁড়ি অর্ধ-ফোটা অবস্থায় লম্বা ডাঁটাসহ কাটলে ফুলদানিতে দীর্ঘদিন সতেজ থাকে।',
     harvestAndPostHarvestEn:
-      'Cut blooms early in the morning when outer petals just begin to unfurl.',
+      'Cut blooms early in the morning when outer petals just begin to unfurl with clean shears.',
+  },
+  {
+    id: 'jasmine_beli',
+    canonicalNameBn: 'বেলি ফুল ও জুঁই',
+    canonicalNameEn: 'Arabian Jasmine (Beli & Jui)',
+    scientificName: 'Jasminum sambac',
+    family: 'Oleaceae',
+    category: 'flower',
+    isAllSeasonDefault: true,
+    aliases: [
+      'beli',
+      'jui',
+      'jasmine',
+      'sambac',
+      'motia',
+      'mogra',
+      'বেলি',
+      'বেলি ফুল',
+      'জুঁই',
+      'জুঁই ফুল',
+      'মতিয়া বেলি',
+      'মোগরা',
+    ],
+    varietiesBn: [
+      'মতিয়া বেলি (থোকা ডাবল ফুল)',
+      'খুদে বেলি (এক পাপড়ির তীব্র সুবাস)',
+      'মোগরা বেলি (Grand Duke of Tuscany)',
+      'দেশি সুবাসিত জুঁই ফুল',
+    ],
+    varietiesEn: [
+      'Motia Double Arabian Jasmine',
+      'Maid of Orleans Single Beli',
+      'Grand Duke of Tuscany (Mogra)',
+      'Desi Fragrant Jui',
+    ],
+    recommendedContainerInches: 10,
+    soilSelectionAndMixBn:
+      'দোআঁশ মাটি ৫০% + ভার্মিকম্পোস্ট ৩০% + কোকোপিট ১০% + হাড়ের গুঁড়ো ও নিম খৈল ১০%।',
+    soilSelectionAndMixEn:
+      '50% Garden Loam + 30% Vermicompost + 10% Coco Peat + 10% Bone Meal & Neem Cake.',
+    plantingMethodBn:
+      '৮–১২ ইঞ্চি মাটির টবে পূর্ণ রোদে রোপণ করুন। বেলি ফুল প্রচুর রোদ ও উষ্ণতা পছন্দ করে।',
+    plantingMethodEn:
+      'Plant in 8–12" terracotta pot in full sun (6+ hours); jasmine thrives in heat and warmth.',
+    ongoingCareAndFertilizerBn:
+      'মাটি শুকিয়ে এলে পরিমিত পানি দিন। ফুল শেষ হলে তরল খৈল সার দিন এবং কুঁড়ি আসার সময় কলার খোসার তরল সার দিন।',
+    ongoingCareAndFertilizerEn:
+      'Water moderately; feed fermented mustard cake tea after blooming cycles and banana peel tea during bud set.',
+    pruningTechniqueBn:
+      'প্রতিবার ফুল ফোটা শেষ হওয়ার পরপরই ডাল ৪–৫ ইঞ্চি ছেঁটে দিন (Post-Bloom Tip Pruning)। বেলি ফুল সবসময় নতুন কচি ডালে ফোটে, তাই ছাঁটাই করলে নতুন ডালপালা গজিয়ে অসংখ্য ফুল আসবে।',
+    pruningTechniqueEn:
+      'Post-Bloom Tip Pruning: Cut spent stems back by 4–5 inches immediately after each flowering flush. Jasmine flowers strictly on new growth, so frequent trimming triggers continuous blooms.',
+    diseaseAndRemediesBn:
+      'মিলিবাগ ও সাদা মাছি রোধে নিম তেল ও লিকুইড সাবান পানি স্প্রে করুন।',
+    diseaseAndRemediesEn:
+      'Spray organic neem oil (5ml/L) with liquid soap surfactant against whitefly and mealybugs.',
+    harvestAndPostHarvestBn:
+      'সন্ধ্যায় কুঁড়ি ফোটার মুখে অথবা সকালে তাজা ফুল সংগ্রহ করুন।',
+    harvestAndPostHarvestEn:
+      'Harvest tight white buds at dusk or open blooms at dawn when essential oils are peak.',
+  },
+  {
+    id: 'bougainvillea',
+    canonicalNameBn: 'বাগানবিলাস (কাগজ ফুল)',
+    canonicalNameEn: 'Bougainvillea',
+    scientificName: 'Bougainvillea glabra / spectabilis',
+    family: 'Nyctaginaceae',
+    category: 'flower',
+    isAllSeasonDefault: true,
+    aliases: [
+      'baganbilash',
+      'bagan bilash',
+      'kagoj ful',
+      'kagoj phul',
+      'bougainvillea',
+      'bouganvillea',
+      'বাগানবিলাস',
+      'কাগজ ফুল',
+      'বাগান বিলাস',
+    ],
+    varietiesBn: [
+      'থাই ডোয়ার্ফ বাগানবিলাস (টবের জন্য সেরা)',
+      'ভ্যারিগেটেড গোল্ডেন গ্লো',
+      'মেরুন ভেলভেট ডাবল পেটাল',
+      'হোয়াইট স্নো ক্যাসকেড',
+      'কমলা সানসেট বাগানবিলাস',
+    ],
+    varietiesEn: [
+      'Thai Dwarf Container Bougainvillea',
+      'Variegated Golden Glow',
+      'Maroon Velvet Double Petal',
+      'White Snow Cascade',
+      'Orange Sunset Bougainvillea',
+    ],
+    recommendedContainerInches: 14,
+    soilSelectionAndMixBn:
+      'বেলে-দোআঁশ মাটি ৫০% + ভার্মিকম্পোস্ট ২৫% + মোটা বালু ও সুরকি ২০% + হাড়ের গুঁড়ো ৫%। পানি নিষ্কাশন দ্রুত হতে হবে।',
+    soilSelectionAndMixEn:
+      '50% sandy-loam + 25% compost + 20% coarse sand/brick grit + 5% bone meal. Swift drainage mandatory.',
+    plantingMethodBn:
+      '১০–১৪ ইঞ্চি টবে পূর্ণ কড়া রোদে (সর্বনিম্ন ৬–৮ ঘণ্টা) রাখুন। রোদ কম হলে ফুল ফুটবে না।',
+    plantingMethodEn:
+      'Plant in a 10–14" container in relentless full rooftop sun (6–8+ hours); shade stops flowering completely.',
+    ongoingCareAndFertilizerBn:
+      'পানি কম দিন! বাগানবিলাসে কম পানি দিলে এবং মাটি শুকালে গাছ বেশি ফুল ফোটায়। বেশি পানি দিলে শুধু পাতা হবে, ফুল হবে না। মাসে একবার পটাশ ও ফসফরাস সার দিন।',
+    ongoingCareAndFertilizerEn:
+      'Water sparingly! Mild drought stress triggers profuse floral bracts; overwatering causes lush leaves with zero flowers. Feed bloom-booster potash monthly.',
+    pruningTechniqueBn:
+      'ফুল ঝরে যাওয়ার পর লম্বা খাড়া ডালগুলো অর্ধেক ছেঁটে দিন এবং বনসাই বা গোল ক্যানোপির আকার দিন। নতুন গজানো প্রতিটি ডালে রঙিন কাগজ ফুলের গুচ্ছ তৈরি হবে।',
+    pruningTechniqueEn:
+      'Hard Tip Pruning: Cut elongated branches back by 50% post-flowering to maintain a tight bonsai/shrub architecture and encourage dense bract clusters on subsequent flushes.',
+    diseaseAndRemediesBn:
+      'ক্যাটারপিলার পাতা খাওয়া শুরু করলে নিম তেল স্প্রে করুন। গোড়ায় যেন কখনোই পানি জমে শিকড় না পচে।',
+    diseaseAndRemediesEn:
+      'Spray neem oil against leaf-eating caterpillars; guard rigorously against wet root rot.',
+    harvestAndPostHarvestBn:
+      'রঙিন ব্র্যাক্টগুলো ডালসহ টবে বা তোড়ায় সাজানোর জন্য কেটে নিন।',
+    harvestAndPostHarvestEn:
+      'Clip colorful bract clusters for dramatic ornamental vases and floral decor.',
   },
 
   {
@@ -977,6 +1506,67 @@ export const BOTANICAL_ENCYCLOPEDIA: BotanicalEncyclopediaEntry[] = [
     harvestAndPostHarvestEn: 'Harvest fresh leaves in the morning after dew dries.'
   },
   {
+    id: 'mint_coriander',
+    canonicalNameBn: 'পুদিনা ও ধনে পাতা',
+    canonicalNameEn: 'Mint & Coriander',
+    scientificName: 'Mentha spicata / Coriandrum sativum',
+    family: 'Lamiaceae / Apiaceae',
+    category: 'herb',
+    isAllSeasonDefault: true,
+    aliases: [
+      'pudina',
+      'dhone',
+      'mint',
+      'coriander',
+      'cilantro',
+      'spearmint',
+      'dhonia',
+      'bilati dhone',
+      'পুদিনা',
+      'ধনে',
+      'ধনে পাতা',
+      'পুদিনা পাতা',
+      'বিলাতি ধনে',
+    ],
+    varietiesBn: [
+      'দেশি সুগন্ধি পুদিনা',
+      'স্পিয়ারমিন্ট (Spearmint)',
+      'বারি ধনে-১ (উচ্চফলনশীল)',
+      'বিলাতি ধনে (Culantro / শালিক শাক)',
+    ],
+    varietiesEn: [
+      'Desi Fragrant Peppermint',
+      'Spearmint Hybrid',
+      'BARI Coriander-1',
+      'Culantro / Wild Sawtooth Coriander',
+    ],
+    recommendedContainerInches: 8,
+    soilSelectionAndMixBn:
+      'উর্বর দোআঁশ মাটি ৫০% + ভার্মিকম্পোস্ট ৪০% + কোকোপিট ১০%। অগভীর চওড়া পাত্রে খুব ভালো জন্মায়।',
+    soilSelectionAndMixEn:
+      '50% Loam + 40% Vermicompost + 10% Coco Peat. Thrives in shallow, wide rectangular window boxes.',
+    plantingMethodBn:
+      '৬–১০ ইঞ্চি চওড়া গামলা বা টবে কাটিং বা বীজ থেকে চাষ করুন। আংশিক রোদ ও উজ্জ্বল আলো পছন্দ করে।',
+    plantingMethodEn:
+      'Propagate from stem cuttings or seeds in shallow wide pots in morning sun/bright shade.',
+    ongoingCareAndFertilizerBn:
+      'মাটি সবসময় হালকা আর্দ্র রাখুন। সপ্তাহে একবার পাতায় পানি স্প্রে করুন এবং হালকা চাল ধোয়া পানি দিন।',
+    ongoingCareAndFertilizerEn:
+      'Keep soil consistently moist; mist foliage weekly and feed diluted rice-wash liquid.',
+    pruningTechniqueBn:
+      'নিয়মিত ডগার ২–৩ ইঞ্চি পাতা কেটে রান্নায় ব্যবহার করুন। এতে নিচ থেকে শত শত নতুন শাখা গজিয়ে গাছ ঘন ঝোপালো হবে। ফুল এলে তা ভেঙে দিন।',
+    pruningTechniqueEn:
+      'Harvest terminal 2–3 inches frequently for culinary use; this breaks apical dominance, making the clump dense and preventing flowering.',
+    diseaseAndRemediesBn:
+      'পাতা হলুদ হওয়া রোধে সরাসরি দুপুর ১২টার কড়া রোদ থেকে সরিয়ে আংশিক ছায়ায় রাখুন।',
+    diseaseAndRemediesEn:
+      'Protect from scorching mid-day sun by moving into filtered light to avoid leaf burn.',
+    harvestAndPostHarvestBn:
+      'প্রয়োজনমতো ডগার কচি পাতা কাঁচি দিয়ে কেটে তাজা ব্যবহার করুন।',
+    harvestAndPostHarvestEn:
+      'Snip fresh tender stems early morning for maximum aromatic flavor.',
+  },
+  {
     id: 'aloe_vera',
     canonicalNameBn: 'ঘৃতকুমারী (অ্যালোভেরা)',
     canonicalNameEn: 'Aloe Vera',
@@ -1057,7 +1647,7 @@ export const BOTANICAL_ENCYCLOPEDIA: BotanicalEncyclopediaEntry[] = [
 ];
 
 // Non-botanical / nonsense words blacklist & heuristics
-const NON_PLANT_NONSENSE_WORDS = new Set([
+export const NON_PLANT_NONSENSE_WORDS = new Set([
   'asdf',
   'qwerty',
   'test',
@@ -1078,7 +1668,48 @@ const NON_PLANT_NONSENSE_WORDS = new Set([
   'none',
   'fake',
   'random',
+  'hjkj',
+  'hjkl',
+  'asdfg',
+  'asdfgh',
+  'zxcv',
+  'foo',
+  'bar',
+  'baz',
+  'dummy',
+  'temp',
+  'demo',
 ]);
+
+export function isGibberishOrNonsense(str: string): boolean {
+  const trimmed = str.trim();
+  if (trimmed.length < 2) return true;
+
+  const norm = str
+    .toLowerCase()
+    .replace(/[^a-z0-9\u0980-\u09FF]/g, '')
+    .trim();
+
+  if (norm.length < 2) return true;
+  if (/^[0-9]+$/.test(norm)) return true;
+  if (NON_PLANT_NONSENSE_WORDS.has(norm)) return true;
+
+  // For Latin text (English/Banglish): check vowel presence and consonant clusters
+  const isPureLatin = /^[a-z]+$/.test(norm);
+  if (isPureLatin) {
+    // If length >= 3 and has NO vowels at all (e.g. "hjkj", "zxcv", "qwr")
+    const hasVowel = /[aeiouy]/.test(norm);
+    if (!hasVowel && norm.length >= 3) return true;
+
+    // 4 or more consecutive consonants (e.g. "dfgh", "bcdf")
+    if (/[bcdfghjklmnpqrstvwxz]{4,}/i.test(norm)) return true;
+
+    // Repeated identical character >= 3 (e.g. "aaa", "zzzz")
+    if (/(.)\1\1/.test(norm)) return true;
+  }
+
+  return false;
+}
 
 function normalizeText(str: string): string {
   return str
@@ -1595,8 +2226,8 @@ export class OnlineBotanicalService {
       category,
       isAllSeasonDefault: true,
       aliases: [trimmed, nameBn, nameEn, scientific],
-      varietiesBn: ['উন্নত হাইব্রিড জাত', 'বারোমাসি কলম জাত', 'অনুমোদিত জাত'],
-      varietiesEn: ['Certified High-Yield Hybrid', 'All-Season Grafted Variety', 'Local Adapted Cultivar'],
+      varietiesBn: [`${nameBn} (উন্নত দেশি)`, `${nameBn} (হাইব্রিড)`, `${nameBn} (বারোমাসি কলম)`],
+      varietiesEn: [`${nameEn} (Local Selected)`, `${nameEn} (F1 Hybrid)`, `${nameEn} (All-Season Graft)`],
       recommendedContainerInches: recContainer,
       soilSelectionAndMixBn: soilBn,
       soilSelectionAndMixEn: soilEn,
@@ -1726,16 +2357,109 @@ export class OnlineBotanicalService {
       }
     }
 
-    // If still empty, use dynamic universal synthesizer
-    if (results.length === 0) {
-      results.push(this.synthesizeBotanicalEntry(trimmed, mapped?.cat));
-    }
-
+    // If no verified Wikipedia agricultural results were found, return empty list
     return results;
   }
 
   /**
+   * Helper to determine if a query specifically targets a variety/cultivar of a plant.
+   */
+  private static findMatchingVariety(
+    entry: BotanicalEncyclopediaEntry,
+    normQuery: string
+  ): { matchedBn?: string; matchedEn?: string } | null {
+  const normBn = normalizeText(entry.canonicalNameBn);
+  const normEn = normalizeText(entry.canonicalNameEn);
+
+  // If query is an exact match for the parent canonical name, ID, or scientific name, it's not a variety query
+  if (
+    normQuery === normBn ||
+    normQuery === normEn ||
+    normQuery === entry.id ||
+    normQuery === normalizeText(entry.scientificName)
+  ) {
+    return null;
+  }
+
+  // If query is just a generic common word of the parent plant (e.g. "গোলাপ" for "গোলাপ ফুল", "মরিচ" for "কাঁচা মরিচ")
+  // and has no other qualifying words, treat it as parent plant
+  const qTokens = normQuery.split(' ').filter((t) => t.length > 0);
+  if (
+    qTokens.length === 1 &&
+    (normBn.includes(normQuery) || normEn.includes(normQuery)) &&
+    !entry.varietiesBn.some((v) => normalizeText(v) === normQuery)
+  ) {
+    return null;
+  }
+
+  // 1. Check varietiesBn
+  for (const vb of entry.varietiesBn) {
+    const normVb = normalizeText(vb);
+    if (
+      normVb === normQuery ||
+      (normQuery.length >= 3 && normVb.includes(normQuery)) ||
+      (normVb.length >= 3 && normQuery.includes(normVb))
+    ) {
+      return { matchedBn: vb };
+    }
+    // Token-based matching: if all tokens of query appear in the variety text
+    if (qTokens.length >= 2 && qTokens.every((tok) => normVb.includes(tok))) {
+      return { matchedBn: vb };
+    }
+    // Distinctive token matching: tokens not in parent name but in variety (e.g. "ডাচ" in "ডাচ লাল গোলাপ")
+    if (qTokens.length >= 1) {
+      const distinctiveTokens = qTokens.filter((tok) => !normBn.includes(tok) && !normEn.includes(tok));
+      if (distinctiveTokens.length > 0 && distinctiveTokens.every((tok) => normVb.includes(tok))) {
+        return { matchedBn: vb };
+      }
+    }
+  }
+
+  // 2. Check varietiesEn
+  for (const ve of entry.varietiesEn) {
+    const normVe = normalizeText(ve);
+    if (
+      normVe === normQuery ||
+      (normQuery.length >= 3 && normVe.includes(normQuery)) ||
+      (normVe.length >= 3 && normQuery.includes(normVe))
+    ) {
+      return { matchedEn: ve };
+    }
+    if (qTokens.length >= 2 && qTokens.every((tok) => normVe.includes(tok))) {
+      return { matchedEn: ve };
+    }
+    if (qTokens.length >= 1) {
+      const distinctiveTokens = qTokens.filter((tok) => !normBn.includes(tok) && !normEn.includes(tok));
+      if (distinctiveTokens.length > 0 && distinctiveTokens.every((tok) => normVe.includes(tok))) {
+        return { matchedEn: ve };
+      }
+    }
+  }
+
+  // 3. Check aliases: if alias matches query and represents a variety rather than the parent plant
+  for (const alias of entry.aliases) {
+    const normAlias = normalizeText(alias);
+    if (
+      (normAlias === normQuery || (normQuery.length >= 3 && normAlias.includes(normQuery))) &&
+      !normBn.includes(normAlias) &&
+      normAlias !== normBn &&
+      normAlias !== normEn
+    ) {
+      const bestVarBn =
+        entry.varietiesBn.find((v) => {
+          const nv = normalizeText(v);
+          return nv.includes(normAlias) || normAlias.includes(nv) || qTokens.some((t) => nv.includes(t));
+        }) || entry.varietiesBn[0];
+      return { matchedBn: bestVarBn };
+    }
+  }
+
+  return null;
+}
+
+  /**
    * 3. Structured Online Plant & Variety Search Engine (Local + Global Internet Cloud)
+   * Resolves plants to their varieties and varieties to their parent plants with accurate botanical taxonomy.
    */
   static async searchEncyclopediaOnline(
     query: string
@@ -1744,49 +2468,126 @@ export class OnlineBotanicalService {
     if (!trimmed) {
       return BOTANICAL_ENCYCLOPEDIA;
     }
+
+    // Step 0: Immediate rejection of gibberish / non-plant nonsense words (e.g. "hjkj", "asdf")
+    if (isGibberishOrNonsense(trimmed)) {
+      return [];
+    }
+
     const norm = normalizeText(trimmed);
+    const results: BotanicalEncyclopediaEntry[] = [];
+    const seenIds = new Set<string>();
 
-    // Step 1: Local Database Matches
-    const localMatches = BOTANICAL_ENCYCLOPEDIA.filter((entry) => {
+    // Step 1: Direct Parent Plant Matches (Exact match on canonical name or ID)
+    for (const entry of BOTANICAL_ENCYCLOPEDIA) {
+      const normBn = normalizeText(entry.canonicalNameBn);
+      const normEn = normalizeText(entry.canonicalNameEn);
+      const normSci = normalizeText(entry.scientificName);
+
       if (
-        normalizeText(entry.canonicalNameBn).includes(norm) ||
-        normalizeText(entry.canonicalNameEn).includes(norm) ||
-        normalizeText(entry.scientificName).includes(norm)
+        norm === normBn ||
+        norm === normEn ||
+        norm === entry.id ||
+        norm === normSci
       ) {
-        return true;
+        seenIds.add(entry.id);
+        results.push({
+          ...entry,
+          isVarietyMatch: false,
+          parentPlantBn: entry.canonicalNameBn,
+          parentPlantEn: entry.canonicalNameEn,
+        });
       }
-      return entry.aliases.some((alias) => {
-        const na = normalizeText(alias);
-        return (
-          na.includes(norm) ||
-          norm.includes(na) ||
-          levenshteinDistance(norm, na) <= 2
+    }
+
+    // Step 2: High-Priority Variety Matching
+    // When a user searches for a specific variety (e.g. "হিমসাগর", "কাটিমন", "চায়না ৩", "বোম্বাই লিচু", "কালো জাম", "বারি মাল্টা-১", "ডাচ গোলাপ")
+    for (const entry of BOTANICAL_ENCYCLOPEDIA) {
+      if (seenIds.has(entry.id)) continue;
+
+      const varMatch = this.findMatchingVariety(entry, norm);
+      if (varMatch) {
+        seenIds.add(entry.id);
+        results.push({
+          ...entry,
+          isVarietyMatch: true,
+          matchedVarietyNameBn: varMatch.matchedBn || entry.varietiesBn[0],
+          matchedVarietyNameEn: varMatch.matchedEn || entry.varietiesEn[0],
+          parentPlantBn: entry.canonicalNameBn,
+          parentPlantEn: entry.canonicalNameEn,
+        });
+      }
+    }
+
+    // Step 3: Generic Parent Plant Matching (Canonical Names, Scientific Name, Aliases)
+    for (const entry of BOTANICAL_ENCYCLOPEDIA) {
+      if (seenIds.has(entry.id)) continue;
+
+      const normBn = normalizeText(entry.canonicalNameBn);
+      const normEn = normalizeText(entry.canonicalNameEn);
+      const normSci = normalizeText(entry.scientificName);
+
+      const matchesParent =
+        normBn.includes(norm) ||
+        normEn.includes(norm) ||
+        normSci.includes(norm) ||
+        entry.aliases.some((alias) => {
+          const na = normalizeText(alias);
+          return (
+            na === norm ||
+            na.includes(norm) ||
+            norm.includes(na) ||
+            (norm.length >= 4 && levenshteinDistance(norm, na) <= 2)
+          );
+        });
+
+      if (matchesParent) {
+        seenIds.add(entry.id);
+        results.push({
+          ...entry,
+          isVarietyMatch: false,
+          parentPlantBn: entry.canonicalNameBn,
+          parentPlantEn: entry.canonicalNameEn,
+        });
+      }
+    }
+
+    // Step 3: Check Bangla Phonetic Plant Map
+    if (results.length === 0) {
+      const normKey = norm.replace(/\s+/g, '');
+      const mapped = BANGLA_PHONETIC_PLANT_MAP[normKey];
+      if (mapped) {
+        const found = BOTANICAL_ENCYCLOPEDIA.find(
+          (e) =>
+            e.canonicalNameBn.includes(mapped.bn) ||
+            mapped.bn.includes(e.canonicalNameBn) ||
+            e.canonicalNameEn.toLowerCase().includes(mapped.en.toLowerCase())
         );
-      });
-    });
-
-    // Step 2: Query Global Online Internet Botanical Repositories
-    const onlineMatches = await this.fetchGlobalOnlinePlantResults(trimmed);
-
-    // Step 3: Deduplicate and merge results
-    const combined: BotanicalEncyclopediaEntry[] = [...localMatches];
-    const seenNames = new Set(
-      localMatches.map((m) => m.canonicalNameBn.toLowerCase())
-    );
-
-    for (const online of onlineMatches) {
-      const key = online.canonicalNameBn.toLowerCase();
-      if (!seenNames.has(key)) {
-        seenNames.add(key);
-        combined.push(online);
+        if (found && !seenIds.has(found.id)) {
+          seenIds.add(found.id);
+          results.push({
+            ...found,
+            isVarietyMatch: false,
+            parentPlantBn: found.canonicalNameBn,
+            parentPlantEn: found.canonicalNameEn,
+          });
+        }
       }
     }
 
-    if (combined.length === 0) {
-      combined.push(this.synthesizeBotanicalEntry(trimmed));
+    // Step 4: Live Global Wikipedia Query (Only for genuine botanical searches)
+    if (results.length === 0 && trimmed.length >= 3) {
+      const onlineMatches = await this.fetchGlobalOnlinePlantResults(trimmed);
+      for (const online of onlineMatches) {
+        if (!seenIds.has(online.id)) {
+          seenIds.add(online.id);
+          results.push(online);
+        }
+      }
     }
 
-    return combined;
+    // Return genuine results (empty if none found)
+    return results;
   }
 
   /**

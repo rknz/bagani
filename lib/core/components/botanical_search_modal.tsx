@@ -126,8 +126,14 @@ export const BotanicalSearchModal: React.FC<BotanicalSearchModalProps> = ({
 
       if (results.length > 0) {
         setSelectedEntry(results[0]);
+        const initialVar = results[0].isVarietyMatch
+          ? (lang === 'bn' ? results[0].matchedVarietyNameBn : results[0].matchedVarietyNameEn)
+          : (lang === 'bn' ? results[0].varietiesBn[0] : results[0].varietiesEn[0]);
         setSelectedVariety(
-          lang === 'bn' ? results[0].varietiesBn[0] || '' : results[0].varietiesEn[0] || ''
+          initialVar ||
+            (lang === 'bn'
+              ? results[0].varietiesBn[0] || ''
+              : results[0].varietiesEn[0] || '')
         );
       } else {
         setSelectedEntry(null);
@@ -152,8 +158,14 @@ export const BotanicalSearchModal: React.FC<BotanicalSearchModalProps> = ({
 
   const handleSelectEntry = (entry: BotanicalEncyclopediaEntry) => {
     setSelectedEntry(entry);
+    const initialVar = entry.isVarietyMatch
+      ? (lang === 'bn' ? entry.matchedVarietyNameBn : entry.matchedVarietyNameEn)
+      : (lang === 'bn' ? entry.varietiesBn[0] : entry.varietiesEn[0]);
     setSelectedVariety(
-      lang === 'bn' ? entry.varietiesBn[0] || '' : entry.varietiesEn[0] || ''
+      initialVar ||
+        (lang === 'bn'
+          ? entry.varietiesBn[0] || ''
+          : entry.varietiesEn[0] || '')
     );
   };
 
@@ -325,27 +337,37 @@ export const BotanicalSearchModal: React.FC<BotanicalSearchModalProps> = ({
                 ]}
                 accessibilityLabel={lang === 'bn' ? 'অনুসন্ধান করুন' : 'Search'}
               >
-                <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+                <Svg width={15} height={15} viewBox="0 0 24 24" fill="none">
                   <Circle cx="11" cy="11" r="7" stroke="#FFFFFF" strokeWidth="2.2" />
                   <Path d="M16.5 16.5L21 21" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" />
                 </Svg>
+                <Text
+                  style={[
+                    styles.searchGoBtnText,
+                    { fontFamily: fontFam },
+                  ]}
+                >
+                  {lang === 'bn' ? 'খুঁজুন' : 'Search'}
+                </Text>
               </TouchableOpacity>
             </View>
 
             {/* Quick Keyword Chips */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 8 }}>
               {[
+                'আম (হিমসাগর)',
+                'লিচু (চায়না-৩)',
+                'মাল্টা (বারি মাল্টা-১)',
+                'কালো জাম',
+                'কুল (আপেল কুল)',
                 'গোলাপ (Rose)',
                 'গাঁদা (Marigold)',
                 'জবা (Hibiscus)',
                 'স্ট্রবেরি (Strawberry)',
                 'ড্রাগন ফল',
-                'আম (Mango)',
-                'মাল্টা (Malta)',
-                'পেয়ারা (Guava)',
                 'টমেটো (Tomato)',
+                'মরিচ (Chili)',
                 'লাউ ও শসা',
-                'ক্যাকটাস (Cactus)',
                 'তুলসী (Tulsi)',
               ].map((chip, idx) => (
                 <TouchableOpacity
@@ -447,104 +469,184 @@ export const BotanicalSearchModal: React.FC<BotanicalSearchModalProps> = ({
             contentContainerStyle={styles.scrollBody}
             showsVerticalScrollIndicator={false}
           >
-            {/* Matching Plant Species Row */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <Text
+            {/* Empty State Display (When no results found) */}
+            {displayedResults.length === 0 && !isLoading ? (
+              <View
                 style={[
-                  styles.sectionLabel,
-                  { color: theme.textPrimary, fontFamily: fontFam },
+                  styles.emptyStateBox,
+                  {
+                    backgroundColor: theme.surfaceElevated,
+                    borderColor: theme.border,
+                  },
                 ]}
               >
-                🌱{' '}
-                {lang === 'bn'
-                  ? `অনলাইন ভেরিফাইড ফলাফল (${displayedResults.length}টি প্রজাতি পাওয়া গেছে):`
-                  : `Online Verified Results (${displayedResults.length} Species):`}
-              </Text>
-              {searchResults.length > 0 && (
-                <Text style={{ fontSize: 11, color: theme.textSecondary, fontFamily: fontFam }}>
-                  {lang === 'bn' ? 'ট্যাপ করে বিস্তারিত দেখুন' : 'Tap to inspect details'}
+                <View style={[styles.emptyIconCircle, { backgroundColor: theme.surface }]}>
+                  <Text style={{ fontSize: 32 }}>🔍</Text>
+                </View>
+                <Text
+                  style={[
+                    styles.emptyTitle,
+                    { color: theme.textPrimary, fontFamily: fontFam },
+                  ]}
+                >
+                  {lang === 'bn'
+                    ? 'কোনো উদ্ভিদ বা জাত পাওয়া যায়নি'
+                    : 'No Plant or Cultivar Found'}
                 </Text>
-              )}
-            </View>
-
-            {/* Horizontal Result Cards Carousel with Photos */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 14 }}>
-              <View style={{ flexDirection: 'row', gap: 10 }}>
-                {displayedResults.map((entry) => {
-                  const isSelected = selectedEntry?.id === entry.id;
-                  return (
+                <Text
+                  style={[
+                    styles.emptySubtitle,
+                    { color: theme.textSecondary, fontFamily: fontFam },
+                  ]}
+                >
+                  {lang === 'bn'
+                    ? 'আপনার অনুসন্ধানকৃত শব্দের সাথে কোনো বাস্তব উদ্ভিদ বা জাতের মিল পাওয়া যায়নি। দয়া করে সঠিক উদ্ভিদের নাম বা জাত লিখুন (যেমন: আম, হিমসাগর, লিচু, চায়না-৩, গোলাপ, টমেটো, মাল্টা) অথবা নিচের যেকোনো একটিতে ট্যাপ করুন:'
+                    : 'No matching botanical species or cultivar found. Please verify spelling (e.g. Mango, Himsagar, Litchi, China-3, Rose, Tomato) or choose from the suggestions below:'}
+                </Text>
+                <View style={styles.emptySuggestionsRow}>
+                  {[
+                    { label: 'আম (হিমসাগর, আম্রপালি)', query: 'আম' },
+                    { label: 'লিচু (বোম্বাই, চায়না-৩)', query: 'লিচু' },
+                    { label: 'মাল্টা (বারি মাল্টা-১)', query: 'মাল্টা' },
+                    { label: 'কালোজাম (দেশি মিষ্টি)', query: 'কালোজাম' },
+                    { label: 'কুল ও বরই (আপেল কুল)', query: 'কুল' },
+                    { label: 'গোলাপ (ডাচ, কাশ্মীরি)', query: 'গোলাপ' },
+                    { label: 'টমেটো (বারি-১৪)', query: 'টমেটো' },
+                    { label: 'মরিচ (নাগা মরিচ)', query: 'মরিচ' },
+                    { label: 'ড্রাগন ফল', query: 'ড্রাগন' },
+                  ].map((sug, sIdx) => (
                     <TouchableOpacity
-                      key={entry.id}
-                      activeOpacity={0.82}
-                      onPress={() => handleSelectEntry(entry)}
+                      key={sIdx}
+                      onPress={() => {
+                        setSearchQuery(sug.query);
+                        executeGlobalSearch(sug.query);
+                      }}
                       style={[
-                        styles.speciesCard,
+                        styles.emptySugChip,
                         {
-                          backgroundColor: isSelected
-                            ? theme.selectedSurface
-                            : theme.surfaceElevated,
-                          borderColor: isSelected ? theme.primary : theme.border,
+                          backgroundColor: theme.surface,
+                          borderColor: theme.primary,
                         },
                       ]}
                     >
-                      {entry.thumbnailUrl ? (
-                        <Image
-                          source={{ uri: entry.thumbnailUrl }}
-                          style={styles.speciesCardThumb}
-                          resizeMode="cover"
-                        />
-                      ) : (
-                        <View style={[styles.speciesCardFallbackThumb, { backgroundColor: theme.surface }]}>
-                          <Text style={{ fontSize: 28 }}>{getCategoryEmoji(entry.category)}</Text>
-                        </View>
-                      )}
-
-                      <View style={{ padding: 8, flex: 1, justifyContent: 'space-between' }}>
-                        <View>
-                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 2 }}>
-                            <Text style={{ fontSize: 11 }}>{getCategoryEmoji(entry.category)}</Text>
-                            <Text
-                              numberOfLines={1}
-                              style={{
-                                color: isSelected ? theme.primary : theme.textPrimary,
-                                fontWeight: '700',
-                                fontSize: 13,
-                                fontFamily: fontFam,
-                              }}
-                            >
-                              {lang === 'bn' ? entry.canonicalNameBn : entry.canonicalNameEn}
-                            </Text>
-                          </View>
-                          <Text
-                            numberOfLines={1}
-                            style={{
-                              color: theme.textSecondary,
-                              fontSize: 10.5,
-                              fontStyle: 'italic',
-                            }}
-                          >
-                            {entry.scientificName}
-                          </Text>
-                        </View>
-
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
-                          <View
-                            style={[
-                              styles.miniVerifiedBadge,
-                              { backgroundColor: theme.primary + '18' },
-                            ]}
-                          >
-                            <Text style={{ color: theme.primary, fontSize: 9.5, fontWeight: '700' }}>
-                              ✓ {getCategoryLabel(entry.category)}
-                            </Text>
-                          </View>
-                        </View>
-                      </View>
+                      <Text
+                        style={{
+                          color: theme.primary,
+                          fontSize: 12,
+                          fontWeight: '700',
+                          fontFamily: fontFam,
+                        }}
+                      >
+                        🌱 {sug.label}
+                      </Text>
                     </TouchableOpacity>
-                  );
-                })}
+                  ))}
+                </View>
               </View>
-            </ScrollView>
+            ) : null}
+
+            {displayedResults.length > 0 ? (
+              <>
+                {/* Matching Plant Species Row */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <Text
+                    style={[
+                      styles.sectionLabel,
+                      { color: theme.textPrimary, fontFamily: fontFam },
+                    ]}
+                  >
+                    🌱{' '}
+                    {lang === 'bn'
+                      ? `অনলাইন ভেরিফাইড ফলাফল (${displayedResults.length}টি প্রজাতি পাওয়া গেছে):`
+                      : `Online Verified Results (${displayedResults.length} Species):`}
+                  </Text>
+                  {searchResults.length > 0 && (
+                    <Text style={{ fontSize: 11, color: theme.textSecondary, fontFamily: fontFam }}>
+                      {lang === 'bn' ? 'ট্যাপ করে বিস্তারিত দেখুন' : 'Tap to inspect details'}
+                    </Text>
+                  )}
+                </View>
+
+                {/* Horizontal Result Cards Carousel with Photos */}
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 14 }}>
+                  <View style={{ flexDirection: 'row', gap: 10 }}>
+                    {displayedResults.map((entry) => {
+                      const isSelected = selectedEntry?.id === entry.id;
+                      return (
+                        <TouchableOpacity
+                          key={entry.id}
+                          activeOpacity={0.82}
+                          onPress={() => handleSelectEntry(entry)}
+                          style={[
+                            styles.speciesCard,
+                            {
+                              backgroundColor: isSelected
+                                ? theme.selectedSurface
+                                : theme.surfaceElevated,
+                              borderColor: isSelected ? theme.primary : theme.border,
+                            },
+                          ]}
+                        >
+                          {entry.thumbnailUrl ? (
+                            <Image
+                              source={{ uri: entry.thumbnailUrl }}
+                              style={styles.speciesCardThumb}
+                              resizeMode="cover"
+                            />
+                          ) : (
+                            <View style={[styles.speciesCardFallbackThumb, { backgroundColor: theme.surface }]}>
+                              <Text style={{ fontSize: 28 }}>{getCategoryEmoji(entry.category)}</Text>
+                            </View>
+                          )}
+
+                          <View style={{ padding: 8, flex: 1, justifyContent: 'space-between' }}>
+                            <View>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 2 }}>
+                                <Text style={{ fontSize: 11 }}>{getCategoryEmoji(entry.category)}</Text>
+                                <Text
+                                  numberOfLines={1}
+                                  style={{
+                                    color: isSelected ? theme.primary : theme.textPrimary,
+                                    fontWeight: '700',
+                                    fontSize: 13,
+                                    fontFamily: fontFam,
+                                  }}
+                                >
+                                  {lang === 'bn' ? entry.canonicalNameBn : entry.canonicalNameEn}
+                                </Text>
+                              </View>
+                              <Text
+                                numberOfLines={1}
+                                style={{
+                                  color: theme.textSecondary,
+                                  fontSize: 10.5,
+                                  fontStyle: 'italic',
+                                }}
+                              >
+                                {entry.scientificName}
+                              </Text>
+                            </View>
+
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
+                              <View
+                                style={[
+                                  styles.miniVerifiedBadge,
+                                  { backgroundColor: theme.primary + '18' },
+                                ]}
+                              >
+                                <Text style={{ color: theme.primary, fontSize: 9.5, fontWeight: '700' }}>
+                                  ✓ {getCategoryLabel(entry.category)}
+                                </Text>
+                              </View>
+                            </View>
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                </ScrollView>
+              </>
+            ) : null}
 
             {/* Selected Entry Detailed Structured Guide (Google-Style Presentation) */}
             {selectedEntry ? (
@@ -557,6 +659,67 @@ export const BotanicalSearchModal: React.FC<BotanicalSearchModalProps> = ({
                   },
                 ]}
               >
+                {/* 🌟 Variety & Parent Plant Origin Banner */}
+                {selectedEntry.isVarietyMatch ? (
+                  <View
+                    style={[
+                      styles.varietyMatchBanner,
+                      {
+                        backgroundColor: theme.selectedSurface,
+                        borderColor: theme.primary,
+                      },
+                    ]}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                      <Text style={{ fontSize: 16 }}>🌟</Text>
+                      <Text
+                        style={[
+                          styles.varietyMatchTitle,
+                          { color: theme.primary, fontFamily: fontFam },
+                        ]}
+                      >
+                        {lang === 'bn'
+                          ? 'জাত ও মূল উদ্ভিদ পরিচিতি'
+                          : 'Cultivar & Parent Plant Identity'}
+                      </Text>
+                      <View style={[styles.verifiedTagBadge, { backgroundColor: theme.primary }]}>
+                        <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '800' }}>
+                          {lang === 'bn' ? 'অনুমোদিত জাত' : 'Verified Cultivar'}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text
+                      style={[
+                        styles.varietyMatchText,
+                        { color: theme.textPrimary, fontFamily: fontFam },
+                      ]}
+                    >
+                      {lang === 'bn'
+                        ? `💡 "${selectedEntry.matchedVarietyNameBn || selectedVariety}" হলো ${selectedEntry.canonicalNameBn} (${selectedEntry.scientificName}) উদ্ভিদের একটি সুপরিচিত ও অনুমোদিত জাত।`
+                        : `💡 "${selectedEntry.matchedVarietyNameEn || selectedVariety}" is an authentic cultivated variety of ${selectedEntry.canonicalNameEn} (${selectedEntry.scientificName}).`}
+                    </Text>
+                    <View style={styles.taxonomyChipsRow}>
+                      <View style={[styles.taxonomyChip, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                        <Text style={{ color: theme.textSecondary, fontSize: 11, fontFamily: fontFam }}>
+                          {lang === 'bn' ? `উদ্ভিদের ধরন: ${getCategoryLabel(selectedEntry.category)}` : `Category: ${getCategoryLabel(selectedEntry.category)}`}
+                        </Text>
+                      </View>
+                      {selectedEntry.family ? (
+                        <View style={[styles.taxonomyChip, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                          <Text style={{ color: theme.textSecondary, fontSize: 11, fontFamily: fontFam }}>
+                            গোত্র / Family: {selectedEntry.family}
+                          </Text>
+                        </View>
+                      ) : null}
+                      <View style={[styles.taxonomyChip, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                        <Text style={{ color: theme.textSecondary, fontSize: 11, fontStyle: 'italic' }}>
+                          {selectedEntry.scientificName}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                ) : null}
+
                 {/* Visual Header Banner with Plant Image & Quick Action */}
                 <View style={styles.bannerRow}>
                   {selectedEntry.thumbnailUrl ? (
@@ -668,8 +831,8 @@ export const BotanicalSearchModal: React.FC<BotanicalSearchModalProps> = ({
                   >
                     🏷️{' '}
                     {lang === 'bn'
-                      ? 'অনলাইন অনুমোদিত উন্নত জাতসমূহ (Certified Varieties):'
-                      : 'Available Certified Varieties:'}
+                      ? `অনলাইন অনুমোদিত উন্নত জাতসমূহ (${selectedEntry.varietiesBn.length}টি জাত):`
+                      : `Available Cultivars & Varieties (${selectedEntry.varietiesEn.length} Varieties):`}
                   </Text>
                   <View style={styles.varietyChipsWrap}>
                     {(lang === 'bn'
@@ -1035,10 +1198,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   searchGoBtn: {
-    width: 42,
-    height: 42,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 6,
+    height: 42,
+    paddingHorizontal: 14,
     borderRadius: 10,
     flexShrink: 0,
   },
@@ -1194,5 +1359,77 @@ const styles = StyleSheet.create({
   guideText: {
     fontSize: 12.5,
     lineHeight: 19,
+  },
+  varietyMatchBanner: {
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    gap: 6,
+    marginBottom: 4,
+  },
+  varietyMatchTitle: {
+    fontSize: 13.5,
+    fontWeight: '800',
+  },
+  verifiedTagBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  varietyMatchText: {
+    fontSize: 12.5,
+    lineHeight: 18,
+    fontWeight: '600',
+  },
+  taxonomyChipsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 4,
+  },
+  taxonomyChip: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  emptyStateBox: {
+    padding: 24,
+    borderRadius: 14,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    marginVertical: 10,
+  },
+  emptyIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    fontSize: 12.5,
+    lineHeight: 18,
+    textAlign: 'center',
+  },
+  emptySuggestionsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 6,
+  },
+  emptySugChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 14,
+    borderWidth: 1,
   },
 });
