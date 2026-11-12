@@ -45,6 +45,11 @@ import {
   ExaminedPart,
   ScanMode,
 } from '../../services/ai_scanner_service';
+import { BotanicalSearchModal } from '../../core/components/botanical_search_modal';
+import {
+  BotanicalEncyclopediaEntry,
+  OnlineBotanicalService,
+} from '../../services/online_botanical_service';
 
 interface ScannerScreenProps {
   theme: AppThemeColors;
@@ -115,10 +120,36 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
 }) => {
   const [scanMode, setScanMode] = useState<ScanMode>('diagnose');
   const [examinedPart, setExaminedPart] = useState<ExaminedPart>('leaf');
-  const [activePlantHint, setActivePlantHint] = useState<string>('গোলাপ');
+  const [activePlantHint, setActivePlantHint] = useState<string>('');
   const [plantQueryInput, setPlantQueryInput] = useState<string>('');
   const [targetPlantId, setTargetPlantId] = useState<string>(plants[0]?.id || '');
   const [capturedImageUri, setCapturedImageUri] = useState<string | null>(null);
+
+  // Live Botanical Autocomplete & Search Modal States
+  const [botanicalSearchModalOpen, setBotanicalSearchModalOpen] = useState<boolean>(false);
+  const [liveSearchResults, setLiveSearchResults] = useState<BotanicalEncyclopediaEntry[]>([]);
+  const [isSearchingLive, setIsSearchingLive] = useState<boolean>(false);
+
+  // Live debounce botanical search when typing in search input
+  useEffect(() => {
+    const q = plantQueryInput.trim();
+    if (!q) {
+      setLiveSearchResults([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        setIsSearchingLive(true);
+        const results = await OnlineBotanicalService.searchEncyclopediaOnline(q);
+        setLiveSearchResults(results.slice(0, 5));
+      } catch (err) {
+        console.warn('Live search error', err);
+      } finally {
+        setIsSearchingLive(false);
+      }
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [plantQueryInput]);
 
   const displayedSuggestions = useMemo(() => {
     const q = plantQueryInput.trim().toLowerCase();
@@ -166,9 +197,11 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
     }
   }, [cameraFacing]);
 
-  // Run initial analysis on mount
+  // Run initial analysis only if plant hint is preset or after user action
   useEffect(() => {
-    executeAnalysis(activePlantHint, examinedPart, scanMode);
+    if (activePlantHint) {
+      executeAnalysis(activePlantHint, examinedPart, scanMode);
+    }
   }, []);
 
   const startLiveCamera = async () => {
@@ -664,8 +697,79 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
             </TouchableOpacity>
           </View>
 
+          {/* Live Matching Botanical Species & Varieties (Google-Style Knowledge Graph) */}
+          {liveSearchResults.length > 0 && (
+            <View style={{ marginTop: 10, gap: 8 }}>
+              <Text style={[styles.fieldLabel, { color: theme.primary, fontFamily: fontFam, fontWeight: '700' }]}>
+                🌿 {lang === 'bn' ? 'শনাক্তকৃত প্রজাতি ও জাতসমূহ (ট্যাপ করে নির্বাচন করুন):' : 'Identified Botanical Species & Cultivars:'}
+              </Text>
+              {liveSearchResults.map((entry) => {
+                const isVar = entry.isVarietyMatch;
+                const matchedVar = lang === 'bn' ? entry.matchedVarietyNameBn : entry.matchedVarietyNameEn;
+                const parentName = lang === 'bn' ? entry.canonicalNameBn : entry.canonicalNameEn;
+                const catLabel =
+                  entry.category === 'flower'
+                    ? (lang === 'bn' ? '🌸 ফুল' : '🌸 Flower')
+                    : entry.category === 'fruit'
+                    ? (lang === 'bn' ? '🍋 ফল' : '🍋 Fruit')
+                    : entry.category === 'vegetable'
+                    ? (lang === 'bn' ? '🥦 সবজি' : '🥦 Vegetable')
+                    : (lang === 'bn' ? '🌿 ভেষজ' : '🌿 Herb');
+
+                return (
+                  <TouchableOpacity
+                    key={entry.id + (matchedVar || '')}
+                    onPress={() => {
+                      const selPlant = isVar ? `${matchedVar} (${parentName})` : parentName;
+                      setActivePlantHint(parentName);
+                      setPlantQueryInput(parentName);
+                      executeAnalysis(parentName, examinedPart, scanMode);
+                    }}
+                    activeOpacity={0.8}
+                    style={{
+                      backgroundColor: theme.surfaceElevated,
+                      borderColor: theme.border,
+                      borderWidth: 1,
+                      borderRadius: 12,
+                      padding: 10,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 10,
+                    }}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                        <Text style={{ fontSize: 13.5, fontWeight: '800', color: theme.textPrimary, fontFamily: fontFam }}>
+                          {isVar ? matchedVar : parentName}
+                        </Text>
+                        <View style={{ backgroundColor: theme.selectedSurface, paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8 }}>
+                          <Text style={{ fontSize: 10.5, color: theme.primary, fontWeight: '700' }}>{catLabel}</Text>
+                        </View>
+                      </View>
+                      <Text style={{ fontSize: 11.5, color: theme.textSecondary, fontFamily: fontFam, marginTop: 2 }}>
+                        {isVar
+                          ? (lang === 'bn'
+                              ? `মূল উদ্ভিদ: ${parentName} • বৈজ্ঞানিক নাম: ${entry.scientificName}`
+                              : `Parent: ${entry.canonicalNameEn} • Scientific: ${entry.scientificName}`)
+                          : (lang === 'bn'
+                              ? `প্রজাতি: ${entry.scientificName} • জাত: ${entry.varietiesBn.slice(0, 3).join(', ')}...`
+                              : `Species: ${entry.scientificName} • Varieties: ${entry.varietiesEn.slice(0, 3).join(', ')}...`)}
+                      </Text>
+                    </View>
+                    <View style={{ backgroundColor: theme.primary, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 }}>
+                      <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '700', fontFamily: fontFam }}>
+                        {lang === 'bn' ? 'বাছাই' : 'Select'}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
+
           {/* Quick & Live Search Suggestions (Always Visible Above Keyboard) */}
-          <Text style={[styles.fieldLabel, { color: theme.textSecondary, fontFamily: fontFam, marginTop: 8 }]}>
+          <Text style={[styles.fieldLabel, { color: theme.textSecondary, fontFamily: fontFam, marginTop: 10 }]}>
             {plantQueryInput.trim()
               ? (lang === 'bn' ? 'সংশ্লিষ্ট উদ্ভিদ সাজেশন (ট্যাপ করুন):' : 'Matching Plant Suggestions:')
               : (lang === 'bn' ? 'জনপ্রিয় উদ্ভিদ সাজেশন (ট্যাপ করে দ্রুত নির্বাচন করুন):' : 'Popular Plant Suggestions:')}
@@ -705,6 +809,32 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
               );
             })}
           </ScrollView>
+
+          {/* Open Full Google-Style Botanical Knowledge Base Modal Button */}
+          <TouchableOpacity
+            onPress={() => setBotanicalSearchModalOpen(true)}
+            activeOpacity={0.82}
+            style={{
+              marginTop: 10,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              paddingVertical: 10,
+              paddingHorizontal: 12,
+              backgroundColor: theme.selectedSurface,
+              borderRadius: 10,
+              borderWidth: 1,
+              borderColor: theme.primary,
+            }}
+          >
+            <Text style={{ fontSize: 16 }}>🌐</Text>
+            <Text style={{ color: theme.primary, fontSize: 12.5, fontWeight: '700', fontFamily: fontFam }}>
+              {lang === 'bn'
+                ? 'গ্লোবাল বোটানিক্যাল ডাটাবেজে বিস্তারিত খুঁজুন →'
+                : 'Search Global Botanical Encyclopedia →'}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Card 3: Camera Capture, Photo Picker & Examined Part */}
@@ -1424,7 +1554,76 @@ export const ScannerScreen: React.FC<ScannerScreenProps> = ({
             )}
           </View>
         )}
+
+        {/* Empty / Welcome Guide Card if no scan result yet */}
+        {!scanResult && (
+          <View
+            style={[
+              styles.mainCard,
+              {
+                backgroundColor: theme.surface,
+                borderColor: theme.border,
+                alignItems: 'center',
+                paddingVertical: 26,
+                paddingHorizontal: 16,
+              },
+            ]}
+          >
+            <View
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: 32,
+                backgroundColor: theme.selectedSurface,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 10,
+              }}
+            >
+              <Text style={{ fontSize: 32 }}>🌱</Text>
+            </View>
+            <Text
+              style={[
+                styles.cardHeading,
+                { color: theme.textPrimary, fontFamily: fontFam, textAlign: 'center', marginBottom: 6 },
+              ]}
+            >
+              {lang === 'bn'
+                ? 'গাছের পাতার ছবি তুলুন অথবা উদ্ভিদ নির্বাচন করুন'
+                : 'Capture Leaf Photo or Select Plant'}
+            </Text>
+            <Text
+              style={{
+                color: theme.textSecondary,
+                fontFamily: fontFam,
+                textAlign: 'center',
+                fontSize: 12.5,
+                lineHeight: 18,
+                maxWidth: 440,
+              }}
+            >
+              {lang === 'bn'
+                ? 'ক্যামেরা দিয়ে আক্রান্ত পাতা বা ফলের স্পষ্ট ছবি তুলে তাৎক্ষণিক এআই রোগ নির্ণয় করুন অথবা উপরের বক্সে যেকোনো গাছের নাম লিখে বৈজ্ঞানিক জাত ও জৈব চিকিৎসা জানুন।'
+                : 'Capture a photo of an affected leaf for instant AI pathology diagnosis, or search any plant or variety name above.'}
+            </Text>
+          </View>
+        )}
       </View>
+
+      {/* Global Botanical Knowledge & Variety Search Modal */}
+      <BotanicalSearchModal
+        visible={botanicalSearchModalOpen}
+        onClose={() => setBotanicalSearchModalOpen(false)}
+        theme={theme}
+        lang={lang}
+        initialQuery={plantQueryInput}
+        onSelectPlantToAdd={(preset) => {
+          setBotanicalSearchModalOpen(false);
+          setActivePlantHint(preset.nameBn);
+          setPlantQueryInput(preset.nameBn);
+          executeAnalysis(preset.nameBn, examinedPart, scanMode);
+        }}
+      />
     </ScrollView>
   );
 };

@@ -19,6 +19,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { APP_CONFIG } from '../../core/constants/app_constants';
@@ -124,6 +125,10 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   lang,
 }) => {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const isCompact = windowHeight < 760;
+  const isUltraCompact = windowHeight < 680;
+
   const fontFam =
     lang === 'bn'
       ? APP_TYPOGRAPHY.fontFamilyBengali
@@ -161,7 +166,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         <View
           style={[
             styles.topHeader,
-            { borderBottomColor: theme.border, backgroundColor: theme.surface },
+            {
+              borderBottomColor: theme.border,
+              backgroundColor: theme.surface,
+              paddingVertical: isCompact ? 8 : 12,
+            },
           ]}
         >
           {/* Logo & App Brand */}
@@ -196,7 +205,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         {/* Scrollable Wizard Card */}
         <ScrollView
           style={{ flex: 1 }}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            {
+              padding: isCompact ? 10 : 16,
+              justifyContent: isCompact ? 'flex-start' : 'center',
+              flexGrow: 1,
+            },
+          ]}
           showsVerticalScrollIndicator={false}
         >
           <View
@@ -205,6 +221,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               {
                 backgroundColor: theme.cardBackground,
                 borderColor: theme.border,
+                maxWidth: Math.min(windowWidth - 20, 580),
               },
             ]}
           >
@@ -212,7 +229,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             <View
               style={[
                 styles.vibrantBanner,
-                { backgroundColor: activeSlide.gradientColors[0] },
+                {
+                  backgroundColor: activeSlide.gradientColors[0],
+                  paddingVertical: isUltraCompact ? 10 : isCompact ? 14 : 24,
+                  gap: isCompact ? 6 : 10,
+                },
               ]}
             >
               <View style={styles.bannerBadgePill}>
@@ -221,20 +242,32 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 </Text>
               </View>
 
-              <View style={styles.largeIconCircle}>
-                <Text style={{ fontSize: 44 }}>{activeSlide.icon}</Text>
+              <View
+                style={[
+                  styles.largeIconCircle,
+                  {
+                    width: isUltraCompact ? 46 : isCompact ? 56 : 72,
+                    height: isUltraCompact ? 46 : isCompact ? 56 : 72,
+                    borderRadius: isUltraCompact ? 23 : isCompact ? 28 : 36,
+                    marginVertical: isCompact ? 2 : 4,
+                  },
+                ]}
+              >
+                <Text style={{ fontSize: isUltraCompact ? 26 : isCompact ? 32 : 42 }}>
+                  {activeSlide.icon}
+                </Text>
               </View>
 
-              <Text style={[styles.bannerTitle, { fontFamily: fontFam }]}>
+              <Text style={[styles.bannerTitle, { fontFamily: fontFam, fontSize: isCompact ? 16 : 18 }]}>
                 {lang === 'bn' ? activeSlide.titleBn : activeSlide.titleEn}
               </Text>
-              <Text style={[styles.bannerSubtitle, { fontFamily: fontFam }]}>
+              <Text style={[styles.bannerSubtitle, { fontFamily: fontFam, fontSize: isCompact ? 11.5 : 13 }]}>
                 {lang === 'bn' ? activeSlide.subtitleBn : activeSlide.subtitleEn}
               </Text>
             </View>
 
             {/* Structured Explanation Sections: What You Can Do & Why It Matters */}
-            <View style={styles.cardBody}>
+            <View style={[styles.cardBody, { padding: isCompact ? 12 : 18, gap: isCompact ? 8 : 14 }]}>
               {/* Box 1: What can be done */}
               <View
                 style={[
@@ -243,16 +276,33 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     backgroundColor: theme.surfaceElevated,
                     borderColor: theme.border,
                     borderLeftColor: theme.primary,
+                    padding: isCompact ? 10 : 14,
+                    gap: isCompact ? 4 : 6,
                   },
                 ]}
               >
                 <View style={styles.boxTitleRow}>
                   <Text style={{ fontSize: 16 }}>🎯</Text>
-                  <Text style={[styles.boxTitle, { color: theme.textPrimary, fontFamily: fontFam }]}>
+                  <Text
+                    style={[
+                      styles.boxTitle,
+                      { color: theme.textPrimary, fontFamily: fontFam, fontSize: isCompact ? 12.5 : 13.5 },
+                    ]}
+                  >
                     {lang === 'bn' ? 'কী করা যাবে (What Can Be Done):' : 'What You Can Do:'}
                   </Text>
                 </View>
-                <Text style={[styles.boxDescription, { color: theme.textSecondary, fontFamily: fontFam }]}>
+                <Text
+                  style={[
+                    styles.boxDescription,
+                    {
+                      color: theme.textSecondary,
+                      fontFamily: fontFam,
+                      fontSize: isCompact ? 11.5 : 13,
+                      lineHeight: isCompact ? 17 : 20,
+                    },
+                  ]}
+                >
                   {lang === 'bn' ? activeSlide.whatYouCanDoBn : activeSlide.whatYouCanDoEn}
                 </Text>
               </View>
@@ -265,16 +315,33 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     backgroundColor: theme.surfaceElevated,
                     borderColor: theme.border,
                     borderLeftColor: '#D97706',
+                    padding: isCompact ? 10 : 14,
+                    gap: isCompact ? 4 : 6,
                   },
                 ]}
               >
                 <View style={styles.boxTitleRow}>
                   <Text style={{ fontSize: 16 }}>💡</Text>
-                  <Text style={[styles.boxTitle, { color: theme.textPrimary, fontFamily: fontFam }]}>
+                  <Text
+                    style={[
+                      styles.boxTitle,
+                      { color: theme.textPrimary, fontFamily: fontFam, fontSize: isCompact ? 12.5 : 13.5 },
+                    ]}
+                  >
                     {lang === 'bn' ? 'কেন এটি গুরুত্বপূর্ণ (Why It Matters):' : 'Why It Matters:'}
                   </Text>
                 </View>
-                <Text style={[styles.boxDescription, { color: theme.textSecondary, fontFamily: fontFam }]}>
+                <Text
+                  style={[
+                    styles.boxDescription,
+                    {
+                      color: theme.textSecondary,
+                      fontFamily: fontFam,
+                      fontSize: isCompact ? 11.5 : 13,
+                      lineHeight: isCompact ? 17 : 20,
+                    },
+                  ]}
+                >
                   {lang === 'bn' ? activeSlide.whyItMattersBn : activeSlide.whyItMattersEn}
                 </Text>
               </View>
@@ -286,7 +353,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         <View
           style={[
             styles.bottomDock,
-            { backgroundColor: theme.surface, borderTopColor: theme.border },
+            {
+              backgroundColor: theme.surface,
+              borderTopColor: theme.border,
+              paddingVertical: isCompact ? 10 : 14,
+              gap: isCompact ? 8 : 12,
+            },
           ]}
         >
           {/* Progress Stepper Indicators */}
@@ -323,6 +395,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   {
                     backgroundColor: theme.surfaceElevated,
                     borderColor: theme.border,
+                    paddingVertical: isCompact ? 10 : 13,
                   },
                 ]}
               >
@@ -341,7 +414,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               style={[
                 styles.navBtn,
                 styles.nextBtn,
-                { backgroundColor: theme.primary },
+                { backgroundColor: theme.primary, paddingVertical: isCompact ? 10 : 13 },
               ]}
             >
               <Text style={[styles.nextBtnText, { fontFamily: fontFam }]}>

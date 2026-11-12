@@ -1683,14 +1683,16 @@ export const NON_PLANT_NONSENSE_WORDS = new Set([
 
 export function isGibberishOrNonsense(str: string): boolean {
   const trimmed = str.trim();
-  if (trimmed.length < 2) return true;
+  if (!trimmed) return true;
+  // Allow single character search prefixes while user is typing
+  if (trimmed.length <= 1) return false;
 
   const norm = str
     .toLowerCase()
     .replace(/[^a-z0-9\u0980-\u09FF]/g, '')
     .trim();
 
-  if (norm.length < 2) return true;
+  if (!norm) return true;
   if (/^[0-9]+$/.test(norm)) return true;
   if (NON_PLANT_NONSENSE_WORDS.has(norm)) return true;
 
@@ -2290,7 +2292,19 @@ export class OnlineBotanicalService {
             term
           )}&utf8=&format=json&origin=*&srlimit=6`;
 
-          const res = await fetch(searchUrl);
+          const wikiHeaders = {
+            'Accept': 'application/json',
+            'User-Agent': 'BaganiApp/2.5.0 (https://github.com/rknz/bagani; contact@bagani.app)',
+          };
+
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+          const res = await fetch(searchUrl, {
+            headers: wikiHeaders,
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
           if (!res.ok) continue;
           const data = await res.json();
           const hits = data?.query?.search || [];
@@ -2309,7 +2323,13 @@ export class OnlineBotanicalService {
 
             try {
               const summaryUrl = `${ep.host}/api/rest_v1/page/summary/${encodeURIComponent(rawTitle)}`;
-              const sumRes = await fetch(summaryUrl, { headers: { Accept: 'application/json' } });
+              const sumController = new AbortController();
+              const sumTimeoutId = setTimeout(() => sumController.abort(), 3500);
+              const sumRes = await fetch(summaryUrl, {
+                headers: wikiHeaders,
+                signal: sumController.signal,
+              });
+              clearTimeout(sumTimeoutId);
               if (!sumRes.ok) continue;
               const summaryData = await sumRes.json();
 

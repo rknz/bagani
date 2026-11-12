@@ -989,6 +989,7 @@ export class AiScannerService {
       };
     }
 
+    const isGenericFallback = !matchedSeed && !plantHintId;
     if (!matchedSeed) {
       matchedSeed = BOTANICAL_CLOUD_DATABASE[0];
     }
@@ -1087,6 +1088,9 @@ export class AiScannerService {
         availableVarietiesBn: matchedEncyclopediaEntry?.varietiesBn,
         availableVarietiesEn: matchedEncyclopediaEntry?.varietiesEn,
         isVarietyMatch: matchedEncyclopediaEntry?.isVarietyMatch,
+        uncertaintyWarning: isGenericFallback
+          ? 'গাছের নাম বা জাত সুনির্দিষ্ট করতে উপরের সার্চ বক্সে নাম লিখুন বা তালিকা থেকে নির্বাচন করুন।'
+          : undefined,
         matchedVarietyNameBn: matchedEncyclopediaEntry?.matchedVarietyNameBn,
         matchedVarietyNameEn: matchedEncyclopediaEntry?.matchedVarietyNameEn,
         parentPlantBn: matchedEncyclopediaEntry?.parentPlantBn || matchedSeed.nameBn,
@@ -1143,6 +1147,9 @@ export class AiScannerService {
       matchedVarietyNameEn: matchedEncyclopediaEntry?.matchedVarietyNameEn,
       parentPlantBn: matchedEncyclopediaEntry?.parentPlantBn || matchedSeed.nameBn,
       parentPlantEn: matchedEncyclopediaEntry?.parentPlantEn || matchedSeed.nameEn,
+      uncertaintyWarning: isGenericFallback
+        ? 'গাছের নাম বা জাত সুনির্দিষ্ট করতে উপরের সার্চ বক্সে নাম লিখুন বা তালিকা থেকে নির্বাচন করুন।'
+        : undefined,
       isAiVisualInference: false,
       expertConsultContact: {
         hotline: '16123',
