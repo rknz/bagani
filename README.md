@@ -18,7 +18,7 @@
 
 ---
 
-### [📥 Download Android Release APK (v2.5.0)](./BAGANI_v2.5.0.apk) &nbsp;•&nbsp; [📦 GitHub Repository](https://github.com/rknz/bagani) &nbsp;•&nbsp; [🌐 Live Localhost Web Preview](http://localhost:3000)
+### [📥 Download Android Release APK (v2.5.0)](https://github.com/rknz/bagani/releases/download/v2.5.0/BAGANI_v2.5.0.apk) &nbsp;•&nbsp; [📦 GitHub Releases](https://github.com/rknz/bagani/releases) &nbsp;•&nbsp; [🌐 Live Localhost Web Preview](http://localhost:3000)
 
 </div>
 
